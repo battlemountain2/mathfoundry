@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import SessionReview from '../components/Study/SessionReview';
 import LessonView from '../components/Lesson/LessonView';
 import { useProgress } from '../hooks/useProgress';
 import { learningPaths, getNextModule } from '../data/learningPaths';
@@ -134,8 +135,9 @@ export default function ModulePage() {
         <p>{progress[moduleId]?.lessonsCompleted || 0} of {moduleData.lessons.length} lessons read. Quiz performance and lesson completion are recorded separately.</p>
         <button className="study-button" onClick={() => setQuizResults(null)}>Review this module</button>
         {quizResults.passed && getNextModule(track?.id, moduleId) && <button className="study-button secondary" onClick={() => navigate(`/module/${getNextModule(track?.id, moduleId).id}`)}>Explore the next module</button>}
+        <SessionReview answers={quizResults.reviewAnswers || []}/>
       </section> : <LessonView key={moduleId}
-        moduleData={moduleData}
+        moduleData={{...moduleData,quiz:moduleData.quiz?.map(q=>({...q,moduleId}))}}
         onComplete={handleComplete}
         progress={progress[moduleId]}
         onLessonComplete={handleLessonComplete}

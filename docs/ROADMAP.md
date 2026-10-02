@@ -25,6 +25,8 @@ Astra refers to help with design and implementation, not the default paid runtim
 
 ## Learning experience
 
+Confirmed October 2 additions: repair sessions, a personal rulebook, and small engineering connections. Prioritize repair sessions built on complete session review, then a rulebook of saved checked explanations/examples with personal notes, then optional prerequisite-matched engineering applications. Integrate these with shared concept evidence and existing navigation. See [DESIGN-NEXT.md](DESIGN-NEXT.md) for scope and acceptance checks. These additions are accepted plans, not yet implemented features.
+
 ### Home: Today
 
 Show a primary recommendation, its evidence, a session-length choice, and a direct start/resume action. Below it, show a small review queue, the current concept, one concrete sign of progress, and an optional application or exploration. Avoid filling the home screen with generic motivational text, percentage rings, or a large analytics grid.
@@ -44,6 +46,8 @@ Schedule later retrieval and reassess after delays. Separate immediate success f
 Use concept-level states such as Unassessed, Learning, Independent, and Retained, with evidence counts and last-practiced dates. Do not claim precision from two diagnostic questions or label untested knowledge as zero mastery. Retention thresholds and review intervals need a documented, testable policy before implementation.
 
 Maintain an error notebook with the problem, submitted answer or reasoning, feedback, assistance, implicated concepts, and a retry action. Allow corrections to inaccurate AI feedback.
+
+October 2 priority clarification: Bry explicitly requires review of missed questions and examples to work through throughout the entire hub. Complete session review, saved mistake history, checked step-by-step solutions, optional guided examples, and fresh independent follow-ups are essential to the next cohesion pass. Cover foundations, mixed practice, lesson quizzes, and diagnostics; do not treat a score-only completion screen or the five-entry recent-work list as sufficient. See [DESIGN-NEXT.md](DESIGN-NEXT.md) for flow and acceptance criteria.
 
 ## Curriculum roadmap
 
@@ -79,6 +83,10 @@ Tutor modes: Explain/Teach, One Hint, Check My Reasoning, and Quiz Me. Adapt exp
 Give the tutor actual recent errors, assistance history, review needs, and current activity through a single consistent data model. Do not let a tutor conversation silently mark a concept mastered. Use concise optional session debriefs and configurable, bounded AI context. Track runtime usage/cost if supported; select provider/model/budget later with Bry.
 
 ## UI and design direction
+
+Confirmed follow-up: Bry prefers proper text-only navigation and a spacious study-desk Today screen with a compact learning path. Use these choices in the next prototype; they are no longer open preference questions.
+
+October 2 design follow-up: Bry requests cleaner navigation indicators, a darker deep-pine forest, multiple discoverable themes, and restoration of the original dark palette. See [DESIGN-NEXT.md](DESIGN-NEXT.md) for the proposed next pass and confirmed theme defects. The three-theme requirement supersedes the earlier two-theme scope; navigation/layout details remain proposals.
 
 Use a small navigation set: Today, Learn/Map, Practice/Review, and Progress; tutor access stays contextual. Final labels should be tested in prototypes.
 
@@ -137,3 +145,7 @@ Bry reports that seeing one worked example typically brings the procedure back. 
 ## Implementation milestone — October 2, 2026
 
 Bry authorized implementation and selected deep pine with warm cream for the forest theme. The first working slice and verification are recorded in [IMPLEMENTATION-2026-10-02.md](IMPLEMENTATION-2026-10-02.md). Today, a foundations starting check, supported/independent evidence, introductory recall policy, saved study blocks, recent-work review, backup downloads, and theme prototypes are implemented. Core lesson/practice/tutor repairs are included. Broader curriculum, branching assessment, restore/sync, live AI cost controls, and future subjects remain scoped work; this does not mark every phase above complete.
+
+## Cohesion follow-up implemented — October 2, 2026
+
+The accepted text-only navigation, study-desk Today, three-theme repair, shared session review, saved history, repair follow-ups, personal rulebook, and two small engineering applications now have a working implementation. See [IMPLEMENTATION-COHESION-2026-10-02.md](IMPLEMENTATION-COHESION-2026-10-02.md) for verification and limits. Broader question families, deeper guided interactions, curriculum expansion, photo-work submission, and restore/sync remain future scope.

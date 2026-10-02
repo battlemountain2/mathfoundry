@@ -10,7 +10,7 @@ import { learningPaths } from '../../data/learningPaths';
 
 export const Layout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { theme, toggleTheme, error: themeError } = useTheme();
+  const { theme, setTheme, error: themeError } = useTheme();
   const { streak } = useProgress();
   const { activity } = useActivityContext();
   const location = useLocation();
@@ -19,7 +19,7 @@ export const Layout = ({ children }) => {
 
   // Derive active context from URL
   const pathParts = location.pathname.split('/').filter(Boolean);
-  let currentContext = { trackId: 'geometry', moduleTitle: 'Overview' };
+  let currentContext = { moduleTitle: 'Study desk' };
 
   if (pathParts[0] === 'module' && pathParts[1]) {
     const moduleId = pathParts[1];
@@ -58,7 +58,7 @@ export const Layout = ({ children }) => {
           onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)} 
           streak={currentStreak} 
           theme={theme} 
-          onThemeToggle={toggleTheme} 
+          onThemeChange={setTheme}
         />
         
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">

@@ -1,3 +1,4 @@
+import { quizReview } from './review.js';
 /**
  * Score a diagnostic quiz and identify weak areas.
  * Each question has a `category` field. We group by category and calculate percentages.
@@ -33,6 +34,7 @@ export function scoreDiagnostic(questions, answers) {
   });
 
   return {
+    reviewAnswers: quizReview(questions,answers),
     categories: results,
     overallScore: Math.round((totalCorrect / totalQuestions) * 100),
     totalCorrect,
@@ -66,6 +68,7 @@ export function scoreQuiz(questions, answers) {
   });
 
   return {
+    reviewAnswers: quizReview(questions,answers),
     correct,
     total: questions.length,
     percentage: Math.round((correct / questions.length) * 100),

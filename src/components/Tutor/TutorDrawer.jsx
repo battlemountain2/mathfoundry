@@ -131,12 +131,10 @@ export const TutorDrawer = ({ currentContext = {} }) => {
       {/* Floating Action Trigger Button */}
       <button ref={triggerRef}
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 bg-zinc-900 dark:bg-indigo-600 hover:bg-zinc-800 dark:hover:bg-indigo-500 text-white font-mono text-xs font-bold py-3 px-4 rounded-xl shadow-lg border border-zinc-700/80 dark:border-indigo-400/30 flex items-center gap-2.5 transition-all hover:scale-105 active:scale-95 cursor-pointer"
-        title="Open Engineering Math Copilot"
+        className="tutor-launcher fixed top-4 right-[210px] z-40 study-button secondary"
+        title="Open study tutor"
       >
-        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span className="text-amber-400">⚡</span>
-        <span>AI COPILOT</span>
+        <span>Tutor</span>
       </button>
 
       {/* Slide-out Drawer Backdrop */}
@@ -159,13 +157,13 @@ export const TutorDrawer = ({ currentContext = {} }) => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">Ada // AI Tutor</h3>
+                <h3 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">Ada · Study tutor</h3>
                 <span className="text-[10px] uppercase font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                   Optional AI
                 </span>
               </div>
               <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
-                Socratic Engineering Math Copilot
+                Study explanations and reasoning support
               </p>
             </div>
           </div>

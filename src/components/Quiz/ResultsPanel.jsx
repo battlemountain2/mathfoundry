@@ -1,4 +1,5 @@
 import React from 'react';
+import SessionReview from '../Study/SessionReview';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 
@@ -161,6 +162,7 @@ export const ResultsPanel = ({ results, isDiagnostic, onRetry, onContinue }) => 
           )}
         </div>
       </Card>
+      {results.reviewAnswers ? <SessionReview answers={results.reviewAnswers}/> : <p className="study-muted">This older result saved scores only. Individual answers cannot be reconstructed.</p>}
     </div>
   );
 };

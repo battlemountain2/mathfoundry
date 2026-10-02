@@ -2,9 +2,17 @@ import React, { useState } from 'react';
 import { QuestionCard } from './QuestionCard';
 import { Button } from '../common/Button';
 import { ProgressBar } from '../Progress/ProgressBar';
+import { saveReviewSession } from '../../utils/storage';
 import { scoreDiagnostic, scoreQuiz } from '../../utils/scoring';
 
 export const QuizEngine = ({ questions, title, onComplete, isDiagnostic }) => {
+  const [sessionId]=useState(()=>crypto.randomUUID());
+  const [saveError,setSaveError]=useState('');
+  function complete(results){
+    const completeResults={...results,reviewSessionId:sessionId};
+    try {saveReviewSession({id:sessionId,title:title || 'Lesson quiz',answers:results.reviewAnswers.map(a=>({...a,moduleId:a.moduleId}))});setSaveError('');onComplete(completeResults);}
+    catch(error){setSaveError(error.message);}
+  }
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showExplanation, setShowExplanation] = useState(false);
@@ -30,7 +38,7 @@ export const QuizEngine = ({ questions, title, onComplete, isDiagnostic }) => {
       } else {
         // Complete - score and return
         const results = scoreDiagnostic(questions, newAnswers);
-        onComplete(results);
+        complete(results);
       }
     } else {
       // In lesson quiz mode, show explanation first
@@ -47,12 +55,13 @@ export const QuizEngine = ({ questions, title, onComplete, isDiagnostic }) => {
     } else {
       // Complete - score and return
       const results = scoreQuiz(questions, answers);
-      onComplete(results);
+      complete(results);
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto w-full">
+      {saveError && <p className="study-notice" role="alert">{saveError}<button className="study-text-button" onClick={()=>complete(isDiagnostic?scoreDiagnostic(questions,answers):scoreQuiz(questions,answers))}>Retry saving</button></p>}
       <div className="mb-8 text-center">
         <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-4">{title || 'Quiz'}</h2>
         <ProgressBar percentage={progress} size="md" showLabel={false} />

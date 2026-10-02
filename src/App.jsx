@@ -13,6 +13,10 @@ const ModulePage = lazy(() => import('./pages/ModulePage'));
 const Progress = lazy(() => import('./pages/Progress'));
 const Practice = lazy(() => import('./pages/Practice'));
 const Foundations = lazy(() => import('./pages/Foundations'));
+const Learn = lazy(() => import('./pages/Learn'));
+const Review = lazy(() => import('./pages/Review'));
+const Repair = lazy(() => import('./pages/Repair'));
+const Rulebook = lazy(() => import('./pages/Rulebook'));
 const Settings = lazy(() => import('./pages/Settings'));
 
 // Loading fallback with engineering feel
@@ -30,6 +34,10 @@ function App() {
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/learn" element={<Learn />} />
+            <Route path="/review" element={<Review />} />
+            <Route path="/repair" element={<Repair />} />
+            <Route path="/rulebook" element={<Rulebook />} />
             <Route path="/overview" element={<CurriculumOverview />} />
             <Route path="/diagnostic" element={<Diagnostic />} />
             <Route path="/path/:pathId" element={<LearningPath />} />

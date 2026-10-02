@@ -42,7 +42,7 @@ export function makeProblem(conceptId, seed = 0, format = 'numeric') {
     case 'equivalence': { const n=1+v%3,d=n+2,k=2+v%2; return {...base,format:format==='visual'?'visual':'numeric',question:`${n}/${d} = ?/${d*k}. How many of the ${d*k} smaller parts represent the same amount?`, denominator:d*k, numerator:n, sourceDenominator:d, answer:String(n*k), explanation:`Multiply the denominator by ${k}, and the numerator by ${k}: ${n} × ${k} = ${n*k}. ${n}/${d} = ${n*k}/${d*k}.`}; }
     case 'comparison': { const pairs=[[1,2,2,5],[2,3,3,5],[3,5,5,8],[3,4,4,5],[1,3,2,7],[5,6,7,9]]; const [a,b,c,d]=pairs[v]; const left=a*d>c*b; return {...base,format:'rule',question:`Which is larger: ${a}/${b} or ${c}/${d}?`,options:[`${a}/${b}`,`${c}/${d}`],answer:left?0:1,explanation:`Use denominator ${b*d}: ${a*d}/${b*d} versus ${c*b}/${b*d}. ${left?a*d:c*b} parts is larger.`}; }
     case 'addition': { const d=3+v,e=d+1,subtract=v%2===1,n=subtract?e-d:e+d;
-      return {...base,question:`${subtract?'Subtract':'Add'} 1/${d} ${subtract?'−':'+'} 1/${e}. Enter a fraction.`, answer:fraction(n,d*e),explanation:`Use denominator ${d*e}: ${e}/${d*e} ${subtract?'−':'+'} ${d}/${d*e} = ${n}/${d*e}, or ${fraction(n,d*e)} simplified.`}; }
+      return {...base,example:subtract?{question:'Subtract 3/4 − 1/6.',steps:['Use a common denominator of 12.','3/4 = 9/12; 1/6 = 2/12.','9/12 − 2/12 = 7/12. Check: 7/12 + 2/12 = 9/12 = 3/4.']}:base.example,question:`${subtract?'Subtract':'Add'} 1/${d} ${subtract?'−':'+'} 1/${e}. Enter a fraction.`, answer:fraction(n,d*e),explanation:`Use denominator ${d*e}: ${e}/${d*e} ${subtract?'−':'+'} ${d}/${d*e} = ${n}/${d*e}, or ${fraction(n,d*e)} simplified.`}; }
     case 'multiplication': { const d=4+v,e=3+v; return {...base,question:`Find 2/${d} of 1/${e}. Enter a fraction.`,answer:fraction(2,d*e),explanation:`Multiply: (2 × 1)/(${d} × ${e}) = 2/${d*e}, or ${fraction(2,d*e)} simplified.`}; }
     case 'division': { const d=5+v,n=2+v%3; return {...base,question:`How many 1/${d} portions fit into ${n}/${d}?`,answer:String(n),explanation:`${n}/${d} ÷ 1/${d} = ${n}/${d} × ${d}/1 = ${n}. Check: ${n} × 1/${d} = ${n}/${d}.`}; }
     default: throw new Error('Unknown concept');
@@ -53,4 +53,14 @@ export function makeFoundationSession(mode, conceptId, previous = [], minutes = 
   const seed=mode==='baseline'?previous.length:previous.filter(attempt=>attempt.conceptId===conceptId).length;
   const questions=['baseline','mixed'].includes(mode) ? concepts.map((concept,i)=>makeProblem(concept.id,seed+i,mode==='mixed' && i===1?'visual':'numeric')) : Array.from({length:6},(_,i)=>makeProblem(conceptId,seed+i,i===0?'rule':i===2 && conceptId==='equivalence'?'visual':'numeric'));
   return {id,mode,minutes,questions,index:0,answers:[],input:'',assisted:false,checked:false,exampleOpen:false,createdAt:new Date().toISOString()};
+}
+
+
+export function makeEngineeringSession(previous = []) {
+  const id=crypto.randomUUID();
+  const questions=[
+    {id:'scale-half',conceptId:'multiplication',format:'numeric',question:'A model drawing uses half the real length. A real beam is 3/4 metre long. How many metres long is it in the drawing? Enter the number only.',answer:'3/8',explanation:'The drawing length is (1/2) × (3/4) = 3/8 metre. A half-scale drawing must be shorter than the real beam.',example:{question:'At half scale, how long is a 2/3 metre beam in the drawing?',steps:['Multiply real length by scale: (1/2) × (2/3).','Multiply across: 2/6 = 1/3 metre.','Check: twice 1/3 metre is the original 2/3 metre.']}},
+    {id:'measure-sections',conceptId:'addition',format:'numeric',question:'Two straight sections end to end measure 1/2 metre and 1/4 metre. Ignore any overlap. What is the total length in metres? Enter the number only.',answer:'3/4',explanation:'Rewrite 1/2 as 2/4. Add 2/4 + 1/4 = 3/4 metre. The total is greater than either individual section.',example:{question:'Combine lengths of 1/3 metre and 1/6 metre, with no overlap.',steps:['Rewrite 1/3 as 2/6.','2/6 + 1/6 = 3/6 = 1/2 metre.','Keep the unit: both inputs and the sum are lengths in metres.']}},
+  ];
+  return {id,mode:'application',minutes:30,questions,index:0,answers:[],input:'',assisted:false,checked:false,exampleOpen:false,createdAt:new Date().toISOString(),previousCount:previous.length};
 }

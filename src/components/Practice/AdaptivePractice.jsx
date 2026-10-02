@@ -6,6 +6,7 @@ import StepSequence from './QuestionTypes/StepSequence';
 import FillBlank from './QuestionTypes/FillBlank';
 import TrueFalseReason from './QuestionTypes/TrueFalseReason';
 import SessionSummary from './SessionSummary';
+import { displayAnswer,expectedAnswer } from '../../utils/review';
 import { checkPracticeAnswer } from '../../utils/answerChecking';
 import MathBlock from '../Lesson/MathBlock';
 
@@ -31,7 +32,10 @@ export const AdaptivePractice = ({ questions, onComplete }) => {
       format: currentQ.format,
       moduleId: currentQ.moduleId,
       isCorrect,
-      submittedAnswer: ans,
+      submittedAnswer: displayAnswer(currentQ,ans),
+      rawAnswer: ans,
+      expectedAnswer: expectedAnswer(currentQ),
+      problem: currentQ,
       question: currentQ.question || currentQ.statement,
       explanation: currentQ.explanation,
       timeTaken

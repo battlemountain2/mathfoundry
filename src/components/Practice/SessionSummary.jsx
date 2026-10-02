@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import SessionReview from '../Study/SessionReview';
 import { savePracticeSession } from '../../utils/storage';
 
 const fmtLabels = {
@@ -113,6 +114,7 @@ export const SessionSummary = ({ sessionId, answers, onComplete }) => {
         </div>
       </div>
 
+      <SessionReview answers={answers} />
       {/* Actions */}
       <div className="flex gap-3">
         <button

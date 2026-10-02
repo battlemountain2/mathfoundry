@@ -207,3 +207,19 @@ export function getFoundationSession() {
   return session && Array.isArray(session.questions) && Array.isArray(session.answers) && Number.isInteger(session.index) ? session : null;
 }
 export function setFoundationSession(session) { setStore({ ...getStore(), foundationSession: session }); }
+
+export function getReviewHistory() { const value=getStore().reviewHistory;return Array.isArray(value)?value:[]; }
+export function saveReviewSession(session) {
+  const store=getStore();const history=getReviewHistory();
+  if(history.some(item=>item.id===session.id)) return;
+  setStore({...store,reviewHistory:[...history,{...session,timestamp:new Date().toISOString()}]});
+}
+export function getRulebook() { const value=getStore().rulebook;return Array.isArray(value)?value:[]; }
+export function saveRulebookEntry(entry) {
+  const store=getStore();const entries=getRulebook();
+  const existing=entries.find(item=>item.id===entry.id);
+  setStore({...store,rulebook:[...entries.filter(item=>item.id!==entry.id),{...existing,...entry,savedAt:existing?.savedAt || new Date().toISOString()}]});
+}
+export function removeRulebookEntry(id) { setStore({...getStore(),rulebook:getRulebook().filter(item=>item.id!==id)}); }
+export function getRepairDraft() { return getStore().repairDraft || null; }
+export function setRepairDraft(draft) { setStore({...getStore(),repairDraft:draft}); }

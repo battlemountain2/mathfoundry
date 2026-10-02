@@ -9,7 +9,7 @@ export function useTheme() {
     root.classList.toggle('dark', theme === 'dark' || theme === 'forest');
     root.dataset.theme=theme;
   },[theme]);
-  const setTheme=useCallback(value=>{try {setSettings({theme:value});setThemeState(value);setError('');} catch(error) {setError(error.message);}},[]);
-  const toggleTheme=useCallback(()=>setTheme(theme==='light'?'forest':'light'),[theme,setTheme]);
+  const setTheme=useCallback(value=>{if(!['light','dark','forest'].includes(value))return;try {setSettings({theme:value});setThemeState(value);setError('');} catch(error) {setError(error.message);}},[]);
+  const toggleTheme=useCallback(()=>setTheme(({light:'dark',dark:'forest',forest:'light'})[theme] || 'light'),[theme,setTheme]);
   return {theme,toggleTheme,setTheme,error};
 }

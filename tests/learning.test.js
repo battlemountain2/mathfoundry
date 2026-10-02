@@ -86,3 +86,40 @@ test('untrusted tutor HTML is escaped and math trust is disabled',()=>{
  assert.ok(!html.includes('<img'));assert.ok(html.includes('&lt;img'));assert.ok(html.includes('katex'));
  assert.ok(!processContent('$\\htmlStyle{background:red}{x}$',true).includes('style="background:red"'));
 });
+
+test('review preserves meaningful answers for every practice format and quiz category',async()=>{
+ const {expectedAnswer,displayAnswer,quizReview,foundationHistory}=await import('../src/utils/review.js');
+ for(const q of practiceBank){assert.ok(expectedAnswer(q));assert.ok(!expectedAnswer(q).includes('[object Object]'));}
+ const sequence=practiceBank.find(q=>q.format==='sequence');assert.ok(displayAnswer(sequence,sequence.correctOrder).includes(sequence.steps[0]));
+ const records=quizReview([{question:'Point?',options:['Line','Point'],correctAnswer:1,category:'basic-shapes',explanation:'A location.'}],{0:0});
+ assert.equal(records[0].submittedAnswer,'Line');assert.equal(records[0].expectedAnswer,'Point');assert.equal(records[0].moduleId,'points-lines');
+ assert.equal(foundationHistory([record({sessionId:'first'}),record({sessionId:'second'}),record({sessionId:'first'})])[0].answers.length,2);
+});
+test('repair tasks differ from the original block and retain correct mathematics',async()=>{
+ const {makeRepairDraft}=await import('../src/utils/repair.js');
+ for(const c of concepts){
+  const previous=Array.from({length:24},(_,i)=>({question:makeProblem(c.id,i).question}));
+  const draft=makeRepairDraft({conceptId:c.id,question:previous[0].question},previous);
+  assert.ok(!previous.some(a=>a.question===draft.problem.question));
+  if(c.id==='comparison')assert.equal(draft.problem.answer,1);
+  else assert.notEqual(numericValue(draft.problem.answer),null);
+ }
+});
+test('saved reviews and rulebook survive other writes, preserve notes, and export without credentials',()=>{
+ reset();storage.setSettings({aiApiKey:'private-fixture'});
+ storage.saveReviewSession({id:'quiz',answers:[{question:'Original',submittedAnswer:'2',isCorrect:false}]});
+ storage.saveReviewSession({id:'quiz',answers:[]});assert.equal(storage.getReviewHistory()[0].answers.length,1);
+ storage.saveRulebookEntry({id:'rule',title:'Fractions',explanation:'Equal-sized parts.',notes:'My note'});
+ storage.saveRulebookEntry({id:'rule',title:'Fractions',explanation:'Equal-sized parts.'});assert.equal(storage.getRulebook()[0].notes,'My note');
+ storage.setRepairDraft({id:'repair',stage:'practice',input:'1/3'});storage.setSettings({theme:'forest'});
+ const backup=JSON.parse(storage.exportLearningData());assert.equal(backup.repairDraft.input,'1/3');assert.equal(backup.rulebook[0].notes,'My note');assert.equal(backup.reviewHistory.length,1);assert.ok(!storage.exportLearningData().includes('private-fixture'));
+});
+
+test('all existing topics have repair support and authored numeric tasks agree with independent calculations',async()=>{
+ const {topicRepair}=await import('../src/data/repairProblems.js');const {makeRepairDraft}=await import('../src/utils/repair.js');
+ for(const path of learningPaths)for(const module of path.modules)assert.ok(makeRepairDraft({moduleId:module.id,question:'Original question'}));
+ for(let seed=0;seed<33;seed++){
+  const n=4+seed%11;const expected={circles:2*3.14*n,polygons:(n+3)*n/2,'volume-surface':n*6,coordinate:n+1,transformations:n+2,'variables-expressions':3*n+4,'linear-inequalities':n-1,'linear-functions':2*n+1,'systems-equations':n,'exponents-radicals':2**n,'polynomials-factoring':n};
+  for(const [module,value]of Object.entries(expected))assert.equal(numericValue(topicRepair(module,seed).correctAnswer),value);
+ }
+});
