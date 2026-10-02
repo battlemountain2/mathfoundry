@@ -67,7 +67,7 @@ export const moduleData = {
         <p>Inequalities are the mathematical language of safety. When designing a structure, engineers calculate the maximum stress $\\sigma$ the material will experience.</p>
         <p>The material has an allowable stress limit, $\\sigma_{\\text{allow}}$. The core requirement for structural safety is a simple inequality:</p>
         <p>$$\\sigma \\le \\sigma_{\\text{allow}}$$</p>
-        <p>If this inequality is false, the bridge collapses. Engineers also use Factor of Safety (FS). If $FS = 2$, they design the structure to handle twice the expected load, ensuring that even under extreme, unexpected conditions, the fundamental inequality $\\text{Load} < \\text{Capacity}$ holds true.</p>
+        <p>This inequality is a simplified mathematical model, not a complete safety check. A factor of safety adds a margin relative to an assumed load or strength; it does not guarantee safety under every unexpected condition. Exceeding a design limit also does not, by itself, prove immediate collapse.</p>
       `,
       keyTakeaways: [
         'Inequalities are used to define system constraints and safety margins.',

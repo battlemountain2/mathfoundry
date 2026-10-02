@@ -1,11 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getProgress, setModuleProgress, getDiagnosticResults, getStreak, updateStreak } from '../utils/storage';
+import { getProgress, setModuleProgress, getDiagnosticResults, getStreak, updateStreak, subscribeStore } from '../utils/storage';
 import { learningPaths } from '../data/learningPaths';
 
 export function useProgress() {
   const [progress, setProgress] = useState(() => getProgress());
   const [streak, setStreak] = useState(() => getStreak());
   const [diagnosticResults, setDiagResults] = useState(() => getDiagnosticResults());
+
+  useEffect(() => subscribeStore(() => {
+    setProgress(getProgress()); setStreak(getStreak()); setDiagResults(getDiagnosticResults());
+  }), []);
 
   const updateModuleProgress = useCallback((moduleId, data) => {
     const updated = setModuleProgress(moduleId, data);
@@ -43,7 +47,7 @@ export function useProgress() {
     if (allModules.length === 0) return 0;
     const total = allModules.reduce((sum, mod) => sum + getModulePercentage(mod.id), 0);
     return Math.round(total / allModules.length);
-  }, [progress, getModulePercentage]);
+  }, [getModulePercentage]);
 
   return {
     progress,

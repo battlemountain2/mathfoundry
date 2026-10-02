@@ -43,10 +43,10 @@ export const ProgressDashboard = ({ progress = {}, diagnosticResults = null, str
   const algebraModules = algebraTrack?.modules || [];
   const allModules = [...geometryModules, ...algebraModules];
 
-  const displayedModules = activeFilter === 'geometry' 
-    ? geometryModules 
-    : activeFilter === 'algebra' 
-    ? algebraModules 
+  const displayedModules = activeFilter === 'geometry'
+    ? geometryModules
+    : activeFilter === 'algebra'
+    ? algebraModules
     : allModules;
 
   // Streak normalization
@@ -65,7 +65,7 @@ export const ProgressDashboard = ({ progress = {}, diagnosticResults = null, str
     totalLessonsCount += total;
     const modCompletedLessons = modProg.lessonsCompleted || (modProg.completed ? total : 0);
     completedLessonsCount += modCompletedLessons;
-    
+
     if (modProg.completed) {
       completedModulesCount += 1;
       totalPercentageSum += 100;
@@ -75,8 +75,8 @@ export const ProgressDashboard = ({ progress = {}, diagnosticResults = null, str
     }
   });
 
-  const overallPercentage = allModules.length > 0 
-    ? Math.round(totalPercentageSum / allModules.length) 
+  const overallPercentage = allModules.length > 0
+    ? Math.round(totalPercentageSum / allModules.length)
     : 0;
 
   // Normalize diagnostic categories safely (handles object or array)
@@ -94,29 +94,29 @@ export const ProgressDashboard = ({ progress = {}, diagnosticResults = null, str
   }, [diagnosticResults]);
 
   const stats = [
-    { 
-      label: 'Foundations Mastery', 
-      value: `${overallPercentage}%`, 
+    {
+      label: 'Lesson Completion',
+      value: `${overallPercentage}%`,
       sub: `${completedModulesCount} of ${allModules.length} units completed`,
-      icon: '📐' 
+      icon: '📐'
     },
-    { 
-      label: 'Engineering Streak', 
-      value: `${currentStreak} ${currentStreak === 1 ? 'day' : 'days'}`, 
+    {
+      label: 'Engineering Streak',
+      value: `${currentStreak} ${currentStreak === 1 ? 'day' : 'days'}`,
       sub: `Best: ${bestStreak} days`,
-      icon: '⚡' 
+      icon: '⚡'
     },
-    { 
-      label: 'Lessons Cleared', 
-      value: `${completedLessonsCount}`, 
+    {
+      label: 'Lessons Cleared',
+      value: `${completedLessonsCount}`,
       sub: `out of ${totalLessonsCount} foundational lessons`,
-      icon: '✓' 
+      icon: '✓'
     },
-    { 
-      label: 'Diagnostic Status', 
-      value: diagnosticResults ? `${diagnosticResults.overallScore || 0}%` : 'Not Evaluated', 
+    {
+      label: 'Diagnostic Status',
+      value: diagnosticResults ? `${diagnosticResults.overallScore || 0}%` : 'Not Evaluated',
       sub: diagnosticResults ? `${diagnosticResults.weakAreas?.length || 0} gap areas identified` : 'Take quiz to map gaps',
-      icon: '🎯' 
+      icon: '🎯'
     },
   ];
 
@@ -197,7 +197,7 @@ export const ProgressDashboard = ({ progress = {}, diagnosticResults = null, str
               const targetModId = cat.moduleId || categoryToModuleMap[cat.id] || 'points-lines';
 
               return (
-                <div 
+                <div
                   key={cat.id || cat.name}
                   className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-950/40 flex flex-col justify-between"
                 >
@@ -220,13 +220,13 @@ export const ProgressDashboard = ({ progress = {}, diagnosticResults = null, str
                   </div>
 
                   <div className="space-y-2 mt-1">
-                    <ProgressBar 
-                      percentage={cat.percentage} 
+                    <ProgressBar
+                      percentage={cat.percentage}
                       color={color}
                       size="sm"
                     />
                     <div className="flex justify-end">
-                      <Link 
+                      <Link
                         to={`/module/${targetModId}`}
                         className="text-[11px] text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
                       >
@@ -312,12 +312,12 @@ export const ProgressDashboard = ({ progress = {}, diagnosticResults = null, str
               const totalLessons = mod.totalLessons || 4;
               const lessonsDone = modProg.lessonsCompleted || (modProg.completed ? totalLessons : 0);
               const percentage = modProg.completed ? 100 : Math.round((lessonsDone / totalLessons) * 100);
-              const isCompleted = modProg.completed || percentage === 100;
+              const isCompleted = Boolean(modProg.completed);
               const inProgress = lessonsDone > 0 && !isCompleted;
               const isAlgebra = mod.track === 'algebra' || mod.category === 'algebra';
 
               return (
-                <div 
+                <div
                   key={mod.id}
                   className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                 >
@@ -328,8 +328,8 @@ export const ProgressDashboard = ({ progress = {}, diagnosticResults = null, str
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
-                          isAlgebra 
-                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
+                          isAlgebra
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
                             : 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20'
                         }`}>
                           {isAlgebra ? 'ALGEBRA' : 'GEOMETRY'}
@@ -350,16 +350,16 @@ export const ProgressDashboard = ({ progress = {}, diagnosticResults = null, str
 
                   <div className="w-full sm:w-1/2 flex items-center gap-4">
                     <div className="flex-1">
-                      <ProgressBar 
-                        percentage={percentage} 
+                      <ProgressBar
+                        percentage={percentage}
                         color={isCompleted ? 'emerald' : inProgress ? 'indigo' : 'indigo'}
                         showLabel={true}
                         size="sm"
                       />
                     </div>
                     <Link to={`/module/${mod.id}`} className="shrink-0">
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant={isCompleted ? 'ghost' : inProgress ? 'primary' : 'secondary'}
                       >
                         {isCompleted ? 'Review' : inProgress ? 'Resume' : 'Start'}
@@ -374,9 +374,9 @@ export const ProgressDashboard = ({ progress = {}, diagnosticResults = null, str
 
         {/* Right column: Badges */}
         <div className="lg:col-span-1">
-          <BadgeDisplay 
-            progress={progress} 
-            diagnosticResults={diagnosticResults} 
+          <BadgeDisplay
+            progress={progress}
+            diagnosticResults={diagnosticResults}
             streak={currentStreak}
           />
         </div>

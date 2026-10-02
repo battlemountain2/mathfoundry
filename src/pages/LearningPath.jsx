@@ -53,7 +53,7 @@ export default function LearningPath() {
 
           <div className="w-full md:w-60 shrink-0 bg-zinc-50 dark:bg-zinc-950/60 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
             <div className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-2 flex justify-between">
-              <span>Track Mastery</span>
+              <span>Lesson Completion</span>
               <span className="text-indigo-600 dark:text-indigo-400 font-bold">{pathProgress}%</span>
             </div>
             <ProgressBar percentage={pathProgress} size="sm" color="indigo" />
@@ -65,7 +65,7 @@ export default function LearningPath() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider text-xs">
-            Curriculum Sequence [10 Units]
+            Curriculum Sequence [{path.modules.length} Units]
           </h2>
           {diagnosticResults && (
             <span className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
@@ -79,7 +79,7 @@ export default function LearningPath() {
             const modProg = progress[module.id] || {};
             const totalLessons = module.totalLessons || 4;
             const lessonsCompleted = modProg.lessonsCompleted || (modProg.completed ? totalLessons : 0);
-            const isCompleted = modProg.completed || lessonsCompleted >= totalLessons;
+            const isCompleted = Boolean(modProg.completed);
             const inProgress = lessonsCompleted > 0 && !isCompleted;
             const recommended = isRecommended(module);
             const percentage = isCompleted ? 100 : Math.round((lessonsCompleted / totalLessons) * 100);

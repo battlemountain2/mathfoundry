@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import LessonView from '../components/Lesson/LessonView';
 import { useProgress } from '../hooks/useProgress';
-import { getModule, getNextModule } from '../data/learningPaths';
+import { learningPaths, getNextModule } from '../data/learningPaths';
 
 const moduleMap = {
   // Geometry track
@@ -36,9 +36,13 @@ export default function ModulePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const pathModuleInfo = getModule('geometry', moduleId);
+  const track = learningPaths.find(path => path.modules.some(module => module.id === moduleId));
+  const [saveError,setSaveError] = useState('');
+  const [quizResults, setQuizResults] = useState(null);
 
   useEffect(() => {
+    let cancelled = false;
+    setQuizResults(null);
     setLoading(true);
     setError(null);
 
@@ -46,7 +50,7 @@ export default function ModulePage() {
       try {
         if (moduleMap[moduleId]) {
           const mod = await moduleMap[moduleId]();
-          setModuleData(mod.default || mod.moduleData);
+          if (!cancelled) setModuleData(mod.default || mod.moduleData);
         } else {
           setError(`Module "${moduleId}" content file not found.`);
         }
@@ -54,36 +58,35 @@ export default function ModulePage() {
         console.error("Error loading module:", err);
         setError("Failed to load module content. Please try again.");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     loadModule();
+    return () => { cancelled = true; };
   }, [moduleId]);
 
-  const handleComplete = (quizResults) => {
-    const score = quizResults?.percentage ?? 100;
-    updateModuleProgress(moduleId, {
-      completed: true,
-      lessonsCompleted: moduleData?.lessons?.length || 4,
-      totalLessons: moduleData?.lessons?.length || 4,
-      quizScore: score,
+  const handleLessonComplete = (lessonIndex) => {
+    const previous = progress[moduleId] || {};
+    const lessonIds = [...new Set([...(previous.lessonIds || []), lessonIndex])];
+    try { updateModuleProgress(moduleId, { lessonIds, lessonsCompleted: lessonIds.length, totalLessons: moduleData.lessons.length });setSaveError('');return true; }
+    catch(error) {setSaveError(error.message);return false;}
+  };
+  const handleComplete = (results) => {
+    const lessonsCompleted = progress[moduleId]?.lessonsCompleted || 0;
+    try { updateModuleProgress(moduleId, {
+      completed: Boolean(results.passed && lessonsCompleted === moduleData.lessons.length),
+      quizScore: results.percentage, quizPassed: results.passed,
+      totalLessons: moduleData.lessons.length,
     });
-    
-    // Find next module
-    const nextMod = getNextModule('geometry', moduleId);
-    if (nextMod) {
-      navigate(`/module/${nextMod.id}`);
-    } else {
-      navigate('/progress');
-    }
+    setQuizResults(results);setSaveError(''); } catch(error) {setSaveError(error.message);}
   };
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 font-mono text-xs text-zinc-500">
         <div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-500/20 border-t-indigo-600"></div>
-        <span>COMPILING GEOMETRIC MODELS...</span>
+        <span>Loading lesson…</span>
       </div>
     );
   }
@@ -105,6 +108,7 @@ export default function ModulePage() {
 
   return (
     <div className="animate-fade-in max-w-6xl mx-auto px-4 py-4 font-mono">
+      {saveError && <p className="study-notice" role="alert">Progress was not saved: {saveError}</p>}
       {/* Breadcrumbs */}
       <nav className="flex text-xs text-zinc-400 dark:text-zinc-500 mb-6" aria-label="Breadcrumb">
         <ol className="inline-flex items-center space-x-1.5">
@@ -113,7 +117,7 @@ export default function ModulePage() {
           </li>
           <li>/</li>
           <li>
-            <Link to={`/path/${pathModuleInfo?.track || (learningPaths.find(t => t.modules.some(m => m.id === moduleId))?.id || 'geometry')}`} className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
+            <Link to={`/path/${track?.id || 'geometry'}`} className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">
               {learningPaths.find(t => t.modules.some(m => m.id === moduleId))?.title?.split(' ')[0] || 'Curriculum'}
             </Link>
           </li>
@@ -124,11 +128,18 @@ export default function ModulePage() {
         </ol>
       </nav>
 
-      <LessonView 
-        moduleData={moduleData} 
-        onComplete={handleComplete} 
-        progress={progress}
-      />
+      {quizResults ? <section className="study-card">
+        <p className="eyebrow">Quiz review</p>
+        <h1>{quizResults.percentage}% · {quizResults.passed ? 'Quiz passed' : 'Keep practicing'}</h1>
+        <p>{progress[moduleId]?.lessonsCompleted || 0} of {moduleData.lessons.length} lessons read. Quiz performance and lesson completion are recorded separately.</p>
+        <button className="study-button" onClick={() => setQuizResults(null)}>Review this module</button>
+        {quizResults.passed && getNextModule(track?.id, moduleId) && <button className="study-button secondary" onClick={() => navigate(`/module/${getNextModule(track?.id, moduleId).id}`)}>Explore the next module</button>}
+      </section> : <LessonView key={moduleId}
+        moduleData={moduleData}
+        onComplete={handleComplete}
+        progress={progress[moduleId]}
+        onLessonComplete={handleLessonComplete}
+      />}
     </div>
   );
 }

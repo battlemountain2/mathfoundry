@@ -8,7 +8,7 @@ import {
   saveTutorChatHistory, 
   clearTutorChatHistory 
 } from '../../utils/aiTutor';
-import { getSettings, setSettings, getProgress, getDiagnosticResults, getStreak, getMastery } from '../../utils/storage';
+import { getSettings, setSettings, getProgress, getDiagnosticResults, getStreak, getMastery, accuracy } from '../../utils/storage';
 
 export const TutorDrawer = ({ currentContext = {} }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,6 +24,23 @@ export const TutorDrawer = ({ currentContext = {} }) => {
   const [keySaved, setKeySaved] = useState(false);
 
   const messagesEndRef = useRef(null);
+  const panelRef = useRef(null);
+  const triggerRef = useRef(null);
+  const [tutorMode, setTutorMode] = useState('Explain');
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = event => {
+      if(event.key === 'Escape') { setIsOpen(false); triggerRef.current?.focus(); }
+      if(event.key === 'Tab') {
+        const nodes = [...panelRef.current.querySelectorAll('button,input,select,a[href]')].filter(el=>!el.disabled);
+        const first=nodes[0], last=nodes.at(-1);
+        if(event.shiftKey && document.activeElement===first) {event.preventDefault();last?.focus();}
+        if(!event.shiftKey && document.activeElement===last) {event.preventDefault();first?.focus();}
+      }
+    };
+    document.addEventListener('keydown',onKey);
+    return () => document.removeEventListener('keydown',onKey);
+  }, [isOpen]);
   const inputRef = useRef(null);
   const location = useLocation();
 
@@ -71,7 +88,7 @@ export const TutorDrawer = ({ currentContext = {} }) => {
       const reply = await sendTutorMessage({
         message: textToSend,
         history: messages,
-        currentContext,
+        currentContext: { ...currentContext, tutorMode },
       });
 
       const assistantMessage = {
@@ -80,14 +97,14 @@ export const TutorDrawer = ({ currentContext = {} }) => {
         timestamp: new Date().toISOString(),
       };
 
-      const finalMessages = [...updatedMessages, assistantMessage];
+      const finalMessages = [...updatedMessages, assistantMessage].slice(-30);
       setMessages(finalMessages);
       saveTutorChatHistory(finalMessages);
     } catch (err) {
       console.error('Tutor chat error:', err);
       if (err.message === 'API_KEY_REQUIRED') {
         setShowConfig(true);
-        setError('Please configure your free Gemini or OpenAI API key.');
+        setError('Please configure your Gemini or OpenAI API key.');
       } else {
         setError(err.message || 'Failed to get response from AI tutor.');
       }
@@ -102,17 +119,17 @@ export const TutorDrawer = ({ currentContext = {} }) => {
   };
 
   const quickPrompts = [
-    'What should I practice next based on my weak areas?',
-    'Explain my most recent mistake step by step',
-    'Give me a hint for improving at Spot the Blunder questions',
-    'Quiz me on my weakest topic with an engineering scenario',
-    'How does this math connect to real engineering?',
+    'Show me one worked example for this concept',
+    'Give me one hint for the current problem',
+    'Help me check my reasoning; ask me for my paper steps',
+    'Quiz me with a new problem on this concept',
+    'What should I revisit later based on my recorded work?',
   ];
 
   return (
     <>
       {/* Floating Action Trigger Button */}
-      <button
+      <button ref={triggerRef}
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 right-6 z-40 bg-zinc-900 dark:bg-indigo-600 hover:bg-zinc-800 dark:hover:bg-indigo-500 text-white font-mono text-xs font-bold py-3 px-4 rounded-xl shadow-lg border border-zinc-700/80 dark:border-indigo-400/30 flex items-center gap-2.5 transition-all hover:scale-105 active:scale-95 cursor-pointer"
         title="Open Engineering Math Copilot"
@@ -126,12 +143,12 @@ export const TutorDrawer = ({ currentContext = {} }) => {
       {isOpen && (
         <div 
           className="fixed inset-0 bg-zinc-950/60 backdrop-blur-xs z-50 transition-opacity"
-          onClick={() => setIsOpen(false)}
+          onClick={() => { setIsOpen(false); triggerRef.current?.focus(); }}
         />
       )}
 
       {/* Slide-out Drawer Panel */}
-      <div className={`fixed inset-y-0 right-0 z-50 w-full sm:w-[480px] bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 shadow-2xl flex flex-col font-mono transform transition-transform duration-200 ease-in-out ${
+      {isOpen && <div ref={panelRef} role="dialog" aria-modal="true" aria-label="Ada study tutor" className={`fixed inset-y-0 right-0 z-50 w-full sm:w-[480px] bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 shadow-2xl flex flex-col font-mono transform transition-transform duration-200 ease-in-out ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}>
         {/* Header */}
@@ -144,7 +161,7 @@ export const TutorDrawer = ({ currentContext = {} }) => {
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">Ada // AI Tutor</h3>
                 <span className="text-[10px] uppercase font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                  Online
+                  Optional AI
                 </span>
               </div>
               <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
@@ -157,13 +174,15 @@ export const TutorDrawer = ({ currentContext = {} }) => {
             <button
               onClick={() => setShowConfig(!showConfig)}
               className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs"
+              aria-label="Tutor settings"
               title="API Key Configuration"
             >
               ⚙
             </button>
             <button
-              onClick={() => setIsOpen(false)}
+              onClick={() => { setIsOpen(false); triggerRef.current?.focus(); }}
               className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-sm font-bold"
+              aria-label="Close tutor"
               title="Close Copilot"
             >
               ✕
@@ -181,15 +200,15 @@ export const TutorDrawer = ({ currentContext = {} }) => {
                 const masteryScores = typeof getMastery === 'function' ? getMastery() : {};
                 const scores = Object.values(masteryScores || {});
                 if (scores.length > 0) {
-                  overallMastery = Math.round(scores.reduce((a,b)=>a+b,0) / scores.length);
+                  overallMastery = Math.round(scores.reduce((sum,record)=>sum+(accuracy(record)||0),0) / scores.length);
                 }
               } catch(e) {}
               const weakCount = getDiagnosticResults()?.weakAreas?.length || 0;
               
               return (
                 <>
-                  {overallMastery > 0 && <span> · {overallMastery}% mastery</span>}
-                  {weakCount > 0 && <span> · {weakCount} weak areas</span>}
+                  {overallMastery > 0 && <span> · {overallMastery}% mixed-practice accuracy</span>}
+                  {weakCount > 0 && <span> · {weakCount} geometry review areas</span>}
                 </>
               );
             })()}
@@ -218,7 +237,7 @@ export const TutorDrawer = ({ currentContext = {} }) => {
             </div>
             
             <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
-              Your API key is stored safely in your browser's local storage and used directly to communicate with the model.
+              Your API key is stored locally in your browser's local storage and used directly to communicate with the model.
             </p>
 
             <form onSubmit={handleSaveConfig} className="space-y-3">
@@ -236,7 +255,7 @@ export const TutorDrawer = ({ currentContext = {} }) => {
                         : 'bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300'
                     }`}
                   >
-                    Google Gemini (Free)
+                    Google Gemini
                   </button>
                   <button
                     type="button"
@@ -264,11 +283,12 @@ export const TutorDrawer = ({ currentContext = {} }) => {
                       rel="noreferrer"
                       className="text-[10px] text-indigo-600 dark:text-indigo-400 underline"
                     >
-                      Get Free Key →
+                      Get API Key →
                     </a>
                   )}
                 </div>
                 <input
+                  aria-label="Tutor provider API key"
                   type="password"
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
@@ -299,16 +319,17 @@ export const TutorDrawer = ({ currentContext = {} }) => {
               </div>
               <div className="space-y-1">
                 <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
-                  Engineering Mentorship Online
+                  Study support
                 </h4>
                 <div className="text-xs text-zinc-500 dark:text-zinc-400 max-w-xs mx-auto leading-relaxed bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg border border-indigo-100 dark:border-indigo-800/60 text-left mt-3">
                   <span className="font-bold text-indigo-700 dark:text-indigo-400">Ada: </span>
                   {(() => {
+                    if (currentContext.conceptId) return `You're working on ${currentContext.conceptId}. Ask for one example, a hint, or help checking the steps on your paper. Your worked examples also work without an AI connection.`;
                     const diag = getDiagnosticResults();
                     const progress = getProgress();
                     const streak = typeof getStreak === 'function' ? getStreak() : 0;
                     const streakDays = typeof streak === 'object' ? (streak?.current || 0) : Number(streak) || 0;
-                    const numComplete = progress?.completedModules?.length || 0;
+                    const numComplete = Object.values(progress).filter(item=>item.completed).length;
                     if (!diag || diag.overallScore === undefined) {
                       return "I see you haven't run the diagnostic yet. That's the best place to start — it only takes 5 minutes and helps me understand exactly where your gaps are.";
                     }
@@ -326,7 +347,7 @@ export const TutorDrawer = ({ currentContext = {} }) => {
                     ⚡ Quick Setup Required
                   </div>
                   <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
-                    Add your free Google Gemini API key to activate the tutor. No subscription needed.
+                    Connect a provider key for optional tutoring. Requests may incur provider charges; study and worked examples work without AI.
                   </p>
                   <Button 
                     size="sm" 
@@ -376,7 +397,7 @@ export const TutorDrawer = ({ currentContext = {} }) => {
                 {msg.role === 'user' ? (
                   <div className="whitespace-pre-wrap">{msg.content}</div>
                 ) : (
-                  <MathBlock content={msg.content} />
+                  <MathBlock plainText content={msg.content} />
                 )}
               </div>
             </div>
@@ -402,6 +423,11 @@ export const TutorDrawer = ({ currentContext = {} }) => {
           <div ref={messagesEndRef} />
         </div>
 
+        <label className="px-4 pt-3 text-sm">Tutor mode
+          <select value={tutorMode} onChange={event=>setTutorMode(event.target.value)} className="block w-full p-2 bg-white dark:bg-zinc-800">
+            {['Explain','One hint','Check my reasoning','Quiz me'].map(mode=><option key={mode}>{mode}</option>)}
+          </select>
+        </label>
         {/* Input Bar */}
         <div className="p-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/70">
           <form
@@ -412,6 +438,7 @@ export const TutorDrawer = ({ currentContext = {} }) => {
             className="flex items-center gap-2"
           >
             <input
+              aria-label="Message to Ada"
               ref={inputRef}
               type="text"
               value={input}
@@ -430,7 +457,7 @@ export const TutorDrawer = ({ currentContext = {} }) => {
             </Button>
           </form>
         </div>
-      </div>
+      </div>}
     </>
   );
 };

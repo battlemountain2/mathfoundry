@@ -1,24 +1,30 @@
 import React, { useState } from 'react';
 import { useTheme } from '../hooks/useTheme';
-import { clearAllData, getSettings, setSettings } from '../utils/storage';
+import { clearAllData, getSettings, setSettings, exportLearningData, exportRawData } from '../utils/storage';
 import { clearTutorChatHistory } from '../utils/aiTutor';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
 
+function download(data,name) {
+  const url=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+  const link=document.createElement('a');link.href=url;link.download=name;link.click();URL.revokeObjectURL(url);
+}
 export default function Settings() {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme, error: themeError } = useTheme();
   const [showClearModal, setShowClearModal] = useState(false);
   
   // AI Settings state
   const initialSettings = getSettings();
   const [apiKey, setApiKey] = useState(initialSettings.aiApiKey || '');
   const [provider, setProvider] = useState(initialSettings.aiProvider || 'gemini');
+  const [saveError,setSaveError]=useState('');
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   const handleSaveAi = (e) => {
     e.preventDefault();
-    setSettings({ aiApiKey: apiKey.trim(), aiProvider: provider });
+    try { setSettings({ aiApiKey: apiKey.trim(), aiProvider: provider });setSaveError(''); }
+    catch(error) {setSaveError(error.message);return;}
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
   };
@@ -34,13 +40,14 @@ export default function Settings() {
     <div className="animate-fade-in max-w-3xl mx-auto px-4 py-6 space-y-6 font-mono">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100">
-          Configuration & Telemetry
+          Settings & backup
         </h1>
         <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-          Manage system preferences, AI copilot connectivity, and data persistence.
+          Choose your study theme, back up progress, and configure optional AI support.
         </p>
       </div>
 
+      {(saveError || themeError) && <p role="alert">{saveError || themeError}</p>}
       {/* AI Copilot Setup Card */}
       <Card className="border border-indigo-200 dark:border-indigo-900/60 bg-white dark:bg-zinc-900/90 p-6 space-y-4 shadow-xs">
         <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-4">
@@ -77,7 +84,7 @@ export default function Settings() {
                     : 'bg-zinc-50 dark:bg-zinc-800/60 border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300'
                 }`}
               >
-                Google Gemini (Recommended & Free)
+                Google Gemini
               </button>
               <button
                 type="button"
@@ -105,11 +112,12 @@ export default function Settings() {
                   rel="noreferrer"
                   className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
                 >
-                  Get free key at Google AI Studio ↗
+                  Get API key at Google AI Studio ↗
                 </a>
               )}
             </div>
             <input
+              aria-label="Provider API key"
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
@@ -138,14 +146,11 @@ export default function Settings() {
         <div className="flex items-center justify-between py-2">
           <div>
             <div className="font-semibold text-xs text-zinc-900 dark:text-zinc-100">Color Palette</div>
-            <div className="text-[11px] text-zinc-500">Switch between dark technical IDE and clean light blueprint mode</div>
+            <div className="text-[11px] text-zinc-500">Choose light paper, deep pine forest, or the original dark palette</div>
           </div>
-          <button 
-            onClick={toggleTheme}
-            className="px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-          >
-            {theme === 'dark' ? '☀ Switch to Light Mode' : '☾ Switch to Dark Mode'}
-          </button>
+          <select aria-label="Color theme" value={theme} onChange={e=>setTheme(e.target.value)} className="study-answer">
+            <option value="light">Light paper</option><option value="forest">Deep pine forest</option><option value="dark">Original dark</option>
+          </select>
         </div>
 
         <div className="flex items-center justify-between py-2 border-t border-zinc-100 dark:border-zinc-800">
@@ -159,6 +164,11 @@ export default function Settings() {
         </div>
       </Card>
 
+      <section className="study-card">
+        <h2>Your learning data</h2><p>Progress is saved in this browser on this address. Download a backup before moving browsers or changing addresses. The learning backup excludes your API key.</p>
+        <div className="study-actions"><button className="study-button" onClick={()=>download(exportLearningData(),'mathfoundry-learning-backup.json')}>Download learning backup</button><button className="study-button secondary" onClick={()=>download(exportRawData(),'mathfoundry-raw-recovery.json')}>Download raw recovery data</button></div>
+        <p className="study-muted">Raw recovery data can contain your locally saved API key. Keep that file private. Import/restore tools are planned; these files preserve the data for recovery.</p>
+      </section>
       {/* Danger Zone */}
       <Card className="border border-rose-200 dark:border-rose-900/50 bg-white dark:bg-zinc-900 p-6 space-y-4">
         <h2 className="text-base font-bold text-rose-600 dark:text-rose-400 border-b border-rose-100 dark:border-rose-900/30 pb-3">

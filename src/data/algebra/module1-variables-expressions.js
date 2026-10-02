@@ -14,7 +14,7 @@ export const moduleData = {
         <p>Why do this? Because in engineering, quantities are rarely static. A variable allows us to write a single equation that works for <em>any</em> situation.</p>
         <p>For example, Ohm's Law relates Voltage ($V$), Current ($I$), and Resistance ($R$):</p>
         <p>$$V = I \\cdot R$$</p>
-        <p>Here, $V$, $I$, and $R$ are variables. If you change the resistor, $R$ changes, and the voltage $V$ changes with it. Variables give us the power to describe universal relationships rather than single specific cases.</p>
+        <p>Here, $V$, $I$, and $R$ are variables. If current $I$ is held fixed, changing resistance $R$ changes voltage $V$. If voltage is held fixed instead, the current changes. Variables give us the power to describe universal relationships rather than single specific cases.</p>
       `,
       keyTakeaways: [
         'A variable is a letter used to represent an unknown or changing quantity.',

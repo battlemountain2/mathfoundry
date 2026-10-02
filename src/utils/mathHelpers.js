@@ -8,7 +8,7 @@ export function renderMath(latex, displayMode = false) {
     return katex.renderToString(latex, {
       displayMode,
       throwOnError: false,
-      trust: true,
+      trust: false,
     });
   } catch (e) {
     console.warn('KaTeX render error:', e);
@@ -20,8 +20,9 @@ export function renderMath(latex, displayMode = false) {
  * Process text containing inline math ($...$) and display math ($$...$$).
  * Returns HTML string with rendered math.
  */
-export function processContent(text) {
+export function processContent(text, plainText = false) {
   if (!text) return '';
+  if (plainText) text = String(text).replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
 
   // First, handle display math ($$...$$)
   let result = text.replace(/\$\$([\s\S]*?)\$\$/g, (_, latex) => {

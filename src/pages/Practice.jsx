@@ -4,6 +4,7 @@ import AdaptivePractice from '../components/Practice/AdaptivePractice';
 import { generateAdaptiveSession } from '../utils/adaptiveEngine';
 import { useProgress } from '../hooks/useProgress';
 import { getDiagnosticResults, getPracticeHistory, getFormatPerformance, getMastery } from '../utils/storage';
+import { practiceBank } from '../data/practiceBank';
 import Button from '../components/common/Button';
 
 const categoryNames = {
@@ -25,7 +26,8 @@ export const Practice = () => {
 
   // Pre-compute what will be targeted
   const sessionPreview = useMemo(() => {
-    const weakAreas = diagnosticResults?.weakAreas || [];
+    const supported = new Set(practiceBank.map(q=>q.moduleId));
+    const weakAreas = (diagnosticResults?.weakAreas || []).filter(area=>supported.has(area));
     const weakFormats = Object.entries(formatPerformance)
       .filter(([, d]) => d.total >= 2 && (d.correct / d.total) < 0.6)
       .map(([fmt]) => fmt);
@@ -80,6 +82,7 @@ export const Practice = () => {
         }
       </p>
 
+<p className="mb-4 text-sm">This bank covers angles, triangles, Pythagorean problems, area/perimeter, linear equations and quadratics. Other diagnostic topics need lesson review. <Link to="/foundations" className="underline">Study arithmetic and fractions →</Link></p>
       {/* What will be tested */}
       <div className="border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 p-5 mb-6">
         <div className="pb-2 mb-3" style={{ borderBottom: '2px solid var(--ink, #18181b)' }}>

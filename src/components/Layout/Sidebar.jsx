@@ -3,13 +3,14 @@ import { NavLink } from 'react-router-dom';
 
 export const Sidebar = ({ isOpen, onToggle }) => {
   const links = [
-    { to: '/', icon: '⌘', label: 'Terminal / Home' },
-    { to: '/diagnostic', icon: '🎯', label: 'Diagnostic Assessment' },
-    { to: '/path/geometry', icon: '📐', label: 'Geometry Curriculum' },
-    { to: '/path/algebra', icon: '∑', label: 'Algebra Curriculum' },
-    { to: '/practice', icon: '🧠', label: 'Adaptive Practice' },
-    { to: '/progress', icon: '📊', label: 'Mastery Matrix' },
-    { to: '/settings', icon: '⚙', label: 'Configuration' },
+    {to:'/',icon:'◉',label:'Today'},
+    {to:'/foundations',icon:'½',label:'Foundations & map'},
+    {to:'/practice',icon:'↻',label:'Mixed math practice'},
+    {to:'/path/geometry',icon:'△',label:'Geometry'},
+    {to:'/path/algebra',icon:'∑',label:'Algebra'},
+    {to:'/diagnostic',icon:'◎',label:'Geometry diagnostic'},
+    {to:'/progress',icon:'▥',label:'Progress'},
+    {to:'/settings',icon:'⚙',label:'Settings & backup'},
   ];
 
   return (
@@ -23,7 +24,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 transform transition-transform duration-200 ease-in-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`study-sidebar fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 transform transition-transform duration-200 ease-in-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex flex-col h-full font-mono">
           {/* Logo / Brand */}
           <div className="h-16 flex items-center px-6 border-b border-zinc-200 dark:border-zinc-800">
@@ -36,7 +37,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
                   MathFoundry
                 </span>
                 <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase tracking-widest block -mt-0.5">
-                  Engineering Math
+                  Personal learning
                 </span>
               </div>
             </div>
@@ -45,7 +46,7 @@ export const Sidebar = ({ isOpen, onToggle }) => {
           {/* Navigation */}
           <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
             <div className="px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider text-zinc-400 dark:text-zinc-500">
-              Curriculum Core
+              Your study space
             </div>
             {links.map((link) => (
               <NavLink
@@ -67,32 +68,16 @@ export const Sidebar = ({ isOpen, onToggle }) => {
               </NavLink>
             ))}
 
-            <div className="pt-6 px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider text-zinc-400 dark:text-zinc-500">
-              Planned Expansion
-            </div>
-            <div className="px-3 py-2 text-xs text-zinc-400 dark:text-zinc-600 space-y-2">
-              <div className="flex items-center justify-between text-[11px]">
-                <span>∫ Calculus</span>
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800">Q2</span>
-              </div>
-              <div className="flex items-center justify-between text-[11px]">
-                <span>⚛ Physics (Statics)</span>
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800">Q3</span>
-              </div>
-              <div className="flex items-center justify-between text-[11px]">
-                <span>⚗ Chemistry (Thermo)</span>
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800">Q4</span>
-              </div>
-            </div>
+            <div className="px-3 pt-8 text-xs text-zinc-500 dark:text-zinc-400">Building toward engineering.<br />Physics, chemistry and coding are future paths.</div>
           </nav>
 
           {/* Footer badge */}
           <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 text-[11px] text-zinc-400 dark:text-zinc-500">
             <div className="flex items-center justify-between">
-              <span>FOUNDRY v1.1</span>
+              <span>MATHFOUNDRY</span>
               <span className="text-emerald-500 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                FREE TIER
+                LOCAL STUDY
               </span>
             </div>
           </div>

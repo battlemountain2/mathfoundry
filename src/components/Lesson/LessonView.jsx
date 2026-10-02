@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
+import { useStudyActivity } from '../Study/ActivityContext';
 import { MathBlock } from './MathBlock';
 import { InteractiveCanvas } from './InteractiveCanvas';
 import { PracticeProblems } from './PracticeProblems';
 import { QuizEngine } from '../Quiz/QuizEngine';
 import { Button } from '../common/Button';
 
-export const LessonView = ({ moduleData, onComplete, progress }) => {
-  const [activeTab, setActiveTab] = useState(0);
-  const [completedLessons, setCompletedLessons] = useState(new Set());
+export const LessonView = ({ moduleData, onComplete, progress, onLessonComplete }) => {
+  const [activeTab, setActiveTab] = useState(() => { const ids=progress?.lessonIds || [];const next=(moduleData?.lessons || []).findIndex((_,i)=>!ids.includes(i));return next>=0?next:'practice'; });
+  const [completedLessons, setCompletedLessons] = useState(() => new Set(progress?.lessonIds || []));
   const lessons = moduleData?.lessons || [];
   
+  useStudyActivity({moduleId:moduleData?.id,moduleTitle:moduleData?.title,lessonTitle:typeof activeTab === 'number' ? lessons[activeTab]?.title : activeTab,lessonTakeaways:typeof activeTab === 'number' ? lessons[activeTab]?.keyTakeaways : []});
   if (!moduleData) return null;
 
   const totalTabs = lessons.length; // 0..n-1 = lessons, 'practice' = practice, 'quiz' = quiz
@@ -17,6 +19,7 @@ export const LessonView = ({ moduleData, onComplete, progress }) => {
   const currentLesson = typeof activeTab === 'number' ? lessons[activeTab] : null;
   
   const handleMarkComplete = () => {
+    if (onLessonComplete?.(activeTab) === false) return;
     setCompletedLessons(prev => new Set([...prev, activeTab]));
     
     if (activeTab < lessons.length - 1) {
@@ -183,8 +186,8 @@ export const LessonView = ({ moduleData, onComplete, progress }) => {
               <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 text-center shadow-lg border border-slate-100 dark:border-slate-700">
                 <p className="text-slate-600 dark:text-slate-400">Quiz coming soon!</p>
                 {onComplete && (
-                  <Button className="mt-4" onClick={() => onComplete({ percentage: 100, passed: true })}>
-                    Complete Module ✓
+                  <Button className="mt-4" onClick={() => onComplete({ percentage: 0, passed: false })}>
+                    Return to review
                   </Button>
                 )}
               </div>

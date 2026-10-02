@@ -3,7 +3,7 @@ import MathBlock from '../../Lesson/MathBlock';
 
 export const SpotTheBlunder = ({ question, onAnswer, showResult, isCorrect }) => {
   return (
-    <div className="flex flex-col gap-4 text-zinc-200 font-mono">
+    <div className="flex flex-col gap-4 text-zinc-900 dark:text-zinc-100 font-mono">
       <div className="text-lg">
         <MathBlock content={question.question} />
       </div>
@@ -15,8 +15,8 @@ export const SpotTheBlunder = ({ question, onAnswer, showResult, isCorrect }) =>
             disabled={showResult}
             className={`p-3 text-left border border-zinc-700 rounded-md hover:border-indigo-500 transition-colors ${
               showResult
-                ? (i === question.correctStep ? 'bg-green-900/50 border-green-500' : 'bg-zinc-800')
-                : 'bg-zinc-800'
+                ? (i === question.correctStep ? 'bg-green-900/50 border-green-500' : 'bg-zinc-50 dark:bg-zinc-800')
+                : 'bg-zinc-50 dark:bg-zinc-800'
             }`}
           >
             <MathBlock content={step} />

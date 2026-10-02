@@ -1,34 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useStudyActivity } from '../Study/ActivityContext';
 import MultipleChoice from './QuestionTypes/MultipleChoice';
 import SpotTheBlunder from './QuestionTypes/SpotTheBlunder';
 import StepSequence from './QuestionTypes/StepSequence';
 import FillBlank from './QuestionTypes/FillBlank';
 import TrueFalseReason from './QuestionTypes/TrueFalseReason';
 import SessionSummary from './SessionSummary';
+import { checkPracticeAnswer } from '../../utils/answerChecking';
 import MathBlock from '../Lesson/MathBlock';
 
 export const AdaptivePractice = ({ questions, onComplete }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [startTime, setStartTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(() => Date.now());
   const [sessionOver, setSessionOver] = useState(false);
 
   const currentQ = questions[currentIndex];
+  useStudyActivity({moduleId:currentQ?.moduleId,moduleTitle:'Mixed math practice',question:currentQ?.question || currentQ?.statement,submittedAnswer:showResult?answers[currentIndex]?.submittedAnswer:null,feedback:showResult?currentQ?.explanation:null});
 
-  const checkAnswer = (q, ans) => {
-    switch (q.format) {
-      case 'mcq': return ans === q.correctAnswer;
-      case 'blunder': return ans === q.correctStep;
-      case 'sequence': return ans.join(',') === q.correctOrder.join(',');
-      case 'fill': return q.acceptableAnswers.includes(ans.trim());
-      case 'tf-reason': return ans.isTrue === q.isTrue && ans.reasonIdx === q.correctReason;
-      default: return false;
-    }
-  };
+  const [sessionId] = useState(() => crypto.randomUUID());
 
   const handleAnswer = (ans) => {
-    const isCorrect = checkAnswer(currentQ, ans);
+    if (showResult) return;
+    const isCorrect = checkPracticeAnswer(currentQ, ans);
     const timeTaken = (Date.now() - startTime) / 1000;
     
     setAnswers(prev => [...prev, {
@@ -36,6 +31,9 @@ export const AdaptivePractice = ({ questions, onComplete }) => {
       format: currentQ.format,
       moduleId: currentQ.moduleId,
       isCorrect,
+      submittedAnswer: ans,
+      question: currentQ.question || currentQ.statement,
+      explanation: currentQ.explanation,
       timeTaken
     }]);
     setShowResult(true);
@@ -52,7 +50,7 @@ export const AdaptivePractice = ({ questions, onComplete }) => {
   };
 
   if (sessionOver) {
-    return <SessionSummary answers={answers} onComplete={onComplete} />;
+    return <SessionSummary sessionId={sessionId} answers={answers} onComplete={onComplete} />;
   }
 
   const renderQuestion = () => {
@@ -64,11 +62,11 @@ export const AdaptivePractice = ({ questions, onComplete }) => {
     };
 
     switch (currentQ.format) {
-      case 'mcq': return <MultipleChoice {...props} />;
-      case 'blunder': return <SpotTheBlunder {...props} />;
-      case 'sequence': return <StepSequence {...props} />;
-      case 'fill': return <FillBlank {...props} />;
-      case 'tf-reason': return <TrueFalseReason {...props} />;
+      case 'mcq': return <MultipleChoice key={currentQ.id} {...props} />;
+      case 'blunder': return <SpotTheBlunder key={currentQ.id} {...props} />;
+      case 'sequence': return <StepSequence key={currentQ.id} {...props} />;
+      case 'fill': return <FillBlank key={currentQ.id} {...props} />;
+      case 'tf-reason': return <TrueFalseReason key={currentQ.id} {...props} />;
       default: return <div>Unknown format</div>;
     }
   };

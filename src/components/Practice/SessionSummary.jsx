@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { addPracticeSession, updateMastery, updateFormatPerformance, addMistake } from '../../utils/storage';
+import { savePracticeSession } from '../../utils/storage';
 
 const fmtLabels = {
   mcq: 'Multiple Choice',
@@ -9,37 +9,16 @@ const fmtLabels = {
   'tf-reason': 'True/False',
 };
 
-export const SessionSummary = ({ answers, onComplete }) => {
+export const SessionSummary = ({ sessionId, answers, onComplete }) => {
   const correctCount = answers.filter(a => a.isCorrect).length;
   const total = answers.length;
   const percentage = Math.round((correctCount / total) * 100);
 
+  const [saveError, setSaveError] = React.useState('');
   useEffect(() => {
-    // Save full session
-    addPracticeSession({
-      answers,
-      score: percentage,
-      total,
-      correct: correctCount,
-      timestamp: Date.now(),
-    });
-
-    // Update per-module mastery and per-format performance
-    answers.forEach(ans => {
-      updateMastery(ans.moduleId, ans.isCorrect ? 1 : 0, 1);
-      updateFormatPerformance(ans.format, ans.isCorrect ? 1 : 0, 1);
-      
-      // Track mistakes for Ada
-      if (!ans.isCorrect) {
-        addMistake({
-          questionId: ans.questionId,
-          moduleId: ans.moduleId,
-          format: ans.format,
-          timestamp: Date.now(),
-        });
-      }
-    });
-  }, []);
+    try { savePracticeSession({ id: sessionId, answers, score: percentage, total, correct: correctCount }); }
+    catch (error) { setSaveError(error.message); }
+  }, [sessionId, answers, percentage, total, correctCount]);
 
   const formats = [...new Set(answers.map(a => a.format))];
   const modules = [...new Set(answers.map(a => a.moduleId))];
@@ -52,6 +31,7 @@ export const SessionSummary = ({ answers, onComplete }) => {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 font-mono animate-fade-in">
+      {saveError && <p role="alert">Progress was not saved: {saveError}</p>}
       {/* Score header */}
       <div className="text-center mb-8">
         <div className="text-[10px] font-bold uppercase tracking-[0.14em] mb-2" style={{ color: 'var(--accent)' }}>

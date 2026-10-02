@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useActivityContext } from '../Study/ActivityContext';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { TutorDrawer } from '../Tutor/TutorDrawer';
@@ -9,8 +10,9 @@ import { learningPaths } from '../../data/learningPaths';
 
 export const Layout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, error: themeError } = useTheme();
   const { streak } = useProgress();
+  const { activity } = useActivityContext();
   const location = useLocation();
 
   const currentStreak = typeof streak === 'object' ? (streak?.current || 0) : (Number(streak) || 0);
@@ -48,7 +50,7 @@ export const Layout = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition-colors duration-150 font-mono">
+    <div className="app-shell min-h-screen transition-colors duration-150">
       <Sidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
       
       <div className="lg:pl-64 flex flex-col min-h-screen">
@@ -60,11 +62,12 @@ export const Layout = ({ children }) => {
         />
         
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+          {themeError && <p role="alert" className="study-notice">{themeError}</p>}
           {children}
         </main>
 
         {/* Global Engineering Math Copilot */}
-        <TutorDrawer currentContext={currentContext} />
+        <TutorDrawer currentContext={{...currentContext,...activity}} />
       </div>
     </div>
   );

@@ -180,7 +180,7 @@ export const moduleData = {
     {
       id: 'q5',
       question: 'Which of the following is an inverse operation to dividing by 5?',
-      options: ['Subtracting 5', 'Multiplying by 5', 'Adding 5', 'Dividing by $\\frac{1}{5}$'],
+      options: ['Subtracting 5', 'Multiplying by 5', 'Adding 5', 'Dividing by 5'],
       correctAnswer: 1,
       explanation: 'Multiplication and division are inverse operations. To undo dividing by 5, you multiply by 5.'
     }

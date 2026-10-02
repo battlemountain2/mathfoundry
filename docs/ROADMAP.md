@@ -132,3 +132,8 @@ Bry identifies remembering fraction rules and doing mental arithmetic as the mai
 ## Preferred support when a procedure is forgotten
 
 Bry reports that seeing one worked example typically brings the procedure back. Default the help flow to an optional concise worked example with visible intermediate calculations, followed by a similar but different problem to solve independently on paper. Offer a deeper explanation if requested or if difficulty persists. Do not force a full lesson restart or repeated Socratic questioning when Bry requests an example. Record the supported attempt separately from the independent follow-up, and schedule a later check without the example visible. This preference is a starting point, not proof that the concept is retained.
+
+
+## Implementation milestone — October 2, 2026
+
+Bry authorized implementation and selected deep pine with warm cream for the forest theme. The first working slice and verification are recorded in [IMPLEMENTATION-2026-10-02.md](IMPLEMENTATION-2026-10-02.md). Today, a foundations starting check, supported/independent evidence, introductory recall policy, saved study blocks, recent-work review, backup downloads, and theme prototypes are implemented. Core lesson/practice/tutor repairs are included. Broader curriculum, branching assessment, restore/sync, live AI cost controls, and future subjects remain scoped work; this does not mark every phase above complete.

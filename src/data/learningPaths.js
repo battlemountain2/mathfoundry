@@ -134,7 +134,7 @@ export const learningPaths = [
         icon: '⚖️',
         category: 'algebra',
         order: 2,
-        totalLessons: 5,
+        totalLessons: 4,
         estimatedMinutes: 25,
       },
       {
@@ -154,7 +154,7 @@ export const learningPaths = [
         icon: '📈',
         category: 'algebra',
         order: 4,
-        totalLessons: 5,
+        totalLessons: 4,
         estimatedMinutes: 30,
       },
       {
@@ -184,7 +184,7 @@ export const learningPaths = [
         icon: '🧩',
         category: 'algebra',
         order: 7,
-        totalLessons: 5,
+        totalLessons: 4,
         estimatedMinutes: 30,
       },
       {

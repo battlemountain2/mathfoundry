@@ -56,7 +56,7 @@ export const moduleData = {
       title: 'Interior Angle Sum Formula',
       content: `
         <h3>Calculating the Sum of Interior Angles</h3>
-        <p>For any simple polygon with $n$ sides, we can divide it into $n-2$ triangles by drawing non-intersecting diagonals from a single vertex.</p>
+        <p>Any simple polygon with $n$ sides can be divided into $n-2$ triangles using non-intersecting diagonals. For a convex polygon, these diagonals can all be drawn from one vertex; a concave polygon may require diagonals from multiple vertices.</p>
         <p>Since the sum of interior angles of a single triangle is $180^\\circ$, the sum of the interior angles $S$ of an $n$-sided polygon is:</p>
         <p>$$S = (n - 2) \\times 180^\\circ$$</p>
         

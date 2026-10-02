@@ -1,6 +1,6 @@
 # MathFoundry project guidance
 
-Read `docs/ROADMAP.md` before planning or changing learning behavior or UI. It records Bry's accepted product direction, proposed phases, and unresolved decisions. Current work is planning unless the user authorizes implementation.
+Read `docs/ROADMAP.md` before planning or changing learning behavior or UI. It records Bry's accepted product direction, proposed phases, and unresolved decisions. Bry authorized implementation on October 2, 2026. Read `docs/IMPLEMENTATION-2026-10-02.md` for the current working milestone and remaining scope.
 
 - Build a personal engineering learning companion, beginning with foundational arithmetic and fractions and progressing into higher math. Physics, chemistry, and possibly coding are future connected subjects; do not prioritize chemistry implementation yet.
 - Support guided and self-directed learning, 30–60 minute default sessions, and optional long practice in resumable blocks.

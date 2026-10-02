@@ -5,7 +5,7 @@ export const TrueFalseReason = ({ question, onAnswer, showResult, isCorrect }) =
   const [isTrue, setIsTrue] = useState(null);
 
   return (
-    <div className="flex flex-col gap-4 text-zinc-200 font-mono">
+    <div className="flex flex-col gap-4 text-zinc-900 dark:text-zinc-100 font-mono">
       <div className="text-lg">
         <MathBlock content={question.statement} />
       </div>
@@ -14,13 +14,13 @@ export const TrueFalseReason = ({ question, onAnswer, showResult, isCorrect }) =
         <button
           onClick={() => !showResult && setIsTrue(true)}
           className={`p-3 w-1/2 border border-zinc-700 rounded-md transition-colors ${
-            isTrue === true ? 'bg-indigo-900/50 border-indigo-500' : 'bg-zinc-800'
+            isTrue === true ? 'bg-indigo-900/50 border-indigo-500' : 'bg-zinc-50 dark:bg-zinc-800'
           }`}
         >True</button>
         <button
           onClick={() => !showResult && setIsTrue(false)}
           className={`p-3 w-1/2 border border-zinc-700 rounded-md transition-colors ${
-            isTrue === false ? 'bg-indigo-900/50 border-indigo-500' : 'bg-zinc-800'
+            isTrue === false ? 'bg-indigo-900/50 border-indigo-500' : 'bg-zinc-50 dark:bg-zinc-800'
           }`}
         >False</button>
       </div>
@@ -35,8 +35,8 @@ export const TrueFalseReason = ({ question, onAnswer, showResult, isCorrect }) =
               disabled={showResult}
               className={`p-3 text-left border border-zinc-700 rounded-md transition-colors ${
                 showResult 
-                  ? (i === question.correctReason ? 'bg-green-900/50 border-green-500' : 'bg-zinc-800')
-                  : 'bg-zinc-800 hover:border-indigo-500'
+                  ? (i === question.correctReason ? 'bg-green-900/50 border-green-500' : 'bg-zinc-50 dark:bg-zinc-800')
+                  : 'bg-zinc-50 dark:bg-zinc-800 hover:border-indigo-500'
               }`}
             >
               <MathBlock content={reason} />

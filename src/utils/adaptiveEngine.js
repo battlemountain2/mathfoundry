@@ -1,4 +1,4 @@
-import { practiceBank } from '../data/practiceBank';
+import { practiceBank } from '../data/practiceBank.js';
 
 /**
  * Generate an adaptive practice session weighted toward the student's weak areas.
@@ -47,7 +47,7 @@ export function generateAdaptiveSession({
     // Boost questions from low-mastery modules
     const moduleMastery = mastery[q.moduleId];
     if (moduleMastery) {
-      const score = moduleMastery.score ?? 50;
+      const score = moduleMastery.total > 0 ? moduleMastery.correct / moduleMastery.total * 100 : 50;
       if (score < 40) weight += 3;        // very weak
       else if (score < 60) weight += 2;    // weak
       else if (score < 80) weight += 1;    // moderate
@@ -65,6 +65,9 @@ export function generateAdaptiveSession({
       else if (accuracy < 0.7) weight += 1;  // moderate
     }
     
+    const recentIds = practiceHistory.slice(-2).flatMap(session => session.answers?.map(answer => answer.questionId) || []);
+    if (recentIds.includes(q.id)) weight *= 0.25;
+
     // Add randomness to prevent identical sessions
     weight *= (0.7 + Math.random() * 0.6);
     
