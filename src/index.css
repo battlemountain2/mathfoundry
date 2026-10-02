@@ -1,0 +1,182 @@
+@import "tailwindcss";
+
+@theme {
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-sans: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --color-primary-50: #eef2ff;
+  --color-primary-100: #e0e7ff;
+  --color-primary-200: #c7d2fe;
+  --color-primary-300: #a5b4fc;
+  --color-primary-400: #818cf8;
+  --color-primary-500: #6366f1;
+  --color-primary-600: #4f46e5;
+  --color-primary-700: #4338ca;
+  --color-primary-800: #3730a3;
+  --color-primary-900: #312e81;
+
+  --color-success-50: #ecfdf5;
+  --color-success-500: #10b981;
+  --color-success-600: #059669;
+
+  --color-warning-50: #fffbeb;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+
+  --color-danger-50: #fef2f2;
+  --color-danger-500: #ef4444;
+  --color-danger-600: #dc2626;
+}
+
+:root {
+  --ground: theme('colors.zinc.50');
+  --surface: #ffffff;
+  --surface-2: theme('colors.zinc.100');
+  --ink: theme('colors.zinc.900');
+  --ink-2: theme('colors.zinc.600');
+  --ink-3: theme('colors.zinc.400');
+  --line: theme('colors.zinc.200');
+  --line-strong: theme('colors.zinc.300');
+  --accent: theme('colors.indigo.600');
+  --accent-soft: theme('colors.indigo.50');
+  --heat: #b97a1b;
+  --heat-soft: #fef3e2;
+  --good: #3b7350;
+  --good-soft: #ecfdf5;
+  --storm: #4c5fa8;
+  --storm-soft: #e4e8f6;
+  --geo-color: theme('colors.indigo.500');
+  --alg-color: theme('colors.emerald.500');
+}
+
+/* Base typography & Engineering styling */
+body {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.015em;
+}
+
+/* Dark mode */
+.dark {
+  color-scheme: dark;
+  --ground: theme('colors.zinc.950');
+  --surface: theme('colors.zinc.900');
+  --surface-2: theme('colors.zinc.800');
+  --ink: theme('colors.zinc.100');
+  --ink-2: theme('colors.zinc.400');
+  --ink-3: theme('colors.zinc.500');
+  --line: theme('colors.zinc.800');
+  --line-strong: theme('colors.zinc.700');
+  --accent: theme('colors.indigo.400');
+  --accent-soft: rgba(99, 102, 241, 0.1);
+  --heat: #e0a055;
+  --heat-soft: rgba(224, 160, 85, 0.1);
+  --good: #71b287;
+  --good-soft: rgba(113, 178, 135, 0.1);
+  --storm: #8b9bdd;
+  --storm-soft: rgba(139, 155, 221, 0.1);
+}
+
+.skeleton-bar {
+  display: block; height: 11px; border-radius: 3px;
+  background: linear-gradient(90deg, var(--surface-2) 0%, var(--line) 50%, var(--surface-2) 100%);
+  background-size: 220% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 120% 0; }
+  100% { background-position: -120% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-bar { animation: none; background: var(--surface-2); }
+}
+
+/* Technical grid background utility */
+.tech-grid {
+  background-size: 24px 24px;
+  background-image: 
+    linear-gradient(to right, rgba(99, 102, 241, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
+}
+
+.dark .tech-grid {
+  background-size: 24px 24px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+/* KaTeX styling overrides for dark mode & clean technical feel */
+.katex {
+  font-size: 1.1em;
+}
+
+.dark .katex {
+  color: #f4f4f5;
+}
+
+.dark .katex-display {
+  background: rgba(24, 24, 27, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+}
+
+.katex-display {
+  background: rgba(244, 244, 245, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.25s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.25s ease-out forwards;
+}
