@@ -18,9 +18,10 @@ Confirmed:
 - Three themes: light paper, original charcoal/indigo dark, deep pine with warm cream. Colors should be consistent across all study screens.
 - Repair sessions, a personal rulebook, and small engineering connections.
 - Latest feedback: incorrect answers and explanations must stand out more; more visual learning interactions are wanted.
-- Confirmed follow-up: after an incorrect answer, offer one hint and a retry before showing the solution. Keep an explicitly requested example/solution available; do not force a Socratic loop.
+- Confirmed follow-up: after an incorrect answer, offer one hint and a retry before showing the solution. Solution reveal is always learner-controlled, including after repeated incorrect attempts. Keep a prominent “Walk me through it” action available; do not force a Socratic loop.
 - Zen references specifically preferred: sidebar, typography, compact controls. JetBrains Mono is liked for numbers. Transparency is not a confirmed preference.
 - First visual learning priority: manipulable fraction bars and number lines.
+- Bry accepts occasional optional entry of one intermediate step to help pinpoint mistakes. Paper remains the primary workspace; do not require full transcription.
 
 Proposed, awaiting discussion:
 - Automatically open the first missed question, with a missed-first review view when misses exist.
@@ -33,9 +34,9 @@ Resolved first discussion round, October 2:
 2. Zen sidebar, typography, and compact controls.
 3. Manipulable fraction bars and number lines.
 
-Next consequential discussion: whether Bry would find occasional optional entry of one intermediate step useful. Paper remains the primary work surface; no mandatory transcription. Later clarify second-error behavior and whether starting-point checks should defer feedback or switch into guided learning when help is used.
+Confirmed follow-up: occasional optional intermediate-step entry is welcome. Confirmed second-error behavior: Bry chooses when to reveal the solution. The remaining assessment question is whether starting-point checks should defer feedback or switch into guided learning when help is used.
 
-Ask subsequent questions in small rounds: how much scaffolding to offer, whether optional intermediate steps feel useful beside paper, feedback color/intensity, preferred repair-session length, rulebook organization, and long-session behavior. Existing confirmed preferences should not be re-asked.
+Ask subsequent questions in small rounds: how much scaffolding to offer, feedback color/intensity, preferred repair-session length, rulebook organization, and long-session behavior. Existing confirmed preferences should not be re-asked.
 
 ## Current gaps to address
 
@@ -51,19 +52,21 @@ Source review, October 2:
 
 ## Learning interaction contract
 
-Every graded activity should answer: Was my answer correct? What can I try next? After the retry or an explicit solution request: what was expected, and why does the method work?
+Every graded activity should answer: Was my answer correct? What can I try next? After an explicit solution request: what was expected, and why does the method work?
 
 Proposed feedback hierarchy:
 1. Clear status text near the answer: Incorrect, Correct, Skipped, or Input needs clarification. Show support use separately from correctness.
 2. During active practice, keep the submitted answer visible and give one targeted hint. Offer Retry and Show the method; do not reveal the correct answer through text, an answer-colored diagram, or a prefilled control before the learner requests it.
 3. On solution reveal or later session review, show Your answer and Correct answer in an easy-to-compare layout, followed by the explanation and useful visual representation. Highlight a mismatched step only when actually observed.
-4. Offer a distinct worked example, a fresh follow-up, save-rule action, and deeper tutor help. After a second error, proposed default is to offer the worked method prominently while allowing another attempt; exact preference remains open.
+4. Offer a distinct worked example, a fresh follow-up, save-rule action, and deeper tutor help. After a second or subsequent error, retain Retry and a prominent “Walk me through it” action. Never reveal the answer automatically based on attempt count or elapsed time. Let Bry pause or move on without forcing a solution reveal.
 
 Save the first response before the hint. Link same-problem retries to that response; do not replace it or count each retry as new independent mastery evidence. Help accessed on the problem makes the retry supported. A later fresh problem with the hint hidden provides separate evidence. Diagnostic/check flows must explicitly label whether they are assessing independent work or switching to guided learning; do not silently mix the two.
 
 Use stronger warm error emphasis for incorrect responses, distinct neutral/amber treatment for skipped work, and a separate support label. Provide text and structure in addition to color; quiet chrome must not make feedback faint. Avoid celebratory effects that interrupt study.
 
 ### Explaining why honestly
+
+Offer a small “Show one step” input when it materially helps: chosen common denominator, rewritten equivalent fraction, intermediate arithmetic result, or equation after an operation. Explain the purpose, allow skipping, and accept mathematically valid alternate methods (including nonleast common denominators). Do not ask on every problem. Preserve exactly what was entered and when; distinguish steps recalled after feedback from work supplied before help. A volunteered step is not automatically assistance, while a scaffold that supplies part of the method is. Check deterministic step relationships where supported; otherwise ask for clarification rather than assert a cause.
 
 Store the basis of a diagnosis: directly checked step, learner report, or possible pattern. If only a final answer is available, explain the correct method and offer a short clarification such as “Did you add the denominators, or did you take another route?” Allow “something else” and “not sure.” A learner-reported cause is useful evidence, not an objective certainty.
 
@@ -109,7 +112,7 @@ Design references (official): [Zen compact mode](https://docs.zen-browser.app/us
 
 Touch: SessionReview, Foundations feedback, Repair feedback, mixed-practice summary, quiz/diagnostic result surfaces, shared style tokens.
 Deliver: immediately identifiable wrong answers; hint → retry → solution-on-request during active practice; missed-first review proposal; first missed item expanded; answer comparison; concise explanation; one-step entry to repair (replace Prepare then Start where safe); correct/skipped/supported/legacy states; exact return link to the source session.
-Acceptance: a six-question fixture with all statuses can be understood without opening multiple rows; every original response remains accessible; assistance is not counted as a second mutually exclusive correctness category; all-correct session has an appropriate success state; keyboard and three-theme checks pass. Error explanations do not invent a cause. The hint state does not leak the answer; same-question retries preserve the initial response and are not counted as independent evidence. Explicitly requested solutions remain accessible.
+Acceptance: a six-question fixture with all statuses can be understood without opening multiple rows; every original response remains accessible; assistance is not counted as a second mutually exclusive correctness category; all-correct session has an appropriate success state; keyboard and three-theme checks pass. Error explanations do not invent a cause. Optional step capture supports skip, alternate valid methods, and an honest explanation grounded in the entered step. The hint state does not leak the answer; same-question retries preserve the initial response and are not counted as independent evidence. Explicitly requested solutions remain accessible. Verify that second and subsequent incorrect submissions never auto-reveal a solution.
 
 ### P2 — One complete fraction visualization
 

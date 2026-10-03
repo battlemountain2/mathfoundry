@@ -7,8 +7,8 @@ export const Card = ({
   onClick,
   padding = 'p-6',
 }) => {
-  const baseClasses = 'bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 transition-all duration-150';
-  const hoverClasses = hover ? 'hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-xs cursor-pointer' : '';
+  const baseClasses = 'rounded-xl border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)] transition-all duration-150';
+  const hoverClasses = hover ? 'hover:border-[var(--line-strong)] hover:shadow-xs cursor-pointer' : '';
   
   return (
     <div

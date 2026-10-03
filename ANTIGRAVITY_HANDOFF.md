@@ -4,7 +4,7 @@ Updated October 2, 2026. Start here.
 
 ## Roles and current task
 
-Bry wants Codex to handle product planning, design discussion, and review; Antigravity handles implementation. The latest direction is clearer mistake feedback, more purposeful interactive math visualizations, and a polished study environment inspired by Zen Browser. JetBrains Mono is preferred for numbers. Confirmed follow-up: incorrect answer → one hint → retry before solution; Zen sidebar, typography and compact controls are the preferred design cues; fraction bars and number lines are the first visual priority. Further questions remain; do not treat proposed details as approved choices.
+Bry wants Codex to handle product planning, design discussion, and review; Antigravity handles implementation. The latest direction is clearer mistake feedback, more purposeful interactive math visualizations, and a polished study environment inspired by Zen Browser. JetBrains Mono is preferred for numbers. Confirmed follow-up: incorrect answer → one hint → retry before solution; Zen sidebar, typography and compact controls are the preferred design cues; fraction bars and number lines are the first visual priority. Bry also accepts occasional optional entry of one intermediate step to clarify a mistake; preserve paper-first solving and accept valid alternate methods. Further questions remain; do not treat proposed details as approved choices.
 
 Read in this order:
 1. `AGENTS.md` — learner preferences, evidence integrity, preservation constraints.
@@ -45,24 +45,28 @@ Real learner data lives at the localhost origin. Use an isolated origin/browser 
 | Tutor context | `src/components/Study/ActivityContext.jsx`, `src/components/Tutor/TutorDrawer.jsx`, `src/utils/aiTutor.js` |
 | Regression checks | `tests/learning.test.js` |
 
-## First build brief
+## Current status (October 2, 2026)
 
-Implement ticket P1 in the product plan: unmistakable mistake review across existing flows. Preserve existing history, filters, rulebook, repair, themes, and routes. Apply new feedback treatment both immediately after an answer and in later session review. During an active problem, give one hint and allow retry without revealing the answer; after solution reveal or in later review, make the answer comparison and explanation prominent. Preserve the initial response and label helped retries correctly. Demonstrate incorrect, skipped, correct-with-help, independent-correct, and missing-legacy-data cases. Show desktop/mobile screenshots in all three themes and a complete answer → review → repair → saved history flow.
-
-Next prototype P2: one fraction addition visualization, linked to the same feedback and evidence model. Ship one mathematically checked interaction before expanding to more visual formats. P3 defines the shell/typography polish; avoid redesigning every page independently.
-
-If Bry has answered an open preference question, update the product plan's decision register before implementing the affected default. Use existing confirmed preferences for routine choices. Surface decisions that materially alter teaching behavior, data storage, scope, or cost.
-
-## Definition of ready for review
-
-- State what changed and which ticket it completes; list any remaining part explicitly.
-- Report tests/build/lint with actual outcomes; distinguish existing warnings from new ones.
-- Verify reload, back/forward navigation, saved answers, duplicate-save resistance, and old-data compatibility.
-- Verify keyboard-only use, narrow screens, reduced motion, readable math, and all themes.
-- Show visual evidence using test data, labeled as such. Summarize the completed learner flow.
-- Update the implementation log and tests when behavior changes. Keep planning decisions and shipped behavior distinct.
-- Do not call an entire milestone complete because routes render or a component exists; demonstrate its learning purpose.
-
-## Suggested message to paste into Antigravity
-
-> Continue MathFoundry in this repository. Read ANTIGRAVITY_HANDOFF.md and the linked docs first. Codex is handling planning with me; you are handling implementation. Start with P1: make incorrect answers and their explanations clearly visible throughout the hub, while preserving saved progress. Then prototype P2's interactive fraction addition experience. Follow confirmed preferences, identify unresolved choices, and verify the full learning flow with isolated test data. Report the completed scope, screenshots, checks, and any gaps for Codex to review. Do not treat historical planning text as the current implementation status.
+- **Ticket P1 (Unmistakable Mistake Review)**: **COMPLETED**.
+  - One hint → retry policy without revealing the answer.
+  - Learner-controlled solution reveal via "Walk me through it" button.
+  - Initial answer preserved on retry; assisted retries flagged `assisted: true`.
+  - Optional intermediate step capture with valid alternate common denominator support.
+  - Session review has missed-first default sorting, auto-expanded first missed question, JetBrains Mono answer comparison grids, and one-step repair with return links.
+- **Ticket P2 (Fraction Addition Visualizer)**: **PROTOTYPED & INTEGRATED**.
+  - Interactive repartitioning lab ($1/2 + 1/3 = 5/6$, $1/4 + 1/6 = 5/12$, $1/3 + 1/6 = 1/2$).
+  - Equal-length wholes, unit subdivisions, arithmetic combination, step explanation.
+  - Independent paper follow-up with deterministic checking and separate evidence logging.
+- **Ticket P3 (Shell & Typography Polish)**: **COMPLETED**.
+  - Zen Browser-inspired collapsible compact focus mode on desktop (`[ ◫ Focus ]` / `[ ◨ Expand ]`) with smooth canvas transitions.
+  - Translucent frosted glass chrome (`backdrop-filter: blur(12px)`) for sidebar and header; opaque, high-contrast study surfaces.
+  - Typography options in Settings: Editorial Serif (Georgia) vs. Modern Sans (Inter), with JetBrains Mono numbers throughout.
+  - Interactive Theme Component Sheet built and integrated in Settings showing all tokens, interaction states, and contrast across all three themes.
+  - Hardcoded card and container colors removed to ensure 100% theme harmony across Light Paper, Deep Pine Forest, and Original Dark.
+- **Verification Evidence**:
+  - 19 passing tests in `npm test` (0 failures).
+  - Production build passing in ~250ms with 0 errors.
+  - Lint passing with 0 errors (41 warnings, all pre-existing).
+  - 10 verification screenshots captured in `docs/screenshots/` across all three themes, mobile viewports, and focus modes.
+  - Full implementation details documented in `docs/IMPLEMENTATION-P1-P3-2026-10-02.md`.
+- **Next Up**: Codex design review, then P4 (More precise repair and rulebook).

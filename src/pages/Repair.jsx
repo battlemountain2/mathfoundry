@@ -12,6 +12,7 @@ import {
   checkPracticeAnswer,
 } from "../utils/answerChecking";
 import { displayAnswer, expectedAnswer } from "../utils/review";
+import { getProblemHint } from "../utils/hints";
 import MathBlock from "../components/Lesson/MathBlock";
 import { useStudyActivity } from "../components/Study/ActivityContext";
 
@@ -48,6 +49,10 @@ export default function Repair() {
         ? raw === q.answer
         : equivalentAnswer(raw, q.answer)
       : checkPracticeAnswer(q, raw);
+    const attemptsCount = (draft.attemptsOnCurrent || 0) + 1;
+    const isHelped = Boolean(draft.assisted || attemptsCount > 1 || draft.showHint);
+    const initialAnswer = draft.initialAnswer ?? displayAnswer(q, raw);
+
     const attempt = {
       id: `${draft.id}:follow-up`,
       sessionId: draft.id,
@@ -57,10 +62,11 @@ export default function Repair() {
       problem: q,
       question: q.question,
       submittedAnswer: displayAnswer(q, raw),
+      initialAnswer,
       expectedAnswer: expectedAnswer(q),
       explanation: q.explanation,
       isCorrect: correct,
-      assisted: draft.assisted,
+      assisted: isHelped,
       mode: "repair",
       format: q.format,
       timestamp: new Date().toISOString(),
@@ -76,10 +82,23 @@ export default function Repair() {
           total: 1,
           score: correct ? 100 : 0,
         });
-      persist({ ...draft, checked: true, attempt });
+
+      if (correct) {
+        persist({ ...draft, checked: true, showSolution: true, showHint: false, attemptsOnCurrent: attemptsCount, attempt });
+      } else {
+        persist({ ...draft, checked: true, showSolution: false, showHint: true, attemptsOnCurrent: attemptsCount, initialAnswer, attempt });
+      }
     } catch (error) {
       setError(error.message);
     }
+  }
+
+  function handleRetry() {
+    persist({ ...draft, checked: false, showHint: true, assisted: true });
+  }
+
+  function handleWalkThrough() {
+    persist({ ...draft, showSolution: true, assisted: true });
   }
   if (!draft)
     return (
@@ -210,23 +229,117 @@ export default function Repair() {
             )}
           </form>
           {draft.checked && (
-            <div className="study-feedback">
-              <h3>
-                {draft.attempt.isCorrect
-                  ? "Correct"
-                  : "Let’s revisit the method"}
-              </h3>
-              <p>Expected: {draft.attempt.expectedAnswer}</p>
-              <MathBlock content={q.explanation} />
-              <p>
-                {draft.assisted
-                  ? "Recorded as supported practice."
-                  : "Recorded as an independent follow-up."}{" "}
-                Return later to check recall.
-              </p>
-              <Link className="study-button secondary" to="/review">
-                Return to your work
-              </Link>
+            <div
+              className={`study-feedback ${
+                draft.attempt?.isCorrect
+                  ? "feedback-correct"
+                  : "feedback-incorrect"
+              }`}
+            >
+              {draft.attempt?.isCorrect ? (
+                <>
+                  <div className="study-badge correct" style={{ marginBottom: 8 }}>
+                    {draft.assisted || (draft.attemptsOnCurrent || 0) > 1
+                      ? "✓ Correct after hint"
+                      : "✓ Correct"}
+                  </div>
+                  <h3>
+                    {draft.assisted || (draft.attemptsOnCurrent || 0) > 1
+                      ? "Solid work"
+                      : "✓ Correct follow-up"}
+                  </h3>
+                  <div className="answer-comparison-box">
+                    <div className="comparison-col your-answer is-correct">
+                      <span className="comparison-label">Your answer</span>
+                      <span className="comparison-value">{draft.attempt?.submittedAnswer}</span>
+                    </div>
+                  </div>
+                  <MathBlock content={q.explanation} />
+                  <p className="study-muted">
+                    {draft.assisted
+                      ? "Recorded as supported practice."
+                      : "Recorded as an independent follow-up."}{" "}
+                    Return later to check recall.
+                  </p>
+                  <Link
+                    className="study-button"
+                    to={
+                      draft.source?.sessionId
+                        ? `/review?session=${encodeURIComponent(draft.source.sessionId)}`
+                        : "/review"
+                    }
+                  >
+                    Return to source session →
+                  </Link>
+                </>
+              ) : !draft.showSolution ? (
+                <>
+                  <div className="study-badge incorrect" style={{ marginBottom: 8 }}>
+                    ✗ Incorrect
+                  </div>
+                  <h3>Not quite</h3>
+                  <p>
+                    Your answer: <strong>{draft.attempt?.submittedAnswer}</strong>
+                  </p>
+
+                  <div className="hint-callout">
+                    <p className="hint-title">Targeted Hint</p>
+                    <p>{getProblemHint(q)}</p>
+                  </div>
+
+                  <div className="study-actions" style={{ marginTop: 14 }}>
+                    <button className="study-button" onClick={handleRetry}>
+                      Try again
+                    </button>
+                    <button className="study-button secondary" onClick={handleWalkThrough}>
+                      Walk me through it
+                    </button>
+                    <Link
+                      className="study-text-button"
+                      to={
+                        draft.source?.sessionId
+                          ? `/review?session=${encodeURIComponent(draft.source.sessionId)}`
+                          : "/review"
+                      }
+                      style={{ display: "inline-block", marginLeft: 8 }}
+                    >
+                      Return to source session
+                    </Link>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="study-badge incorrect" style={{ marginBottom: 8 }}>
+                    ✗ Solution Revealed
+                  </div>
+                  <h3>Walk me through it</h3>
+                  <div className="answer-comparison-box">
+                    <div className="comparison-col your-answer is-wrong">
+                      <span className="comparison-label">Your answer</span>
+                      <span className="comparison-value">{draft.attempt?.submittedAnswer}</span>
+                    </div>
+                    <div className="comparison-col expected-answer">
+                      <span className="comparison-label">Expected answer</span>
+                      <span className="comparison-value">{draft.attempt?.expectedAnswer}</span>
+                    </div>
+                  </div>
+                  <h3>Why the method works</h3>
+                  <MathBlock content={q.explanation} />
+                  <p className="study-muted">
+                    Recorded with support. You can revisit this topic anytime.
+                  </p>
+                  <Link
+                    className="study-button"
+                    to={
+                      draft.source?.sessionId
+                        ? `/review?session=${encodeURIComponent(draft.source.sessionId)}`
+                        : "/review"
+                    }
+                  >
+                    Return to source session →
+                  </Link>
+                </>
+              )}
             </div>
           )}
         </section>

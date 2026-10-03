@@ -21,3 +21,57 @@ export function checkPracticeAnswer(q, answer) {
     default: return false;
   }
 }
+
+const gcd = (a, b) => b ? gcd(b, a % b) : Math.abs(a);
+
+// Analyzes an optional learner-submitted intermediate step without guessing unwritten work.
+// Supports valid alternative methods (including non-least common denominators) and detects common pitfalls.
+export function analyzeIntermediateStep(problem, stepText) {
+  if (!stepText || !String(stepText).trim()) return null;
+  const text = String(stepText).trim();
+  const num = numericValue(text);
+
+  if (problem?.conceptId === 'addition' && problem.question) {
+    const match = problem.question.match(/1\/(\d+)\s*([+−-])\s*1\/(\d+)/);
+    if (match) {
+      const d1 = Number(match[1]);
+      const d2 = Number(match[3]);
+      if (num !== null && Number.isInteger(num) && num > 0) {
+        if (num % d1 === 0 && num % d2 === 0) {
+          const lcm = (d1 * d2) / gcd(d1, d2);
+          const isLcm = num === lcm;
+          return {
+            valid: true,
+            type: 'common-denominator',
+            message: isLcm
+              ? `Common denominator ${num} is the least common denominator.`
+              : `Common denominator ${num} is a valid common multiple of ${d1} and ${d2}.`,
+          };
+        }
+        if (num === d1 + d2) {
+          return {
+            valid: false,
+            type: 'added-denominators',
+            message: `Entered ${num} is the sum of denominators (${d1} + ${d2}), but combining fractions requires a common multiple.`,
+          };
+        }
+      }
+    }
+  }
+
+  if (problem?.conceptId === 'arithmetic') {
+    if (num !== null) {
+      return {
+        valid: true,
+        type: 'intermediate-value',
+        message: `Intermediate value noted: ${text}`,
+      };
+    }
+  }
+
+  return {
+    valid: true,
+    type: 'learner-step',
+    message: `Step noted: ${text}`,
+  };
+}

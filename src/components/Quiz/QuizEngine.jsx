@@ -16,6 +16,7 @@ export const QuizEngine = ({ questions, title, onComplete, isDiagnostic }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showExplanation, setShowExplanation] = useState(false);
+  const [hintActive, setHintActive] = useState(false);
   const [answers, setAnswers] = useState({});
 
   if (!questions || questions.length === 0) return null;
@@ -41,13 +42,30 @@ export const QuizEngine = ({ questions, title, onComplete, isDiagnostic }) => {
         complete(results);
       }
     } else {
-      // In lesson quiz mode, show explanation first
-      setShowExplanation(true);
+      // In lesson quiz mode: if correct, show explanation; if incorrect, offer hint before solution
+      if (selectedAnswer === currentQuestion.correctAnswer) {
+        setShowExplanation(true);
+        setHintActive(false);
+      } else {
+        setHintActive(true);
+        setShowExplanation(false);
+      }
     }
+  };
+
+  const handleRetry = () => {
+    setHintActive(false);
+    setSelectedAnswer(null);
+  };
+
+  const handleWalkThrough = () => {
+    setHintActive(false);
+    setShowExplanation(true);
   };
 
   const handleNext = () => {
     setShowExplanation(false);
+    setHintActive(false);
     setSelectedAnswer(null);
 
     if (currentIndex < questions.length - 1) {
@@ -75,12 +93,30 @@ export const QuizEngine = ({ questions, title, onComplete, isDiagnostic }) => {
         selectedAnswer={selectedAnswer}
         onSelectAnswer={setSelectedAnswer}
         showExplanation={showExplanation}
+        hintActive={hintActive}
         questionNumber={currentIndex + 1}
         totalQuestions={questions.length}
       />
 
-      <div className="mt-8 flex justify-end">
-        {!showExplanation ? (
+      <div className="mt-8 flex justify-end gap-3">
+        {hintActive ? (
+          <>
+            <Button
+              onClick={handleRetry}
+              size="lg"
+              variant="secondary"
+            >
+              Try again
+            </Button>
+            <Button
+              onClick={handleWalkThrough}
+              size="lg"
+              variant="primary"
+            >
+              Walk me through it
+            </Button>
+          </>
+        ) : !showExplanation ? (
           <Button
             onClick={handleConfirm}
             disabled={selectedAnswer === null}

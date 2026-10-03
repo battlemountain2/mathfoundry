@@ -4,7 +4,7 @@ import { useProgress } from '../hooks/useProgress';
 import { learningPaths } from '../data/learningPaths';
 import Button from '../components/common/Button';
 import ProgressBar from '../components/Progress/ProgressBar';
-import { getDiagnosticResults, getMastery, getFormatPerformance, getPracticeHistory } from '../utils/storage';
+import { getDiagnosticResults, getFormatPerformance, getPracticeHistory } from '../utils/storage';
 
 // Map category keys to human-readable names
 const categoryNames = {
@@ -25,7 +25,6 @@ export default function Home() {
   const { progress, streak, getOverallPercentage, getModulePercentage } = useProgress();
   const navigate = useNavigate();
   const diagnosticResults = getDiagnosticResults();
-  const mastery = getMastery() || {};
   const formatPerformance = getFormatPerformance() || {};
   const practiceHistory = getPracticeHistory() || [];
 

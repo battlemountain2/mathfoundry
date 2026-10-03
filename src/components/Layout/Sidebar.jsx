@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-export default function Sidebar({ isOpen, onToggle }) {
+export default function Sidebar({ isOpen, onToggle, compactSidebar, onToggleCompact }) {
   const { pathname } = useLocation();
   const learning = [
     "/learn",
@@ -28,18 +28,33 @@ export default function Sidebar({ isOpen, onToggle }) {
         />
       )}
       <aside
-        className={`study-sidebar fixed inset-y-0 left-0 z-50 w-64 border-r transition-transform lg:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`study-sidebar fixed inset-y-0 left-0 z-50 w-64 border-r transition-transform duration-200 ${
+          compactSidebar ? "lg:-translate-x-full" : "lg:translate-x-0"
+        } ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className="sidebar-inner">
-          <Link
-            to="/"
-            className="study-brand"
-            onClick={() => {
-              if (isOpen) onToggle();
-            }}
-          >
-            MathFoundry<span>Personal learning</span>
-          </Link>
+          <div className="flex items-center justify-between mb-4">
+            <Link
+              to="/"
+              className="study-brand"
+              onClick={() => {
+                if (isOpen) onToggle();
+              }}
+            >
+              MathFoundry<span>Personal learning</span>
+            </Link>
+            {onToggleCompact && (
+              <button
+                type="button"
+                onClick={onToggleCompact}
+                className="zen-compact-toggle hidden lg:inline-flex p-1.5"
+                title="Collapse sidebar to Zen focus mode"
+                aria-label="Collapse sidebar"
+              >
+                ◫
+              </button>
+            )}
+          </div>
           <nav className="desk-navigation" aria-label="Primary navigation">
             {links.map((link) => (
               <Link

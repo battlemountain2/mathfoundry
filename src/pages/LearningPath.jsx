@@ -3,12 +3,11 @@ import { Link, useParams } from 'react-router-dom';
 import { learningPaths, getPath } from '../data/learningPaths';
 import { useProgress } from '../hooks/useProgress';
 import ProgressBar from '../components/Progress/ProgressBar';
-import Card from '../components/common/Card';
 import { getDiagnosticResults } from '../utils/storage';
 
 export default function LearningPath() {
   const { pathId = 'geometry' } = useParams();
-  const { progress, getOverallPercentage } = useProgress();
+  const { progress } = useProgress();
   const path = getPath(pathId) || learningPaths[0];
   const diagnosticResults = getDiagnosticResults();
   

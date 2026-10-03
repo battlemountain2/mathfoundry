@@ -114,7 +114,7 @@ export const SessionSummary = ({ sessionId, answers, onComplete }) => {
         </div>
       </div>
 
-      <SessionReview answers={answers} />
+      <SessionReview sessionId={sessionId} answers={answers} />
       {/* Actions */}
       <div className="flex gap-3">
         <button

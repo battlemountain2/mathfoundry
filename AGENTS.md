@@ -22,3 +22,7 @@ Read `docs/ROADMAP.md` before planning or changing learning behavior or UI. It r
 - When Bry forgets a procedure, one worked example usually helps. Offer a concise example, then a similar independent problem; deeper explanation stays available. Do not force full lesson restarts or withhold requested worked examples. Distinguish assisted success from later independent recall.
 
 - Latest confirmed feedback flow: show one hint and allow retry before revealing the solution; explicitly requested worked examples/solutions remain accessible. Preserve initial responses and distinguish helped same-problem retries from new independent evidence. Design inspiration is specifically Zen Browser’s sidebar, typography, and compact controls; use JetBrains Mono for numbers and prioritize manipulable fraction bars and number lines.
+
+- Bry accepts occasional optional intermediate-step input to help explain mistakes. Keep paper-first solving, allow skipping and valid alternate methods, and distinguish observed steps from inferred causes.
+
+- Solution reveal is learner-controlled even after repeated incorrect attempts. Offer “Walk me through it,” retry, and pause; never auto-reveal based on attempt count or elapsed time.

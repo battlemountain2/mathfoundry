@@ -10,7 +10,15 @@ import { learningPaths } from '../../data/learningPaths';
 
 export const Layout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { theme, setTheme, error: themeError } = useTheme();
+  const {
+    theme,
+    setTheme,
+    compactSidebar,
+    toggleCompactSidebar,
+    headingStyle,
+    setHeadingStyle,
+    error: themeError,
+  } = useTheme();
   const { streak } = useProgress();
   const { activity } = useActivityContext();
   const location = useLocation();
@@ -51,14 +59,21 @@ export const Layout = ({ children }) => {
 
   return (
     <div className="app-shell min-h-screen transition-colors duration-150">
-      <Sidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+        compactSidebar={compactSidebar}
+        onToggleCompact={toggleCompactSidebar}
+      />
       
-      <div className="lg:pl-64 flex flex-col min-h-screen">
+      <div className={`${compactSidebar ? 'lg:pl-0' : 'lg:pl-64'} flex flex-col min-h-screen transition-all duration-200`}>
         <Header 
           onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)} 
           streak={currentStreak} 
           theme={theme} 
           onThemeChange={setTheme}
+          compactSidebar={compactSidebar}
+          onToggleCompactSidebar={toggleCompactSidebar}
         />
         
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">

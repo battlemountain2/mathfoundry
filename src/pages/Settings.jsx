@@ -5,13 +5,25 @@ import { clearTutorChatHistory } from '../utils/aiTutor';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
+import ThemeComponentSheet from '../components/Study/ThemeComponentSheet';
 
 function download(data,name) {
   const url=URL.createObjectURL(new Blob([data],{type:'application/json'}));
   const link=document.createElement('a');link.href=url;link.download=name;link.click();URL.revokeObjectURL(url);
 }
 export default function Settings() {
-  const { theme, setTheme, error: themeError } = useTheme();
+  const {
+    theme,
+    setTheme,
+    headingStyle,
+    setHeadingStyle,
+    compactSidebar,
+    setCompactSidebar,
+    error: themeError,
+  } = useTheme();
+  const [showComponentSheet, setShowComponentSheet] = useState(() => {
+    return typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('sheet') === 'true';
+  });
   const [showClearModal, setShowClearModal] = useState(false);
   
   // AI Settings state
@@ -37,20 +49,20 @@ export default function Settings() {
   };
 
   return (
-    <div className="animate-fade-in max-w-3xl mx-auto px-4 py-6 space-y-6 font-mono">
+    <div className="animate-fade-in max-w-3xl mx-auto px-4 py-6 space-y-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+        <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: 'var(--ink)' }}>
           Settings & backup
         </h1>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+        <p className="text-xs study-muted mt-1">
           Choose your study theme, back up progress, and configure optional AI support.
         </p>
       </div>
 
-      {(saveError || themeError) && <p role="alert">{saveError || themeError}</p>}
+      {(saveError || themeError) && <p role="alert" className="study-notice">{saveError || themeError}</p>}
       {/* AI Copilot Setup Card */}
-      <Card className="border border-indigo-200 dark:border-indigo-900/60 bg-white dark:bg-zinc-900/90 p-6 space-y-4 shadow-xs">
-        <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-4">
+      <Card className="p-6 space-y-4 shadow-xs">
+        <div className="flex items-center justify-between border-b border-[var(--line)] pb-4">
           <div>
             <div className="flex items-center gap-2">
               <span className="text-amber-500 font-bold">⚡</span>
@@ -138,31 +150,85 @@ export default function Settings() {
       </Card>
 
       {/* Appearance Card */}
-      <Card className="border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 space-y-4">
-        <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100 border-b border-zinc-100 dark:border-zinc-800 pb-3">
+      <Card className="p-6 space-y-4">
+        <h2 className="text-base font-bold border-b border-[var(--line)] pb-3" style={{ color: 'var(--ink)' }}>
           Display & Appearance
         </h2>
         
+        {/* Theme Palette */}
         <div className="flex items-center justify-between py-2">
           <div>
-            <div className="font-semibold text-xs text-zinc-900 dark:text-zinc-100">Color Palette</div>
-            <div className="text-[11px] text-zinc-500">Choose light paper, deep pine forest, or the original dark palette</div>
+            <div className="font-semibold text-xs" style={{ color: 'var(--ink)' }}>Color Palette</div>
+            <div className="text-[11px] study-muted">Choose light paper, deep pine forest, or original dark palette</div>
           </div>
-          <select aria-label="Color theme" value={theme} onChange={e=>setTheme(e.target.value)} className="study-answer">
-            <option value="light">Light paper</option><option value="forest">Deep pine forest</option><option value="dark">Original dark</option>
+          <select aria-label="Color theme" value={theme} onChange={e=>setTheme(e.target.value)} className="study-answer" style={{ width: 'auto', margin: 0 }}>
+            <option value="light">Light paper</option>
+            <option value="forest">Deep pine forest</option>
+            <option value="dark">Original dark</option>
           </select>
         </div>
 
-        <div className="flex items-center justify-between py-2 border-t border-zinc-100 dark:border-zinc-800">
+        {/* Heading Typography Option */}
+        <div className="flex items-center justify-between py-2 border-t border-[var(--line)]">
           <div>
-            <div className="font-semibold text-xs text-zinc-900 dark:text-zinc-100">Typography</div>
-            <div className="text-[11px] text-zinc-500">Engineering font family</div>
+            <div className="font-semibold text-xs" style={{ color: 'var(--ink)' }}>Heading Typography</div>
+            <div className="text-[11px] study-muted">Choose editorial serif or modern sans-serif headings</div>
           </div>
-          <span className="text-xs px-2.5 py-1 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+          <select
+            aria-label="Heading typography"
+            value={headingStyle}
+            onChange={(e) => setHeadingStyle(e.target.value)}
+            className="study-answer"
+            style={{ width: 'auto', margin: 0 }}
+          >
+            <option value="serif">Editorial Serif (Georgia)</option>
+            <option value="sans">Modern Sans (Inter)</option>
+          </select>
+        </div>
+
+        {/* Zen Compact Mode Option */}
+        <div className="flex items-center justify-between py-2 border-t border-[var(--line)]">
+          <div>
+            <div className="font-semibold text-xs" style={{ color: 'var(--ink)' }}>Zen Workspace Layout</div>
+            <div className="text-[11px] study-muted">Choose standard persistent sidebar or compact focus canvas</div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setCompactSidebar(!compactSidebar)}
+            className={`zen-compact-toggle ${compactSidebar ? 'active' : ''}`}
+          >
+            {compactSidebar ? '◨ Focus Mode (Active)' : '◫ Standard View'}
+          </button>
+        </div>
+
+        {/* Monospace for Numbers */}
+        <div className="flex items-center justify-between py-2 border-t border-[var(--line)]">
+          <div>
+            <div className="font-semibold text-xs" style={{ color: 'var(--ink)' }}>Numeric & Aligned Notation</div>
+            <div className="text-[11px] study-muted">High-legibility font for calculations and answers</div>
+          </div>
+          <span className="text-xs px-2.5 py-1 rounded border border-[var(--line)] font-mono" style={{ background: 'var(--surface-2)', color: 'var(--ink)' }}>
             JetBrains Mono
           </span>
         </div>
+
+        {/* Design System Verification Sheet Toggle */}
+        <div className="pt-2 border-t border-[var(--line)]">
+          <button
+            type="button"
+            className="study-button secondary"
+            style={{ width: '100%', fontSize: '0.85rem', padding: '10px' }}
+            onClick={() => setShowComponentSheet(!showComponentSheet)}
+          >
+            {showComponentSheet ? '▲ Hide Design System & Component Sheet' : '▼ Inspect Theme Component Sheet'}
+          </button>
+        </div>
       </Card>
+
+      {/* Component Sheet Viewer */}
+      {showComponentSheet && (
+        <ThemeComponentSheet currentTheme={theme} />
+      )}
 
       <section className="study-card">
         <h2>Your learning data</h2><p>Progress is saved in this browser on this address. Download a backup before moving browsers or changing addresses. The learning backup excludes your API key.</p>
@@ -170,15 +236,15 @@ export default function Settings() {
         <p className="study-muted">Raw recovery data can contain your locally saved API key. Keep that file private. Import/restore tools are planned; these files preserve the data for recovery.</p>
       </section>
       {/* Danger Zone */}
-      <Card className="border border-rose-200 dark:border-rose-900/50 bg-white dark:bg-zinc-900 p-6 space-y-4">
-        <h2 className="text-base font-bold text-rose-600 dark:text-rose-400 border-b border-rose-100 dark:border-rose-900/30 pb-3">
+      <Card className="p-6 space-y-4" style={{ borderColor: 'var(--heat)' }}>
+        <h2 className="text-base font-bold pb-3 border-b border-[var(--line)]" style={{ color: 'var(--heat)' }}>
           Memory & Reset
         </h2>
         
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
           <div>
-            <div className="font-semibold text-xs text-zinc-900 dark:text-zinc-100">Clear All Stored Progress</div>
-            <div className="text-[11px] text-zinc-500">
+            <div className="font-semibold text-xs" style={{ color: 'var(--ink)' }}>Clear All Stored Progress</div>
+            <div className="text-[11px] study-muted">
               Permanently purges completed modules, streaks, diagnostic scores, and chat logs from localStorage.
             </div>
           </div>
