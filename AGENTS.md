@@ -1,5 +1,7 @@
 # MathFoundry project guidance
 
+Current collaboration direction (October 2): Codex handles planning/design discussion and review; Antigravity handles implementation. Codex should update planning/handoff documents rather than app code unless Bry explicitly changes this assignment. Start new build work from `ANTIGRAVITY_HANDOFF.md` and `docs/PRODUCT-PLAN.md`; they identify current priorities and distinguish confirmed choices from proposals.
+
 Read `docs/ROADMAP.md` before planning or changing learning behavior or UI. It records Bry's accepted product direction, proposed phases, and unresolved decisions. Bry authorized implementation on October 2, 2026. Read `docs/IMPLEMENTATION-2026-10-02.md` for the first working milestone and docs/IMPLEMENTATION-COHESION-2026-10-02.md for the subsequent cohesion build and remaining scope.
 
 - Build a personal engineering learning companion, beginning with foundational arithmetic and fractions and progressing into higher math. Physics, chemistry, and possibly coding are future connected subjects; do not prioritize chemistry implementation yet.
@@ -18,3 +20,5 @@ Read `docs/ROADMAP.md` before planning or changing learning behavior or UI. It r
 - Confirmed preferences: paper-first problem solving; optional handwritten-work submission later for complex problems; gradual introductions, clear progression, repetition, purposeful visual manipulation, and immediate feedback. First milestone: arithmetic and fractions. Fade assistance and check delayed independent recall rather than equating guided completion with mastery.
 - Bry's reported fraction difficulties are recalling rules and mental arithmetic. Distinguish procedure recall, calculation accuracy, and conceptual understanding in assessment. Calculator-free practice must allow paper and written intermediate steps; mental-only work is a separate optional activity, untimed by default.
 - When Bry forgets a procedure, one worked example usually helps. Offer a concise example, then a similar independent problem; deeper explanation stays available. Do not force full lesson restarts or withhold requested worked examples. Distinguish assisted success from later independent recall.
+
+- Latest confirmed feedback flow: show one hint and allow retry before revealing the solution; explicitly requested worked examples/solutions remain accessible. Preserve initial responses and distinguish helped same-problem retries from new independent evidence. Design inspiration is specifically Zen Browser’s sidebar, typography, and compact controls; use JetBrains Mono for numbers and prioritize manipulable fraction bars and number lines.

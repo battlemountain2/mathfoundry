@@ -1,5 +1,7 @@
 # MathFoundry: personal engineering learning companion
 
+Current entry points: [Antigravity handoff](../ANTIGRAVITY_HANDOFF.md) and [living product plan](PRODUCT-PLAN.md). Earlier sections retain planning history; use the current plan and implementation logs to distinguish shipped work from proposals.
+
 Planning baseline: October 1, 2026. This document records the user's direction and proposed implementation sequence; it is not a claim that these features are implemented.
 
 ## Purpose and learner
