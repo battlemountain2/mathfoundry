@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import MathBlock from '../Lesson/MathBlock';
-import { equivalentAnswer, numericValue } from '../../utils/answerChecking';
+import { equivalentAnswer } from '../../utils/answerChecking';
 import { saveLearningAttempt } from '../../utils/storage';
 
 const authoredVariants = [
@@ -57,7 +56,6 @@ export default function FractionBarVisualizer({ onComplete }) {
     const p = typeof window !== 'undefined' ? Number(new URLSearchParams(window.location.search).get('partition')) : null;
     return p && authoredVariants[0].availablePartitions.includes(p) ? p : authoredVariants[0].f1.d;
   });
-  const [manipulated, setManipulated] = useState(false);
   const [followUpInput, setFollowUpInput] = useState('');
   const [followUpChecked, setFollowUpChecked] = useState(false);
   const [followUpCorrect, setFollowUpCorrect] = useState(false);
@@ -71,7 +69,6 @@ export default function FractionBarVisualizer({ onComplete }) {
     } else {
       setPartition(authoredVariants[variantIndex].f1.d);
     }
-    setManipulated(false);
     setFollowUpInput('');
     setFollowUpChecked(false);
     setFollowUpCorrect(false);
@@ -92,7 +89,6 @@ export default function FractionBarVisualizer({ onComplete }) {
 
   function handlePartitionChange(p) {
     setPartition(p);
-    setManipulated(true);
   }
 
   function handleCheckFollowUp(e) {

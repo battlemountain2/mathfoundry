@@ -1,3 +1,5 @@
+import { defaultRulebookEntries } from '../data/rulebookData.js';
+
 const STORAGE_KEY = 'mathfoundry_data';
 const listeners = new Set();
 export function subscribeStore(listener) {
@@ -214,12 +216,89 @@ export function saveReviewSession(session) {
   if(history.some(item=>item.id===session.id)) return;
   setStore({...store,reviewHistory:[...history,{...session,timestamp:new Date().toISOString()}]});
 }
-export function getRulebook() { const value=getStore().rulebook;return Array.isArray(value)?value:[]; }
-export function saveRulebookEntry(entry) {
-  const store=getStore();const entries=getRulebook();
-  const existing=entries.find(item=>item.id===entry.id);
-  setStore({...store,rulebook:[...entries.filter(item=>item.id!==entry.id),{...existing,...entry,savedAt:existing?.savedAt || new Date().toISOString()}]});
+
+export function getRulebook() {
+  const store = getStore();
+  const saved = Array.isArray(store.rulebook) ? store.rulebook : [];
+  const deletedIds = Array.isArray(store.deletedRulebookIds) ? store.deletedRulebookIds : [];
+  const merged = [...saved];
+  for (const def of defaultRulebookEntries) {
+    if (!deletedIds.includes(def.id) && !merged.some(e => e.id === def.id)) {
+      merged.push(def);
+    }
+  }
+  return merged;
 }
-export function removeRulebookEntry(id) { setStore({...getStore(),rulebook:getRulebook().filter(item=>item.id!==id)}); }
-export function getRepairDraft() { return getStore().repairDraft || null; }
-export function setRepairDraft(draft) { setStore({...getStore(),repairDraft:draft}); }
+
+export function saveRulebookEntry(entry) {
+  const store = getStore();
+  const entries = Array.isArray(store.rulebook) ? store.rulebook : [];
+  const existing = entries.find(item => item.id === entry.id);
+  const updatedEntry = {
+    ...entry,
+    notes: entry.notes !== undefined ? entry.notes : (existing?.notes || ''),
+    savedAt: existing?.savedAt || new Date().toISOString(),
+  };
+  setStore({
+    ...store,
+    rulebook: [
+      ...entries.filter(item => item.id !== entry.id),
+      updatedEntry,
+    ],
+  });
+}
+
+export function removeRulebookEntry(id) {
+  const store = getStore();
+  const saved = Array.isArray(store.rulebook) ? store.rulebook : [];
+  const deletedIds = Array.isArray(store.deletedRulebookIds) ? store.deletedRulebookIds : [];
+  setStore({
+    ...store,
+    rulebook: saved.filter(item => item.id !== id),
+    deletedRulebookIds: [...new Set([...deletedIds, id])],
+  });
+}
+
+export function getRepairDrafts() {
+  const store = getStore();
+  if (Array.isArray(store.repairDrafts) && store.repairDrafts.length > 0) {
+    return store.repairDrafts;
+  }
+  return store.repairDraft ? [store.repairDraft] : [];
+}
+
+export function getRepairDraft(id) {
+  const drafts = getRepairDrafts();
+  if (id) {
+    return drafts.find((d) => d.id === id) || null;
+  }
+  const store = getStore();
+  return store.repairDraft || drafts[0] || null;
+}
+
+export function setRepairDraft(draft) {
+  if (!draft || !draft.id) return;
+  const store = getStore();
+  const drafts = getRepairDrafts();
+  const updatedDrafts = [
+    ...drafts.filter((d) => d.id !== draft.id),
+    draft,
+  ];
+  setStore({
+    ...store,
+    repairDraft: draft,
+    repairDrafts: updatedDrafts,
+  });
+}
+
+export function removeRepairDraft(id) {
+  const store = getStore();
+  const drafts = getRepairDrafts();
+  const remaining = drafts.filter((d) => d.id !== id);
+  const nextActive = store.repairDraft?.id === id ? (remaining[remaining.length - 1] || null) : store.repairDraft;
+  setStore({
+    ...store,
+    repairDraft: nextActive,
+    repairDrafts: remaining,
+  });
+}

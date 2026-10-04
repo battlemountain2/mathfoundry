@@ -63,10 +63,14 @@ Real learner data lives at the localhost origin. Use an isolated origin/browser 
   - Typography options in Settings: Editorial Serif (Georgia) vs. Modern Sans (Inter), with JetBrains Mono numbers throughout.
   - Interactive Theme Component Sheet built and integrated in Settings showing all tokens, interaction states, and contrast across all three themes.
   - Hardcoded card and container colors removed to ensure 100% theme harmony across Light Paper, Deep Pine Forest, and Original Dark.
+- **Ticket P4 (More Precise Repair and Rulebook)**: **COMPLETED**.
+  - Subskill & problem-family matching: subtraction strictly repairs subtraction, perimeter strictly repairs perimeter, area strictly repairs area. Bounded novelty policy implemented.
+  - Multi-repair draft preservation: `repairDrafts` array in storage preserves multiple unfinished repairs; interactive pill switcher in `/repair` allows switching between active tasks without data loss.
+  - Scoped rulebook assistance: assistance attaches only when explicitly navigated via `?from=...&activeId=...`; opening rulebook directly leaves parked sessions/drafts unassisted.
+  - Concept-organized rulebook: categories (Fractions, Arithmetic, Geometry, Algebra, My Notes), real-time search, "When to use" triggers, common pitfall warnings, checked worked examples, and durable user notes that survive backups.
 - **Verification Evidence**:
-  - 19 passing tests in `npm test` (0 failures).
-  - Production build passing in ~250ms with 0 errors.
-  - Lint passing with 0 errors (41 warnings, all pre-existing).
-  - 10 verification screenshots captured in `docs/screenshots/` across all three themes, mobile viewports, and focus modes.
-  - Full implementation details documented in `docs/IMPLEMENTATION-P1-P3-2026-10-02.md`.
-- **Next Up**: Codex design review, then P4 (More precise repair and rulebook).
+  - 22 passing tests in `npm test` (0 failures).
+  - Production build passing in ~240ms with 0 errors.
+  - Lint passing with 0 errors (38 warnings, all pre-existing).
+  - Full implementation details documented in `docs/IMPLEMENTATION-P4-2026-10-03.md`.
+- **Next Up**: Ticket P5 (Cohesive session planning and progress: prerequisite-based compact path, consistent shared attempt evidence across subjects, review prioritization, and resumable long-session blocks).

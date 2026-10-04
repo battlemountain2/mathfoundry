@@ -204,3 +204,134 @@ test('P3: theme settings, heading styles, and compact sidebar defaults are valid
   assert.equal(restored.compactSidebar, false);
 });
 
+test('P4: subskill matching ensures subtraction repairs subtraction and perimeter repairs perimeter', async () => {
+  const { makeRepairDraft, detectSubskill } = await import('../src/utils/repair.js');
+
+  // 1. Arithmetic subtraction attempt must generate subtraction repair
+  const attemptSub = {
+    conceptId: 'arithmetic',
+    question: 'What is 31 − 14?',
+    submittedAnswer: '20',
+    expectedAnswer: '17',
+    isCorrect: false,
+  };
+  assert.equal(detectSubskill(attemptSub), 'arithmetic-subtraction');
+  const draftSub = makeRepairDraft(attemptSub);
+  assert.equal(draftSub.subskill, 'arithmetic-subtraction');
+  assert.ok(draftSub.problem.question.includes('−') || draftSub.problem.question.includes('-'));
+  assert.ok(!draftSub.problem.question.includes('×'));
+  assert.ok(!draftSub.problem.question.includes('÷'));
+
+  // 2. Fraction subtraction attempt must generate fraction subtraction repair
+  const attemptFracSub = {
+    conceptId: 'addition',
+    question: 'Subtract 1/4 − 1/5. Enter a fraction.',
+    submittedAnswer: '1/1',
+    expectedAnswer: '1/20',
+    isCorrect: false,
+  };
+  assert.equal(detectSubskill(attemptFracSub), 'fraction-subtraction');
+  const draftFracSub = makeRepairDraft(attemptFracSub);
+  assert.equal(draftFracSub.subskill, 'fraction-subtraction');
+  assert.ok(
+    draftFracSub.problem.question.toLowerCase().includes('subtract') ||
+    draftFracSub.problem.question.includes('−')
+  );
+
+  // 3. Perimeter attempt must generate perimeter repair, never area
+  const attemptPeri = {
+    moduleId: 'area-perimeter',
+    question: 'What is the perimeter of a rectangle with length 5 and width 3?',
+    submittedAnswer: '15',
+    expectedAnswer: '16',
+    isCorrect: false,
+  };
+  assert.equal(detectSubskill(attemptPeri), 'perimeter');
+  const draftPeri = makeRepairDraft(attemptPeri);
+  assert.equal(draftPeri.subskill, 'perimeter');
+  assert.ok(
+    draftPeri.problem.question.toLowerCase().includes('perimeter') ||
+    draftPeri.problem.question.toLowerCase().includes('circumference')
+  );
+  assert.ok(!draftPeri.problem.question.toLowerCase().includes('area'));
+
+  // 4. Area attempt must generate area repair, never perimeter
+  const attemptArea = {
+    moduleId: 'area-perimeter',
+    question: 'What is the area of a circle with radius 3?',
+    submittedAnswer: '6π',
+    expectedAnswer: '9π',
+    isCorrect: false,
+  };
+  assert.equal(detectSubskill(attemptArea), 'area');
+  const draftArea = makeRepairDraft(attemptArea);
+  assert.equal(draftArea.subskill, 'area');
+  assert.ok(draftArea.problem.question.toLowerCase().includes('area'));
+  assert.ok(!draftArea.problem.question.toLowerCase().includes('perimeter'));
+});
+
+test('P4: multiple repair drafts are preserved and individual drafts can be completed without destroying others', async () => {
+  const {
+    getRepairDrafts,
+    getRepairDraft,
+    setRepairDraft,
+    removeRepairDraft,
+    exportLearningData,
+  } = await import('../src/utils/storage.js');
+
+  const draft1 = { id: 'draft-p4-sub', subskill: 'arithmetic-subtraction', input: '12' };
+  const draft2 = { id: 'draft-p4-peri', subskill: 'perimeter', input: '24' };
+
+  setRepairDraft(draft1);
+  assert.ok(getRepairDrafts().some((d) => d.id === 'draft-p4-sub'));
+
+  setRepairDraft(draft2);
+  const currentDrafts = getRepairDrafts();
+  assert.ok(currentDrafts.some((d) => d.id === 'draft-p4-sub'));
+  assert.ok(currentDrafts.some((d) => d.id === 'draft-p4-peri'));
+  assert.equal(getRepairDraft('draft-p4-sub').id, 'draft-p4-sub');
+  assert.equal(getRepairDraft('draft-p4-peri').id, 'draft-p4-peri');
+
+  // Verify backup export preserves multiple drafts and backward compatibility
+  const backup = JSON.parse(exportLearningData());
+  assert.ok(Array.isArray(backup.repairDrafts));
+  assert.ok(backup.repairDrafts.some((d) => d.id === 'draft-p4-sub'));
+  assert.ok(backup.repairDrafts.some((d) => d.id === 'draft-p4-peri'));
+  assert.ok(backup.repairDraft);
+
+  // Complete and remove draft1; draft2 must remain intact
+  removeRepairDraft('draft-p4-sub');
+  const remaining = getRepairDrafts();
+  assert.ok(!remaining.some((d) => d.id === 'draft-p4-sub'));
+  assert.ok(remaining.some((d) => d.id === 'draft-p4-peri'));
+  assert.equal(getRepairDraft('draft-p4-sub'), null);
+  assert.equal(getRepairDraft('draft-p4-peri').id, 'draft-p4-peri');
+});
+
+test('P4: rulebook entries are categorized, contain when-to-use and pitfalls, and user notes survive updates', async () => {
+  const {
+    getRulebook,
+    saveRulebookEntry,
+  } = await import('../src/utils/storage.js');
+
+  const entries = getRulebook();
+  assert.ok(entries.length >= 8);
+
+  const fracSub = entries.find((e) => e.id === 'rule:subtraction-fractions');
+  assert.ok(fracSub);
+  assert.ok(fracSub.whenToUse && fracSub.whenToUse.length > 10);
+  assert.ok(fracSub.pitfall && fracSub.pitfall.length > 10);
+  assert.ok(fracSub.example && fracSub.example.steps.length > 0);
+
+  // User notes survive re-saves
+  saveRulebookEntry({ ...fracSub, notes: 'Remember: find LCD 12 first on paper.' });
+  const updated = getRulebook().find((e) => e.id === 'rule:subtraction-fractions');
+  assert.equal(updated.notes, 'Remember: find LCD 12 first on paper.');
+
+  // Partial update preserves existing notes
+  saveRulebookEntry({ id: 'rule:subtraction-fractions', title: 'Subtracting Unlike Fractions' });
+  const updated2 = getRulebook().find((e) => e.id === 'rule:subtraction-fractions');
+  assert.equal(updated2.notes, 'Remember: find LCD 12 first on paper.');
+});
+
+
