@@ -334,4 +334,140 @@ test('P4: rulebook entries are categorized, contain when-to-use and pitfalls, an
   assert.equal(updated2.notes, 'Remember: find LCD 12 first on paper.');
 });
 
+test('P5: prerequisite-based compact path traverses real prerequisites and unlocks downstream concepts', async () => {
+  const { buildPrerequisitePath } = await import('../src/utils/learningProfile.js');
+
+  // 1. With empty history, multiplication prerequisites (arithmetic and equivalence) are not ready
+  const pathEmpty = buildPrerequisitePath('multiplication', []);
+  assert.equal(pathEmpty.target.id, 'multiplication');
+  assert.equal(pathEmpty.prerequisites.length, 2);
+  assert.deepEqual(pathEmpty.prerequisites.map((p) => p.id), ['arithmetic', 'equivalence']);
+  assert.equal(pathEmpty.allPrereqsReady, false);
+  assert.ok(pathEmpty.statusNote.includes('strengthen'));
+  assert.ok(pathEmpty.downstream.some((d) => d.id === 'division'));
+
+  // 2. Arithmetic relationships has no prerequisites (entry point)
+  const pathArithmetic = buildPrerequisitePath('arithmetic', []);
+  assert.equal(pathArithmetic.prerequisites.length, 0);
+  assert.equal(pathArithmetic.allPrereqsReady, true);
+  assert.ok(pathArithmetic.statusNote.includes('entry point'));
+});
+
+test('P5: explained recommendations provide clear reasons, evidence summaries, and finite endpoints', async () => {
+  const { foundationRecommendation } = await import('../src/utils/learningProfile.js');
+
+  // Baseline recommendation
+  const recBaseline = foundationRecommendation([]);
+  assert.equal(recBaseline.mode, 'baseline');
+  assert.ok(recBaseline.reason.length > 10);
+  assert.ok(recBaseline.targetEndpoint.length > 5);
+
+  // Assisted attempt recommendation
+  const assistedAttempt = {
+    id: 'att-assisted',
+    conceptId: 'arithmetic',
+    isCorrect: true,
+    assisted: true,
+    timestamp: '2026-10-01T10:00:00Z',
+  };
+  const recAssisted = foundationRecommendation([assistedAttempt]);
+  assert.ok(recAssisted.reason.includes('worked example') || recAssisted.reason.includes('independently'));
+  assert.ok(recAssisted.targetEndpoint.includes('independent'));
+
+  // Delayed recall recommendation (48 hours later)
+  const indepAttempt = {
+    id: 'att-indep',
+    conceptId: 'arithmetic',
+    isCorrect: true,
+    assisted: false,
+    timestamp: '2026-10-01T00:00:00Z',
+  };
+  const recRecall = foundationRecommendation([indepAttempt], Date.parse('2026-10-03T12:00:00Z'));
+  assert.equal(recRecall.mode, 'review');
+  assert.ok(recRecall.targetEndpoint.includes('recall'));
+});
+
+test('P5: review queue prioritizes unrepaired mistakes, delayed recall, and supported practice with clear endpoints', async () => {
+  const { getPrioritizedReviewQueue } = await import('../src/utils/learningProfile.js');
+
+  const missedAttempt = {
+    id: 'att-missed-1',
+    conceptId: 'arithmetic',
+    question: 'What is 43 − 17?',
+    submittedAnswer: '30',
+    expectedAnswer: '26',
+    isCorrect: false,
+    timestamp: '2026-10-02T10:00:00Z',
+  };
+
+  const queue = getPrioritizedReviewQueue([missedAttempt], Date.parse('2026-10-02T12:00:00Z'));
+  assert.ok(queue.length >= 1);
+  const topItem = queue[0];
+  assert.equal(topItem.priority, 'high');
+  assert.equal(topItem.type, 'repair');
+  assert.ok(topItem.reason.includes('Missed in session'));
+  assert.ok(topItem.targetEndpoint.includes('repair'));
+
+  // Later independent success clears the high-priority repair item
+  const repairedAttempt = {
+    id: 'att-repaired-1',
+    conceptId: 'arithmetic',
+    question: 'What is 35 − 12?',
+    isCorrect: true,
+    assisted: false,
+    timestamp: '2026-10-02T11:00:00Z',
+  };
+  const queueAfterRepair = getPrioritizedReviewQueue([missedAttempt, repairedAttempt], Date.parse('2026-10-02T12:00:00Z'));
+  assert.ok(!queueAfterRepair.some((item) => item.type === 'repair' && item.conceptId === 'arithmetic'));
+});
+
+test('P5: evidence summary distinguishes sparse evidence from independent retention without premature mastery claims', async () => {
+  const { summarizeEvidence } = await import('../src/utils/learningProfile.js');
+
+  // Sparse evidence (1 attempt)
+  const singleAttempt = [{ conceptId: 'arithmetic', isCorrect: true, assisted: false }];
+  const summarySparse = summarizeEvidence('arithmetic', singleAttempt);
+  assert.equal(summarySparse.reliability, 'sparse');
+  assert.ok(summarySparse.claim.includes('Sparse evidence'));
+  assert.ok(summarySparse.claim.includes('not proof of mastery'));
+
+  // Independent evidence across 2 sessions
+  const multipleAttempts = [
+    { id: '1', sessionId: 's1', conceptId: 'arithmetic', isCorrect: true, assisted: false },
+    { id: '2', sessionId: 's2', conceptId: 'arithmetic', isCorrect: true, assisted: false },
+    { id: '3', sessionId: 's2', conceptId: 'arithmetic', isCorrect: true, assisted: false },
+  ];
+  const summaryIndependent = summarizeEvidence('arithmetic', multipleAttempts);
+  assert.equal(summaryIndependent.reliability, 'independent');
+  assert.ok(summaryIndependent.claim.includes('independent answers'));
+});
+
+test('P5: reflective cause input updates attempt records and persists in storage', async () => {
+  const {
+    saveLearningAttempt,
+    getLearningAttempts,
+    updateAttemptReflectiveCause,
+  } = await import('../src/utils/storage.js');
+
+  const testAttempt = {
+    id: 'test-reflective-attempt',
+    conceptId: 'addition',
+    question: 'Add 1/4 + 1/6. Enter a fraction.',
+    submittedAnswer: '2/10',
+    expectedAnswer: '5/12',
+    isCorrect: false,
+    timestamp: new Date().toISOString(),
+  };
+
+  saveLearningAttempt(testAttempt);
+  assert.ok(getLearningAttempts().some((a) => a.id === 'test-reflective-attempt'));
+
+  // Update reflective cause
+  updateAttemptReflectiveCause('test-reflective-attempt', 'rule-confused');
+  const updated = getLearningAttempts().find((a) => a.id === 'test-reflective-attempt');
+  assert.equal(updated.reflectiveCause, 'rule-confused');
+  assert.equal(updated.submittedAnswer, '2/10'); // original answer strictly preserved
+});
+
+
 

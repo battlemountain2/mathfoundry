@@ -68,9 +68,16 @@ Real learner data lives at the localhost origin. Use an isolated origin/browser 
   - Multi-repair draft preservation: `repairDrafts` array in storage preserves multiple unfinished repairs; interactive pill switcher in `/repair` allows switching between active tasks without data loss.
   - Scoped rulebook assistance: assistance attaches only when explicitly navigated via `?from=...&activeId=...`; opening rulebook directly leaves parked sessions/drafts unassisted.
   - Concept-organized rulebook: categories (Fractions, Arithmetic, Geometry, Algebra, My Notes), real-time search, "When to use" triggers, common pitfall warnings, checked worked examples, and durable user notes that survive backups.
+- **Ticket P5 (Cohesive Session Planning and Progress)**: **COMPLETED**.
+  - Real prerequisite-based compact path traversal following concept DAGs (`buildPrerequisitePath`), showing prerequisite readiness (`✓ Ready`, `⏳ In progress`, `— Unassessed`), current focus, and unlocked downstream topics.
+  - Honest shared attempt evidence model (`summarizeEvidence`, `getAllLearningAttempts`): strict anti-sparse mastery enforcement requiring multi-session independent recall (≥3 independent correct answers across ≥2 distinct sessions).
+  - Explained recommendations with concrete endpoints: explicit evidence triggers and finite session goals (e.g., "Complete 1 independent block (6 questions)" or "Answer 2 recall check questions").
+  - Review prioritization queue (`getPrioritizedReviewQueue`): ranked High (unrepaired mistakes), Medium (48h delayed retention due), and Low (supported practice) with direct deep-links to repair/review.
+  - Resumable long-session blocks: 30m, 45m, 60m, and 90m block support with atomic persistence, progress indicators, and "Shelve session" options.
+  - Optional reflective cause input: non-intrusive diagnosis pills (`calc-slip`, `rule-confused`, `misread`, `unsure-start`, `other`) across Foundations, Repair, and Session Review.
 - **Verification Evidence**:
-  - 22 passing tests in `npm test` (0 failures).
-  - Production build passing in ~240ms with 0 errors.
-  - Lint passing with 0 errors (38 warnings, all pre-existing).
-  - Full implementation details documented in `docs/IMPLEMENTATION-P4-2026-10-03.md`.
-- **Next Up**: Ticket P5 (Cohesive session planning and progress: prerequisite-based compact path, consistent shared attempt evidence across subjects, review prioritization, and resumable long-session blocks).
+  - 27 passing tests in `npm test` (0 failures).
+  - Production build passing in ~270ms with 0 errors.
+  - Lint passing with 0 errors (40 warnings, all pre-existing).
+  - Full implementation details documented in `docs/IMPLEMENTATION-P5-2026-10-03.md`.
+- **Next Up**: Ticket P6 (Controlled content expansion: number lines, algebraic balance scale, or extended problem variations as prioritized by Codex and Bry).

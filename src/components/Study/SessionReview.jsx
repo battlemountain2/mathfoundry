@@ -1,9 +1,17 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import MathBlock from "../Lesson/MathBlock";
-import { saveRulebookEntry, setRepairDraft } from "../../utils/storage";
+import { saveRulebookEntry, setRepairDraft, updateAttemptReflectiveCause } from "../../utils/storage";
 import { useStudyActivity } from "./ActivityContext";
 import { makeRepairDraft } from "../../utils/repair";
+
+const REFLECTIVE_OPTIONS = [
+  { id: "calc-slip", label: "Calculation slip", icon: "🧮" },
+  { id: "rule-confused", label: "Confused rule", icon: "📖" },
+  { id: "misread", label: "Misread numbers", icon: "👁️" },
+  { id: "unsure-start", label: "Unsure where to start", icon: "❓" },
+  { id: "other", label: "Other", icon: "💡" },
+];
 
 export default function SessionReview({
   answers = [],
@@ -304,6 +312,11 @@ export default function SessionReview({
                     Assisted attempt: completed after viewing hint or worked example.
                   </span>
                 )}
+                {a.reflectiveCause && (
+                  <span className="comparison-subtext" style={{ color: "var(--accent)" }}>
+                    Learner-reported factor: <strong>{REFLECTIVE_OPTIONS.find((o) => o.id === a.reflectiveCause)?.label || a.reflectiveCause}</strong>
+                  </span>
+                )}
               </div>
 
               <div className="comparison-col expected-answer">
@@ -313,6 +326,28 @@ export default function SessionReview({
                 </span>
               </div>
             </div>
+
+            {!a.isCorrect && !a.skipped && (
+              <div className="reflective-cause-container" style={{ margin: "14px 0" }}>
+                <span className="reflective-label">What happened on this attempt? (Optional learner diagnosis)</span>
+                <div className="reflective-pill-row">
+                  {REFLECTIVE_OPTIONS.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className={`reflective-pill ${a.reflectiveCause === c.id ? "active" : ""}`}
+                      onClick={() => {
+                        updateAttemptReflectiveCause(a.id, c.id);
+                        a.reflectiveCause = c.id;
+                        setNotice(`Recorded "${c.label}" for this question.`);
+                      }}
+                    >
+                      <span>{c.icon}</span> {c.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <h3>Solution & why the method works</h3>
             <MathBlock

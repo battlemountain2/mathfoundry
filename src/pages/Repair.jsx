@@ -7,7 +7,16 @@ import {
   removeRepairDraft,
   saveLearningAttempt,
   savePracticeSession,
+  updateAttemptReflectiveCause,
 } from "../utils/storage";
+
+const REFLECTIVE_OPTIONS = [
+  { id: "calc-slip", label: "Calculation slip", icon: "🧮" },
+  { id: "rule-confused", label: "Confused the rule", icon: "📖" },
+  { id: "misread", label: "Misread numbers", icon: "👁️" },
+  { id: "unsure-start", label: "Unsure where to start", icon: "❓" },
+  { id: "other", label: "Other reason", icon: "💡" },
+];
 import {
   equivalentAnswer,
   numericValue,
@@ -168,6 +177,13 @@ export default function Repair() {
 
   function handleWalkThrough() {
     persist({ ...draft, showSolution: true, assisted: true });
+  }
+
+  function handleSelectReflectiveCause(causeId) {
+    if (!draft?.attempt) return;
+    const updatedAttempt = { ...draft.attempt, reflectiveCause: causeId };
+    updateAttemptReflectiveCause(draft.attempt.id, causeId);
+    persist({ ...draft, attempt: updatedAttempt });
   }
 
   if (!draft)
@@ -444,6 +460,27 @@ export default function Repair() {
                     <p>{getProblemHint(q)}</p>
                   </div>
 
+                  <div className="reflective-cause-container">
+                    <span className="reflective-label">What happened here? (Optional · Diagnostic only)</span>
+                    <div className="reflective-pill-row">
+                      {REFLECTIVE_OPTIONS.map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          className={`reflective-pill ${draft.attempt?.reflectiveCause === c.id ? "active" : ""}`}
+                          onClick={() => handleSelectReflectiveCause(c.id)}
+                        >
+                          <span>{c.icon}</span> {c.label}
+                        </button>
+                      ))}
+                    </div>
+                    {draft.attempt?.reflectiveCause && (
+                      <p className="study-muted text-xs" style={{ marginTop: 6, color: "var(--accent)" }}>
+                        ✓ Recorded: {REFLECTIVE_OPTIONS.find((c) => c.id === draft.attempt.reflectiveCause)?.label}
+                      </p>
+                    )}
+                  </div>
+
                   <div className="study-actions" style={{ marginTop: 14 }}>
                     <button className="study-button" onClick={handleRetry}>
                       Try again
@@ -477,6 +514,28 @@ export default function Repair() {
                       <span className="comparison-value">{draft.attempt?.expectedAnswer}</span>
                     </div>
                   </div>
+
+                  <div className="reflective-cause-container">
+                    <span className="reflective-label">What happened here? (Optional · Diagnostic only)</span>
+                    <div className="reflective-pill-row">
+                      {REFLECTIVE_OPTIONS.map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          className={`reflective-pill ${draft.attempt?.reflectiveCause === c.id ? "active" : ""}`}
+                          onClick={() => handleSelectReflectiveCause(c.id)}
+                        >
+                          <span>{c.icon}</span> {c.label}
+                        </button>
+                      ))}
+                    </div>
+                    {draft.attempt?.reflectiveCause && (
+                      <p className="study-muted text-xs" style={{ marginTop: 6, color: "var(--accent)" }}>
+                        ✓ Recorded: {REFLECTIVE_OPTIONS.find((c) => c.id === draft.attempt.reflectiveCause)?.label}
+                      </p>
+                    )}
+                  </div>
+
                   <h3>Why the method works</h3>
                   <MathBlock content={q.explanation} />
                   <p className="study-muted">

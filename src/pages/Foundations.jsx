@@ -1,13 +1,21 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { concepts, makeFoundationSession, makeEngineeringSession } from '../data/foundations';
-import { getFoundationSession,setFoundationSession,getLearningAttempts,saveLearningAttempt } from '../utils/storage';
-import { foundationRecommendation,conceptProfile } from '../utils/learningProfile';
+import { getFoundationSession, setFoundationSession, getLearningAttempts, saveLearningAttempt, updateAttemptReflectiveCause } from '../utils/storage';
+import { foundationRecommendation, conceptProfile } from '../utils/learningProfile';
 import { equivalentAnswer, numericValue, analyzeIntermediateStep } from '../utils/answerChecking';
 import { getProblemHint } from '../utils/hints';
 import SessionReview from '../components/Study/SessionReview';
 import FractionBarVisualizer from '../components/Study/FractionBarVisualizer';
 import { useStudyActivity } from '../components/Study/ActivityContext';
+
+const REFLECTIVE_OPTIONS = [
+  { id: 'calc-slip', label: 'Calculation slip', icon: '🧮' },
+  { id: 'rule-confused', label: 'Confused the rule', icon: '📖' },
+  { id: 'misread', label: 'Misread numbers', icon: '👁️' },
+  { id: 'unsure-start', label: 'Unsure where to start', icon: '❓' },
+  { id: 'other', label: 'Other reason', icon: '💡' },
+];
 
 const HINT_FIXTURE_SESSION = {
   id: 'fixture-active-foundations',
@@ -165,6 +173,18 @@ export default function Foundations() {
       showSolution: true,
       assisted: true,
     });
+  }
+
+  function handleSelectReflectiveCause(causeId) {
+    if (!lastAnswer) return;
+    const updatedAnswers = session.answers.map((a) => {
+      if (a.id === lastAnswer.id) {
+        return { ...a, reflectiveCause: causeId };
+      }
+      return a;
+    });
+    updateAttemptReflectiveCause(lastAnswer.id, causeId);
+    persist({ ...session, answers: updatedAnswers });
   }
 
   function next() {
@@ -326,6 +346,27 @@ export default function Foundations() {
                   <p>{getProblemHint(q)}</p>
                 </div>
 
+                <div className="reflective-cause-container">
+                  <span className="reflective-label">What happened on this step? (Optional · Diagnostic only)</span>
+                  <div className="reflective-pill-row">
+                    {REFLECTIVE_OPTIONS.map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        className={`reflective-pill ${lastAnswer?.reflectiveCause === c.id ? 'active' : ''}`}
+                        onClick={() => handleSelectReflectiveCause(c.id)}
+                      >
+                        <span>{c.icon}</span> {c.label}
+                      </button>
+                    ))}
+                  </div>
+                  {lastAnswer?.reflectiveCause && (
+                    <p className="study-muted text-xs" style={{ marginTop: 6, color: 'var(--accent)' }}>
+                      ✓ Recorded: {REFLECTIVE_OPTIONS.find((c) => c.id === lastAnswer.reflectiveCause)?.label}
+                    </p>
+                  )}
+                </div>
+
                 <div className="study-actions" style={{marginTop: 18}}>
                   <button className="study-button" onClick={handleRetry}>
                     Try again
@@ -358,6 +399,28 @@ export default function Foundations() {
                     <span className="comparison-value">{lastAnswer?.expectedAnswer}</span>
                   </div>
                 </div>
+
+                <div className="reflective-cause-container">
+                  <span className="reflective-label">What happened on this step? (Optional · Diagnostic only)</span>
+                  <div className="reflective-pill-row">
+                    {REFLECTIVE_OPTIONS.map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        className={`reflective-pill ${lastAnswer?.reflectiveCause === c.id ? 'active' : ''}`}
+                        onClick={() => handleSelectReflectiveCause(c.id)}
+                      >
+                        <span>{c.icon}</span> {c.label}
+                      </button>
+                    ))}
+                  </div>
+                  {lastAnswer?.reflectiveCause && (
+                    <p className="study-muted text-xs" style={{ marginTop: 6, color: 'var(--accent)' }}>
+                      ✓ Recorded: {REFLECTIVE_OPTIONS.find((c) => c.id === lastAnswer.reflectiveCause)?.label}
+                    </p>
+                  )}
+                </div>
+
                 <h3>Why this method works</h3>
                 <p>{q.explanation}</p>
                 <p className="study-muted">

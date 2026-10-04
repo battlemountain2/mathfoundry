@@ -209,6 +209,78 @@ export function getFoundationSession() {
   return session && Array.isArray(session.questions) && Array.isArray(session.answers) && Number.isInteger(session.index) ? session : null;
 }
 export function setFoundationSession(session) { setStore({ ...getStore(), foundationSession: session }); }
+export function clearFoundationSession() { setStore({ ...getStore(), foundationSession: null }); }
+
+export function getAllLearningAttempts() {
+  const store = getStore();
+  const foundationAttempts = Array.isArray(store.learningAttempts) ? store.learningAttempts : [];
+  const practiceAttempts = (Array.isArray(store.practiceHistory) ? store.practiceHistory : []).flatMap((s) =>
+    (s.answers || []).map((a) => ({
+      ...a,
+      sessionId: s.id,
+      timestamp: a.timestamp || s.timestamp,
+    }))
+  );
+  const reviewAttempts = (Array.isArray(store.reviewHistory) ? store.reviewHistory : []).flatMap((s) =>
+    (s.answers || []).map((a) => ({
+      ...a,
+      sessionId: s.id,
+      timestamp: a.timestamp || s.timestamp,
+    }))
+  );
+
+  const seen = new Set();
+  const unified = [];
+  for (const a of [...foundationAttempts, ...practiceAttempts, ...reviewAttempts]) {
+    const key = a.id || `${a.sessionId}:${a.question}:${a.timestamp}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      unified.push(a);
+    }
+  }
+
+  return unified.sort((a, b) => String(a.timestamp || '').localeCompare(String(b.timestamp || '')));
+}
+
+export function updateAttemptReflectiveCause(attemptId, cause) {
+  if (!attemptId || !cause) return;
+  const store = getStore();
+  let modified = false;
+
+  if (Array.isArray(store.learningAttempts)) {
+    store.learningAttempts = store.learningAttempts.map((a) => {
+      if (a.id === attemptId || a.problemId === attemptId) {
+        modified = true;
+        return { ...a, reflectiveCause: cause };
+      }
+      return a;
+    });
+  }
+
+  if (store.foundationSession && Array.isArray(store.foundationSession.answers)) {
+    store.foundationSession.answers = store.foundationSession.answers.map((a) => {
+      if (a.id === attemptId || a.problemId === attemptId) {
+        modified = true;
+        return { ...a, reflectiveCause: cause };
+      }
+      return a;
+    });
+  }
+
+  if (Array.isArray(store.repairDrafts)) {
+    store.repairDrafts = store.repairDrafts.map((d) => {
+      if (d.attempt && (d.attempt.id === attemptId || d.id === attemptId)) {
+        modified = true;
+        return { ...d, attempt: { ...d.attempt, reflectiveCause: cause } };
+      }
+      return d;
+    });
+  }
+
+  if (modified) {
+    setStore(store);
+  }
+}
 
 export function getReviewHistory() { const value=getStore().reviewHistory;return Array.isArray(value)?value:[]; }
 export function saveReviewSession(session) {
