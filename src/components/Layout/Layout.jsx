@@ -57,6 +57,18 @@ export const Layout = ({ children }) => {
     };
   }
 
+  // Full-screen chrome suppression for guided lesson player (Requirement R1, R3)
+  const isLessonRoute = /\/courses\/[^/]+\/[^/]+\/lesson\/?$/.test(location.pathname);
+
+  if (isLessonRoute) {
+    return (
+      <div className="app-shell min-h-screen transition-colors duration-150">
+        {themeError && <p role="alert" className="study-notice">{themeError}</p>}
+        {children}
+      </div>
+    );
+  }
+
   return (
     <div className="app-shell min-h-screen transition-colors duration-150">
       <Sidebar

@@ -4,16 +4,15 @@ import { ActivityProvider } from './components/Study/ActivityContext';
 import Layout from './components/Layout/Layout';
 import ErrorBoundary from './components/common/ErrorBoundary';
 
-// Lazy loaded pages for better performance
+// Lazy loaded pages for optimal performance
 const Home = lazy(() => import('./pages/Home'));
-const CurriculumOverview = lazy(() => import('./pages/CurriculumOverview'));
-const Diagnostic = lazy(() => import('./pages/Diagnostic'));
-const LearningPath = lazy(() => import('./pages/LearningPath'));
-const ModulePage = lazy(() => import('./pages/ModulePage'));
-const Progress = lazy(() => import('./pages/Progress'));
-const Practice = lazy(() => import('./pages/Practice'));
-const Foundations = lazy(() => import('./pages/Foundations'));
-const Learn = lazy(() => import('./pages/Learn'));
+const CourseCatalog = lazy(() => import('./pages/Courses/CourseCatalog'));
+const CoursePage = lazy(() => import('./pages/Courses/CoursePage'));
+const UnitPage = lazy(() => import('./pages/Courses/UnitPage'));
+const LessonView = lazy(() => import('./pages/Courses/LessonView'));
+const UnitPractice = lazy(() => import('./pages/Courses/UnitPractice'));
+const UnitLab = lazy(() => import('./pages/Courses/UnitLab'));
+const UnitQuiz = lazy(() => import('./pages/Courses/UnitQuiz'));
 const Review = lazy(() => import('./pages/Review'));
 const Repair = lazy(() => import('./pages/Repair'));
 const Rulebook = lazy(() => import('./pages/Rulebook'));
@@ -29,31 +28,47 @@ const PageLoader = () => (
 
 function App() {
   return (
-    <ActivityProvider><Layout>
-      <ErrorBoundary>
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/learn" element={<Learn />} />
-            <Route path="/review" element={<Review />} />
-            <Route path="/repair" element={<Repair />} />
-            <Route path="/rulebook" element={<Rulebook />} />
-            <Route path="/overview" element={<CurriculumOverview />} />
-            <Route path="/diagnostic" element={<Diagnostic />} />
-            <Route path="/path/:pathId" element={<LearningPath />} />
-            <Route path="/module/:moduleId" element={<ModulePage />} />
-            <Route path="/progress" element={<Progress />} />
-            <Route path="/practice" element={<Practice />} />
-            <Route path="/foundations" element={<Foundations />} />
-            <Route path="/speed-run" element={<Navigate to="/practice" replace />} />
-            <Route path="/settings" element={<Settings />} />
-            
-            {/* Catch-all redirect */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-      </ErrorBoundary>
-    </Layout></ActivityProvider>
+    <ActivityProvider>
+      <Layout>
+        <ErrorBoundary>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              {/* Home: Simplified Study Desk */}
+              <Route path="/" element={<Home />} />
+
+              {/* Courses & Hierarchy */}
+              <Route path="/courses" element={<CourseCatalog />} />
+              <Route path="/courses/:courseId" element={<CoursePage />} />
+              <Route path="/courses/:courseId/:unitId" element={<UnitPage />} />
+              <Route path="/courses/:courseId/:unitId/lesson" element={<LessonView />} />
+              <Route path="/courses/:courseId/:unitId/practice" element={<UnitPractice />} />
+              <Route path="/courses/:courseId/:unitId/lab" element={<UnitLab />} />
+              <Route path="/courses/:courseId/:unitId/quiz" element={<UnitQuiz />} />
+
+              {/* Cross-Subject Study Tools */}
+              <Route path="/rulebook" element={<Rulebook />} />
+              <Route path="/repair" element={<Repair />} />
+              <Route path="/review" element={<Review />} />
+              <Route path="/settings" element={<Settings />} />
+
+              {/* Deprecated Standalone Routes (Redirect to Course Hierarchy) */}
+              <Route path="/learn" element={<Navigate to="/courses" replace />} />
+              <Route path="/foundations" element={<Navigate to="/courses/math" replace />} />
+              <Route path="/practice" element={<Navigate to="/courses/math" replace />} />
+              <Route path="/diagnostic" element={<Navigate to="/courses/math" replace />} />
+              <Route path="/progress" element={<Navigate to="/courses/math" replace />} />
+              <Route path="/overview" element={<Navigate to="/courses" replace />} />
+              <Route path="/speed-run" element={<Navigate to="/courses/math" replace />} />
+              <Route path="/path/:pathId" element={<Navigate to="/courses/math" replace />} />
+              <Route path="/module/:moduleId" element={<Navigate to="/courses/math" replace />} />
+
+              {/* Catch-all */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
+      </Layout>
+    </ActivityProvider>
   );
 }
 

@@ -1,322 +1,233 @@
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import React, { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
-  getLearningAttempts,
-  getFoundationSession,
-  clearFoundationSession,
-  getRepairDrafts,
   getAllLearningAttempts,
-} from "../utils/storage";
-import { concepts } from "../data/foundations";
-import {
-  conceptProfile,
-  foundationRecommendation,
-  buildPrerequisitePath,
-  getPrioritizedReviewQueue,
-  summarizeEvidence,
-} from "../utils/learningProfile";
-import { useProgress } from "../hooks/useProgress";
+  getLessonProgress,
+  getProgress,
+} from '../utils/storage';
+import { mathFoundationsUnits, checkUnitPrerequisites, getMathUnit } from '../data/courses/mathFoundations';
+import { getPrioritizedReviewQueue } from '../utils/learningProfile';
+import { useProgress } from '../hooks/useProgress';
 
 export default function Home() {
   useProgress();
-  const attempts = getLearningAttempts();
   const allWork = getAllLearningAttempts();
-  const [session, setSession] = useState(getFoundationSession);
-  const repairDrafts = getRepairDrafts();
-  const resume = session?.questions?.[session.index];
-  const recommendation = foundationRecommendation(attempts);
-  const [minutes, setMinutes] = useState(30);
+  const reviewQueue = getPrioritizedReviewQueue(allWork).slice(0, 3);
 
-  const activeConceptId = resume?.conceptId || recommendation.id;
-  const path = buildPrerequisitePath(activeConceptId, attempts);
-  const reviewQueue = getPrioritizedReviewQueue(allWork);
-  const evidence = summarizeEvidence(activeConceptId, attempts);
-  const latest = attempts.at(-1);
+  // Compute the single primary next action across courses and units
+  const primaryAction = useMemo(() => {
+    const rawProgress = getProgress();
+    const satisfiedSet = new Set();
 
-  function handleShelveSession() {
-    clearFoundationSession();
-    setSession(null);
-  }
+    // Check for in-progress lesson first
+    for (const unit of mathFoundationsUnits) {
+      if (unit.hasLesson) {
+        const lesson = getLessonProgress(unit.unitPath);
+        if (lesson && !lesson.completed && (lesson.currentStepIndex > 0 || Object.keys(lesson.microCheckAnswers || {}).length > 0)) {
+          return {
+            badge: 'In Progress · Lesson',
+            title: `Continue: ${unit.title}`,
+            description: `You're currently on Step ${(lesson.currentStepIndex || 0) + 1} of the interactive walkthrough.`,
+            actionUrl: `/courses/math/${unit.id}/lesson`,
+            buttonText: 'Resume Lesson →',
+            icon: '📖',
+            progressPercent: Math.round((((lesson.currentStepIndex || 0) + 1) / 8) * 100),
+          };
+        }
+      }
+    }
+
+    // Determine satisfied units
+    mathFoundationsUnits.forEach((unit) => {
+      const attempts = allWork.filter(
+        (a) => a.unitId === unit.id || a.conceptId === unit.legacyConceptId || a.moduleId === unit.id
+      );
+      const independentCorrect = attempts.filter((a) => a.isCorrect && !a.assisted).length;
+      const lesson = getLessonProgress(unit.unitPath);
+      const isQuizPassed = rawProgress?.[unit.id]?.quizPassed || rawProgress?.[unit.unitPath]?.quizPassed;
+
+      if (independentCorrect >= 3 || isQuizPassed || (unit.id === 'arithmetic' && attempts.length > 0)) {
+        satisfiedSet.add(unit.id);
+        if (unit.legacyConceptId) satisfiedSet.add(unit.legacyConceptId);
+      }
+    });
+
+    // Find the current active/eligible unit
+    for (const unit of mathFoundationsUnits) {
+      const attempts = allWork.filter(
+        (a) => a.unitId === unit.id || a.conceptId === unit.legacyConceptId || a.moduleId === unit.id
+      );
+      const independentCorrect = attempts.filter((a) => a.isCorrect && !a.assisted).length;
+      const lesson = getLessonProgress(unit.unitPath);
+      const isQuizPassed = rawProgress?.[unit.id]?.quizPassed || rawProgress?.[unit.unitPath]?.quizPassed;
+
+      if (!isQuizPassed && !(lesson?.completed && independentCorrect >= 6)) {
+        const prereqCheck = checkUnitPrerequisites(unit.id, satisfiedSet);
+        if (prereqCheck.eligible) {
+          // If unit has an uncompleted lesson, recommend starting the lesson
+          if (unit.hasLesson && !lesson?.completed) {
+            return {
+              badge: 'Recommended Next Step',
+              title: `Start Lesson: ${unit.title}`,
+              description: unit.description,
+              actionUrl: `/courses/math/${unit.id}/lesson`,
+              buttonText: 'Start Lesson →',
+              icon: '📖',
+            };
+          }
+
+          // Otherwise recommend unit practice
+          return {
+            badge: attempts.length > 0 ? 'Continue Unit' : 'Up Next',
+            title: `${attempts.length > 0 ? 'Practice' : 'Start'}: ${unit.title}`,
+            description: attempts.length > 0
+              ? `${independentCorrect} of 6 questions solved independently. Keep building fluency.`
+              : unit.description,
+            actionUrl: `/courses/math/${unit.id}/practice`,
+            buttonText: attempts.length > 0 ? 'Continue Practice →' : 'Start Practice →',
+            icon: '✏️',
+          };
+        }
+      }
+    }
+
+    // Default cold start
+    const unit1 = mathFoundationsUnits[0];
+    return {
+      badge: 'Welcome to MathFoundry',
+      title: `Start Unit 1: ${unit1.title}`,
+      description: unit1.description,
+      actionUrl: `/courses/math/${unit1.id}`,
+      buttonText: 'Start Unit 1 →',
+      icon: '🧮',
+    };
+  }, [allWork]);
 
   return (
-    <div className="study-page today-page">
-      <div className="today-heading">
-        <div>
-          <p className="eyebrow">Room to think. A path to follow.</p>
-          <h1>Your study desk.</h1>
-          <p className="study-intro">
-            Build your foundations with real prerequisite tracking and honest evidence.
-          </p>
-        </div>
-      </div>
+    <div className="study-page animate-fade-in max-w-3xl mx-auto py-8">
+      {/* Header */}
+      <header className="mb-8">
+        <p className="eyebrow">Study Desk</p>
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[var(--ink)] mb-2">
+          Ready to learn.
+        </h1>
+        <p className="study-intro text-base text-[var(--ink-2)]">
+          Follow your focused step-by-step path toward engineering mathematics.
+        </p>
+      </header>
 
-      <div className="today-grid">
-        {/* Main Recommendation or Resumable Session */}
-        <section className="study-card today-main">
-          {resume ? (
-            <>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                <p className="eyebrow" style={{ margin: 0 }}>Active study block · In progress</p>
-                <span className="study-badge supported">Resumable</span>
-              </div>
-              <h2>{concepts.find((c) => c.id === resume.conceptId)?.title || "Active Block"}</h2>
-              <p>
-                Question {session.index + 1} of {session.questions.length}. Your work and checked answers are saved in local storage.
-              </p>
-              <div className="resumable-progress-bar" style={{ margin: "14px 0" }}>
-                <div
-                  className="resumable-progress-fill"
-                  style={{ width: `${((session.index) / session.questions.length) * 100}%` }}
-                />
-              </div>
-              <div className="study-actions" style={{ marginTop: 16 }}>
-                <Link className="study-button" to="/foundations">
-                  Resume study block →
-                </Link>
-                <button
-                  type="button"
-                  className="study-text-button"
-                  onClick={handleShelveSession}
-                  title="Pause this block and clear it from active view"
-                >
-                  Shelve & pause session
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <p className="eyebrow">Your next study block · Explained recommendation</p>
-              <h2>{!attempts.length ? "Find your starting point" : recommendation.title}</h2>
-              <p>
-                {!attempts.length
-                  ? "A short arithmetic and fractions check helps choose a useful place to begin."
-                  : recommendation.reason}
-              </p>
-
-              {recommendation.evidenceSummary && (
-                <div className="recommendation-evidence-callout">
-                  <span className="callout-evidence-tag">Evidence basis:</span>{" "}
-                  <span>{recommendation.evidenceSummary}</span>
-                </div>
-              )}
-
-              {recommendation.targetEndpoint && (
-                <div className="recommendation-endpoint-callout">
-                  <span className="callout-endpoint-tag">🎯 Concrete goal:</span>{" "}
-                  <span>{recommendation.targetEndpoint}</span>
-                </div>
-              )}
-
-              <div className="study-time" style={{ marginTop: 18 }}>
-                <span>Study time you’re planning</span>
-                <div role="group" aria-label="Study plan duration">
-                  {[30, 45, 60, 90].map((n) => (
-                    <button
-                      key={n}
-                      aria-pressed={minutes === n}
-                      onClick={() => setMinutes(n)}
-                      className={minutes === n ? "active" : ""}
-                    >
-                      {n === 90 ? "90 min (Extended)" : `${n} min`}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="study-actions" style={{ marginTop: 18 }}>
-                <Link
-                  className="study-button"
-                  to={`/foundations?minutes=${minutes}&concept=${recommendation.id}`}
-                >
-                  {!attempts.length ? "Find my starting point" : "Start recommended block →"}
-                </Link>
-                <Link className="study-text-button" to="/foundations">
-                  Browse all topics
-                </Link>
-              </div>
-            </>
-          )}
-
-          <p className="study-muted" style={{ marginTop: 18 }}>
-            Resumable blocks · Untimed · Paper-first problem solving
-          </p>
-
-          <div className="desk-tools" style={{ marginTop: 14 }}>
-            <Link to="/review">Session history</Link>
-            <Link to="/rulebook">Personal rulebook</Link>
-            {repairDrafts.length > 0 && (
-              <Link to="/repair">
-                Pending repairs ({repairDrafts.length})
-              </Link>
-            )}
-          </div>
-        </section>
-
-        {/* Real Prerequisite-Based Compact Path */}
-        <aside className="study-card today-side">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-            <p className="eyebrow" style={{ margin: 0 }}>Prerequisite path</p>
-            <span className="study-badge neutral" style={{ fontSize: 11 }}>
-              {path.allPrereqsReady ? "Prereqs Met" : "In Progress"}
+      {/* Primary Action Card (Brilliant / Minimalist Focus) */}
+      <section className="study-card p-6 sm:p-8 rounded-2xl border border-[var(--line-strong)] bg-[var(--surface)] shadow-sm mb-8">
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">{primaryAction.icon}</span>
+            <span className="font-mono text-xs uppercase tracking-wider text-[var(--accent)] font-bold">
+              {primaryAction.badge}
             </span>
           </div>
-          <h2>One step connects to the next.</h2>
-
-          <div className="prerequisite-path-container">
-            {/* Prerequisites Chain */}
-            {path.prerequisites.length > 0 && (
-              <div className="path-prereqs-section">
-                <span className="path-subhead">Required Prerequisites:</span>
-                <ul className="path-node-list">
-                  {path.prerequisites.map((p) => (
-                    <li key={p.id} className="path-node prereq-node">
-                      <Link to={`/foundations?concept=${p.id}`}>{p.title}</Link>
-                      <span className={`study-badge ${p.isReady ? "correct" : p.state === "Learning" ? "supported" : "skipped"}`}>
-                        {p.isReady ? "✓ Ready" : p.state === "Learning" ? "⏳ In progress" : "— Unassessed"}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Current Focus Node */}
-            <div className="path-current-section">
-              <span className="path-subhead">Current Study Target:</span>
-              <div className="path-node current-node">
-                <div>
-                  <strong>{path.target.title}</strong>
-                  <span className="study-muted text-xs block" style={{ marginTop: 2 }}>
-                    {path.target.state} · {path.target.assessed} assessed attempts
-                  </span>
-                </div>
-                <span className="study-badge supported">Active Focus</span>
-              </div>
-            </div>
-
-            {/* Downstream Unlocks */}
-            {path.downstream.length > 0 && (
-              <div className="path-downstream-section">
-                <span className="path-subhead">Unlocks Downstream:</span>
-                <p className="study-muted text-xs" style={{ margin: "4px 0 0" }}>
-                  {path.downstream.map((d) => d.title).join(", ")}
-                </p>
-              </div>
-            )}
-
-            {/* Readiness Note */}
-            <div className="path-status-note">
-              <p>{path.statusNote}</p>
-            </div>
-          </div>
-
-          <p className="study-muted text-xs" style={{ marginTop: 12 }}>
-            {path.target.bridge}
-          </p>
-          <Link className="study-text-button" to="/foundations">
-            Open full foundation map →
-          </Link>
-        </aside>
-      </div>
-
-      <div className="today-grid">
-        {/* Prioritized Review Queue */}
-        <section className="study-card">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-            <p className="eyebrow" style={{ margin: 0 }}>Review queue</p>
-            {reviewQueue.length > 0 && (
-              <span className="study-badge incorrect" style={{ fontSize: 11 }}>
-                {reviewQueue.length} Priority Item{reviewQueue.length === 1 ? "" : "s"}
-              </span>
-            )}
-          </div>
-          <h2>Prioritized for revisit</h2>
-
-          {reviewQueue.length > 0 ? (
-            <div className="review-queue-list">
-              {reviewQueue.slice(0, 2).map((item) => (
-                <div key={item.id} className="review-queue-card">
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-                    <strong>{item.title}</strong>
-                    <span className={`study-badge ${item.priority === "high" ? "incorrect" : item.priority === "medium" ? "supported" : "neutral"}`}>
-                      {item.priority === "high" ? "High: Repair" : item.priority === "medium" ? "Medium: Recall" : "Low: Practice"}
-                    </span>
-                  </div>
-                  <p className="queue-reason" style={{ margin: "6px 0 2px", fontSize: 13, color: "var(--ink)" }}>
-                    {item.reason}
-                  </p>
-                  <p className="queue-endpoint study-muted text-xs" style={{ margin: "2px 0 8px" }}>
-                    🎯 Goal: {item.targetEndpoint}
-                  </p>
-                  <Link className="study-text-button" to={item.actionUrl}>
-                    Revisit this item →
-                  </Link>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <>
-              <p>Your review queue is clear! All recent missed problems have been repaired and no delayed checks are due.</p>
-              <Link className="study-text-button" to="/review">
-                Browse past sessions →
-              </Link>
-            </>
+          {primaryAction.progressPercent !== undefined && (
+            <span className="font-mono text-xs text-[var(--ink-3)] font-semibold">
+              {primaryAction.progressPercent}% complete
+            </span>
           )}
-        </section>
-
-        {/* Evidence Transparency Model */}
-        <section className="study-card">
-          <p className="eyebrow">Evidence integrity</p>
-          <h2>What your work shows</h2>
-          <div className="evidence-metrics-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, margin: "14px 0" }}>
-            <div className="evidence-metric-box">
-              <span className="metric-num font-mono">{evidence.independent}</span>
-              <span className="metric-label">Independent</span>
-            </div>
-            <div className="evidence-metric-box">
-              <span className="metric-num font-mono">{evidence.supported}</span>
-              <span className="metric-label">Helped</span>
-            </div>
-            <div className="evidence-metric-box">
-              <span className="metric-num font-mono">{evidence.missed}</span>
-              <span className="metric-label">Needs look</span>
-            </div>
-            <div className="evidence-metric-box">
-              <span className="metric-num font-mono">{evidence.total}</span>
-              <span className="metric-label">Total answers</span>
-            </div>
-          </div>
-
-          <p className="evidence-claim-note" style={{ fontSize: 13, color: "var(--ink)", margin: "8px 0" }}>
-            {evidence.claim}
-          </p>
-
-          <p className="study-muted text-xs">
-            Helped success and delayed recall remain distinct. No mastery claims are made from sparse evidence.
-          </p>
-
-          <Link className="study-text-button" to="/progress" style={{ marginTop: 10, display: "inline-block" }}>
-            Inspect full learning profile →
-          </Link>
-        </section>
-      </div>
-
-      {/* Real Application Bridge */}
-      <section className="study-card today-paths">
-        <div>
-          <p className="eyebrow">Connect it to something real</p>
-          <h2>Fractions in engineering scale drawings</h2>
-          <p>
-            Use a simple drawing to see how a fraction connects to a physical
-            measurement and engineering tolerance.
-          </p>
         </div>
-        <Link
-          className="study-button secondary"
-          to="/foundations?application=scale"
-        >
-          Try small application →
-        </Link>
+
+        <h2 className="text-2xl sm:text-3xl font-bold text-[var(--ink)] mb-2 leading-snug">
+          {primaryAction.title}
+        </h2>
+        <p className="text-sm sm:text-base text-[var(--ink-2)] leading-relaxed mb-6 max-w-xl">
+          {primaryAction.description}
+        </p>
+
+        {primaryAction.progressPercent !== undefined && (
+          <div
+            className="w-full h-1.5 rounded-full overflow-hidden bg-[var(--surface-2)] mb-6 border border-[var(--line)]"
+            role="progressbar"
+            aria-valuenow={primaryAction.progressPercent}
+            aria-valuemin="0"
+            aria-valuemax="100"
+          >
+            <div
+              className="h-full transition-all duration-300"
+              style={{
+                width: `${primaryAction.progressPercent}%`,
+                backgroundColor: 'var(--accent)',
+              }}
+            />
+          </div>
+        )}
+
+        <div className="flex items-center gap-3">
+          <Link
+            to={primaryAction.actionUrl}
+            className="study-button inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-transform active:scale-95"
+            style={{ backgroundColor: 'var(--accent)', color: 'var(--surface)' }}
+          >
+            <span>{primaryAction.buttonText}</span>
+          </Link>
+          <Link
+            to="/courses/math"
+            className="study-button secondary px-4 py-3 rounded-xl font-semibold text-sm border border-[var(--line)] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors"
+          >
+            Course Map
+          </Link>
+        </div>
+      </section>
+
+      {/* Short Review Queue (Max 3 Items) */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-base font-bold text-[var(--ink)] flex items-center gap-2">
+            <span>📋</span>
+            <span>Review Priorities</span>
+          </h3>
+          {reviewQueue.length > 0 && (
+            <Link
+              to="/repair"
+              className="text-xs font-semibold text-[var(--accent)] hover:underline"
+            >
+              Open Repair Desk →
+            </Link>
+          )}
+        </div>
+
+        {reviewQueue.length > 0 ? (
+          <div className="space-y-2.5">
+            {reviewQueue.map((item, idx) => (
+              <div
+                key={idx}
+                className="p-4 rounded-xl border border-[var(--line)] bg-[var(--surface)] flex items-center justify-between gap-4"
+              >
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span
+                      className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                        item.priority === 'high'
+                          ? 'bg-[var(--heat-soft)] text-[var(--heat)]'
+                          : 'bg-[var(--surface-2)] text-[var(--ink-2)]'
+                      }`}
+                    >
+                      {item.priority === 'high' ? 'Mistake to Repair' : 'Retention Check'}
+                    </span>
+                    <span className="text-xs font-bold text-[var(--ink)]">{item.title}</span>
+                  </div>
+                  <p className="text-xs text-[var(--ink-2)] m-0">{item.reason}</p>
+                </div>
+
+                <Link
+                  to={item.actionUrl || '/repair'}
+                  className="study-button secondary px-3 py-1.5 rounded-lg text-xs font-semibold shrink-0 border border-[var(--line)] text-[var(--ink)] hover:bg-[var(--surface-2)]"
+                >
+                  {item.actionLabel || 'Repair →'}
+                </Link>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="p-5 rounded-xl border border-[var(--line)] bg-[var(--surface)] text-center text-xs text-[var(--ink-3)]">
+            <span>✓ No urgent mistakes or delayed reviews due. Your foundation is clean.</span>
+          </div>
+        )}
       </section>
     </div>
   );

@@ -75,9 +75,16 @@ Real learner data lives at the localhost origin. Use an isolated origin/browser 
   - Review prioritization queue (`getPrioritizedReviewQueue`): ranked High (unrepaired mistakes), Medium (48h delayed retention due), and Low (supported practice) with direct deep-links to repair/review.
   - Resumable long-session blocks: 30m, 45m, 60m, and 90m block support with atomic persistence, progress indicators, and "Shelve session" options.
   - Optional reflective cause input: non-intrusive diagnosis pills (`calc-slip`, `rule-confused`, `misread`, `unsure-start`, `other`) across Foundations, Repair, and Session Review.
+- **MathFoundry v2 (Phases 1–3: Guided Lessons, Number Line Lab, and Course-Based Architecture)**: **COMPLETED**.
+  - **Guided Lesson System (`LessonPlayer`)**: Full-screen focused walkthrough with 6 step types (`explain`, `visual`, `interact`, `micro-check`, `key-rule`, `transition`), progress resumption, formative micro-check isolation, and complete 8-step "Add & Subtract Fractions" curriculum.
+  - **Interactive Number Line Lab (`NumberLineLab`)**: Continuous axis with configurable range, subdivisions, keyboard (coarse/fine) & touch/drag navigation, snap-to-tick, signed rational values, and predict-verify evaluation.
+  - **Course-Based Hierarchy**: `/courses` catalog (Math, Geometry, Physics, Chemistry), `/courses/:courseId` vertical unit list with prerequisite locking and progress bars, `/courses/:courseId/:unitId` unit pages with stacked sections (Lesson → Lab → Practice → Review → Quiz).
+  - **4-Item Top Navigation**: Cleaned sidebar to exactly 4 items (Today, Courses, Rulebook, Settings) with full-screen chrome suppression on lesson routes.
+  - **Simplified Today Desk (`/`)**: Single primary action card (resume lesson / start practice / take quiz) + short prioritized review queue.
+  - **Non-Destructive Storage Migration**: Virtualized bidirectional mapping (`toUnitPath`, `toConceptId`, `normalizeAttempt`, `getAttemptsForUnit`) ensuring all past learner history remains 100% intact.
 - **Verification Evidence**:
-  - 27 passing tests in `npm test` (0 failures).
-  - Production build passing in ~270ms with 0 errors.
-  - Lint passing with 0 errors (40 warnings, all pre-existing).
-  - Full implementation details documented in `docs/IMPLEMENTATION-P5-2026-10-03.md`.
-- **Next Up**: Ticket P6 (Controlled content expansion: number lines, algebraic balance scale, or extended problem variations as prioritized by Codex and Bry).
+  - 275 passing automated tests (208 unit/stress tests + 67 E2E tests across Tiers 1–4, 0 failures).
+  - Production build succeeds in ~290ms with 0 errors.
+  - Lint clean with 0 errors.
+  - Dev server running on `http://127.0.0.1:5173/` (`http://localhost:5173/`).
+- **Next Up**: Content expansion for remaining units (Units 7–12 lessons/practice), physics & chemistry course units.

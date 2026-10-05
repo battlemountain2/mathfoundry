@@ -14,9 +14,9 @@ export default function Sidebar({ isOpen, onToggle, compactSidebar, onToggleComp
   );
   const links = [
     { to: "/", label: "Today", active: pathname === "/" },
-    { to: "/learn", label: "Learn", active: learning },
-    { to: "/practice", label: "Practice", active: pathname === "/practice" },
-    { to: "/progress", label: "Progress", active: progress },
+    { to: "/courses", label: "Courses", active: pathname.startsWith("/courses") || pathname.startsWith("/learn") },
+    { to: "/rulebook", label: "Rulebook", active: pathname.startsWith("/rulebook") },
+    { to: "/settings", label: "Settings", active: pathname.startsWith("/settings") },
   ];
   return (
     <>
@@ -73,15 +73,6 @@ export default function Sidebar({ isOpen, onToggle, compactSidebar, onToggleComp
             ))}
           </nav>
           <div className="sidebar-bottom">
-            <Link
-              className="desk-nav-link"
-              to="/settings"
-              onClick={() => {
-                if (isOpen) onToggle();
-              }}
-            >
-              Settings & backup
-            </Link>
             <p>Your space to build understanding.</p>
           </div>
         </div>
