@@ -7,11 +7,11 @@
 
 export const curatedUnitVideos = {
   'arithmetic': {
-    title: 'Mental Arithmetic & Decomposition Strategies',
-    creator: 'Professor Leonard',
-    channel: 'Prealgebra & Basic Math',
-    embedId: 'cl69vK_kLd0', // YouTube video ID
-    duration: '12 min',
+    title: 'Mental Math Tricks — Addition, Subtraction, Multiplication & Division',
+    creator: 'The Organic Chemistry Tutor',
+    channel: 'Math Foundations',
+    embedId: 'kGg16-Xq9oM',
+    duration: '14 min',
     takeaways: [
       'Decompose difficult products: 7 × 6 = (5 × 6) + (2 × 6) = 30 + 12 = 42',
       'Check division with multiplication: 42 ÷ 6 = 7 because 7 × 6 = 42',

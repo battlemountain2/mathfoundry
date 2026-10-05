@@ -423,8 +423,8 @@ test('M1.11: 12-unit Math Foundations course definitions have consecutive orders
       assert.equal(unit.hasPractice, false);
     }
 
-    // Authored lesson is active for Unit 4 only
-    if (unit.id === 'add-subtract-fractions') {
+    // Authored lessons are active for Unit 1 and Unit 4
+    if (['add-subtract-fractions', 'arithmetic'].includes(unit.id)) {
       assert.equal(unit.hasLesson, true);
     } else {
       assert.equal(unit.hasLesson, false);

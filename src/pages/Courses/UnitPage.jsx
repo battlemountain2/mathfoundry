@@ -140,9 +140,12 @@ export default function UnitPage() {
                       : 'Start Lesson →'}
                 </Link>
               ) : (
-                <span className="text-xs font-mono text-[var(--ink-3)] px-3 py-1.5 rounded-lg bg-[var(--surface-2)]">
-                  Practice Ready
-                </span>
+                <Link
+                  to={`/courses/${course.id}/${unit.id}/practice`}
+                  className="study-button secondary inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border border-[var(--line)] text-[var(--ink)]"
+                >
+                  Start Practice →
+                </Link>
               )}
             </div>
           </div>

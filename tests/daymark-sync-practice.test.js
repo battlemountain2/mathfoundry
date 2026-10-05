@@ -59,7 +59,7 @@ test('curatedUnitVideos: provides structured videos for core units', () => {
 
   const arithVideo = getCuratedVideo('arithmetic');
   assert.ok(arithVideo);
-  assert.equal(arithVideo.creator, 'Professor Leonard');
+  assert.equal(arithVideo.creator, 'The Organic Chemistry Tutor');
 });
 
 test('githubSync: persists and retrieves cross-device sync configuration safely', () => {

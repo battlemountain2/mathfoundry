@@ -24,7 +24,7 @@ export const mathFoundationsUnits = [
     description: 'Use the four operations and decomposition with paper or mentally.',
     prerequisites: [],
     legacyConceptId: 'arithmetic',
-    hasLesson: false,
+    hasLesson: true,
     hasLab: false,
     labType: null,
     hasPractice: true,
