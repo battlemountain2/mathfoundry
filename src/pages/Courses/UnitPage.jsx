@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { getCourse } from '../../data/courses/courseCatalog';
 import { getMathUnit, checkUnitPrerequisites } from '../../data/courses/mathFoundations';
 import { getAttemptsForUnit, getLessonProgress, getProgress } from '../../utils/storage';
+import VideoDrawer from '../../components/Study/VideoDrawer';
 
 export default function UnitPage() {
   const { courseId, unitId } = useParams();
@@ -317,6 +318,9 @@ export default function UnitPage() {
           </ul>
         </div>
       </div>
+
+      {/* Floating Video Reference Drawer */}
+      <VideoDrawer unitId={unit?.id} />
     </div>
   );
 }

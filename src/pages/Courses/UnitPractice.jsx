@@ -3,10 +3,12 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getCourse } from '../../data/courses/courseCatalog';
 import { getMathUnit } from '../../data/courses/mathFoundations';
 import { makeProblem } from '../../data/foundations';
+import { generateUnitPracticeSet } from '../../utils/problemGenerator';
 import { saveLearningAttempt, updateAttemptReflectiveCause, getLearningAttempts } from '../../utils/storage';
 import { equivalentAnswer, numericValue, analyzeIntermediateStep } from '../../utils/answerChecking';
 import { getProblemHint } from '../../utils/hints';
 import MathBlock from '../../components/Lesson/MathBlock';
+import VideoDrawer from '../../components/Study/VideoDrawer';
 
 const REFLECTIVE_OPTIONS = [
   { id: 'calc-slip', label: 'Calculation slip', icon: '🧮' },
@@ -22,13 +24,11 @@ export default function UnitPractice() {
   const course = getCourse(courseId) || getCourse('math');
   const unit = getMathUnit(unitId);
 
-  // Generate 6 problems for this unit
+  // Generate randomized 6 problems with spaced repetition reinforcement
   const targetConcept = unit?.legacyConceptId || 'arithmetic';
   const questions = useMemo(() => {
-    return Array.from({ length: 6 }, (_, i) =>
-      makeProblem(targetConcept, i + 1, i === 0 ? 'rule' : 'numeric')
-    );
-  }, [targetConcept]);
+    return generateUnitPracticeSet(targetConcept, unit?.id, courseId);
+  }, [targetConcept, unit?.id, courseId]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [input, setInput] = useState('');
@@ -180,13 +180,41 @@ export default function UnitPractice() {
             </div>
           </div>
 
+          {/* Explicit Up Next Guidance */}
+          <div className="p-4 rounded-xl border border-[var(--line)] bg-[var(--surface-2)] mb-8 text-left max-w-md mx-auto">
+            <span className="font-mono text-xs uppercase tracking-wider text-[var(--accent)] font-bold block mb-1">
+              {totalCorrect >= 5 ? '🎯 Next Milestone Recommended' : '💡 Recommended Next Step'}
+            </span>
+            <p className="text-sm font-semibold text-[var(--ink)] m-0">
+              {totalCorrect >= 5
+                ? `Take the Unit Quiz for ${unit.title} to lock in unit mastery.`
+                : `Review and repair the ${questions.length - totalCorrect} slip(s) before taking the quiz.`}
+            </p>
+          </div>
+
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            {totalCorrect >= 5 ? (
+              <Link
+                to={`/courses/${course.id}/${unit.id}/quiz`}
+                className="study-button px-6 py-2.5 rounded-xl font-semibold text-sm"
+                style={{ backgroundColor: 'var(--accent)', color: 'var(--surface)' }}
+              >
+                Take Unit Quiz →
+              </Link>
+            ) : (
+              <Link
+                to="/repair"
+                className="study-button px-6 py-2.5 rounded-xl font-semibold text-sm"
+                style={{ backgroundColor: 'var(--accent)', color: 'var(--surface)' }}
+              >
+                Repair Mistakes →
+              </Link>
+            )}
             <Link
               to={`/courses/${course.id}/${unit.id}`}
-              className="study-button px-6 py-2.5 rounded-xl font-semibold text-sm"
-              style={{ backgroundColor: 'var(--accent)', color: 'var(--surface)' }}
+              className="study-button secondary px-5 py-2.5 rounded-xl font-semibold text-sm border border-[var(--line)] text-[var(--ink)]"
             >
-              Back to Unit Page →
+              Back to Unit Page
             </Link>
             <Link
               to={`/courses/${course.id}`}
@@ -241,9 +269,16 @@ export default function UnitPractice() {
       {/* Question Card */}
       <div className="study-card p-6 sm:p-8 rounded-2xl border border-[var(--line)] bg-[var(--surface)]">
         <div className="flex items-center justify-between gap-2 mb-3">
-          <span className="font-mono text-xs uppercase tracking-wider text-[var(--ink-3)]">
-            {unit.title} · Paper-First
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-xs uppercase tracking-wider text-[var(--ink-3)]">
+              {unit.title} · Paper-First
+            </span>
+            {currentQ?.isReinforcement && (
+              <span className="study-badge text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-[var(--heat-soft)] text-[var(--heat)]">
+                🎯 Slip Reinforcement
+              </span>
+            )}
+          </div>
           {assisted && (
             <span className="study-badge text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-[var(--surface-2)] text-[var(--ink-3)]">
               Supported Attempt
@@ -417,6 +452,9 @@ export default function UnitPractice() {
           </div>
         )}
       </div>
+
+      {/* Side-by-side Video Lecture Drawer */}
+      <VideoDrawer unitId={unit?.id} />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { defaultRulebookEntries } from '../data/rulebookData.js';
 import { getMathUnit } from '../data/courses/mathFoundations.js';
+import { triggerBackgroundAutoSync } from './githubSync.js';
 
 const STORAGE_KEY = 'mathfoundry_data';
 const listeners = new Set();
@@ -36,6 +37,9 @@ function setStore(data) {
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...data, schemaVersion: 2 }));
   notify();
+  if (typeof window !== 'undefined') {
+    triggerBackgroundAutoSync();
+  }
 }
 
 // ============================================================================

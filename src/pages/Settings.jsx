@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTheme } from '../hooks/useTheme';
 import { clearAllData, getSettings, setSettings, exportLearningData, exportRawData } from '../utils/storage';
+import { getSyncConfig, saveSyncConfig, pushToGist, pullFromGist } from '../utils/githubSync';
 import { clearTutorChatHistory } from '../utils/aiTutor';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -32,6 +33,47 @@ export default function Settings() {
   const [provider, setProvider] = useState(initialSettings.aiProvider || 'gemini');
   const [saveError,setSaveError]=useState('');
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  // GitHub Gist Sync State
+  const initialSync = getSyncConfig();
+  const [syncToken, setSyncToken] = useState(initialSync.token || '');
+  const [gistId, setGistId] = useState(initialSync.gistId || '');
+  const [autoSync, setAutoSync] = useState(initialSync.autoSync || false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState(
+    initialSync.lastSynced ? `Synced ${new Date(initialSync.lastSynced).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''
+  );
+
+  const handlePushGist = async () => {
+    setIsSyncing(true);
+    setSaveError('');
+    try {
+      saveSyncConfig({ token: syncToken.trim(), gistId: gistId.trim(), autoSync });
+      const res = await pushToGist(syncToken.trim(), gistId.trim());
+      setGistId(res.gistId);
+      setSyncStatus(`✓ Cloud Backup Saved`);
+      setTimeout(() => setSyncStatus(''), 4000);
+    } catch (err) {
+      setSaveError(err.message);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handlePullGist = async () => {
+    setIsSyncing(true);
+    setSaveError('');
+    try {
+      saveSyncConfig({ token: syncToken.trim(), gistId: gistId.trim(), autoSync });
+      await pullFromGist(syncToken.trim(), gistId.trim());
+      setSyncStatus(`✓ Cloud State Loaded`);
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (err) {
+      setSaveError(err.message);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const handleSaveAi = (e) => {
     e.preventDefault();
@@ -229,6 +271,98 @@ export default function Settings() {
       {showComponentSheet && (
         <ThemeComponentSheet currentTheme={theme} />
       )}
+
+      {/* GitHub Gist Cross-Device Auto-Sync */}
+      <Card className="p-6 space-y-4 shadow-xs">
+        <div className="flex items-center justify-between border-b border-[var(--line)] pb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🔄</span>
+              <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                Cross-Device Cloud Sync (GitHub Gist)
+              </h2>
+            </div>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+              Sync your learning progress across your laptop and desktop automatically using a private GitHub Gist. Zero server required.
+            </p>
+          </div>
+          {syncStatus && (
+            <span className="text-xs font-mono font-bold px-2 py-1 rounded bg-[var(--surface-2)] text-[var(--ink)]">
+              {syncStatus}
+            </span>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                GitHub Personal Access Token (classic or fine-grained with Gist permission)
+              </label>
+              <a
+                href="https://github.com/settings/tokens"
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+              >
+                Create token on GitHub ↗
+              </a>
+            </div>
+            <input
+              type="password"
+              value={syncToken}
+              onChange={(e) => setSyncToken(e.target.value)}
+              placeholder="ghp_... or github_pat_..."
+              className="w-full max-w-lg px-3 py-2 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-indigo-500 font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+              Gist ID (auto-created on first push; paste on another computer to pull)
+            </label>
+            <input
+              type="text"
+              value={gistId}
+              onChange={(e) => setGistId(e.target.value)}
+              placeholder="e.g. 7f8a9b2c..."
+              className="w-full max-w-lg px-3 py-2 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-indigo-500 font-mono"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 pt-1">
+            <input
+              type="checkbox"
+              id="autoSyncToggle"
+              checked={autoSync}
+              onChange={(e) => setAutoSync(e.target.checked)}
+              className="rounded border-[var(--line)]"
+            />
+            <label htmlFor="autoSyncToggle" className="text-xs text-[var(--ink-2)] font-medium cursor-pointer">
+              Enable background auto-sync (silently updates your private Gist after each lesson & practice)
+            </label>
+          </div>
+
+          <div className="flex flex-wrap gap-2 pt-2">
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={handlePushGist}
+              disabled={isSyncing || !syncToken.trim()}
+            >
+              {isSyncing ? 'Syncing…' : 'Push to Gist (Save Cloud Backup)'}
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={handlePullGist}
+              disabled={isSyncing || !syncToken.trim() || !gistId.trim()}
+            >
+              Pull from Gist (Load on this Device)
+            </Button>
+          </div>
+        </div>
+      </Card>
 
       <section className="study-card">
         <h2>Your learning data</h2><p>Progress is saved in this browser on this address. Download a backup before moving browsers or changing addresses. The learning backup excludes your API key.</p>
