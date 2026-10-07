@@ -43,17 +43,6 @@ export default function Sidebar({ isOpen, onToggle, compactSidebar, onToggleComp
             >
               MathFoundry<span>Personal learning</span>
             </Link>
-            {onToggleCompact && (
-              <button
-                type="button"
-                onClick={onToggleCompact}
-                className="zen-compact-toggle hidden lg:inline-flex p-1.5"
-                title="Collapse sidebar to Zen focus mode"
-                aria-label="Collapse sidebar"
-              >
-                ◫
-              </button>
-            )}
           </div>
           <nav className="desk-navigation" aria-label="Primary navigation">
             {links.map((link) => (

@@ -10,8 +10,25 @@ import {
 } from '../../utils/aiTutor';
 import { getSettings, setSettings, getProgress, getDiagnosticResults, getStreak, getMastery, accuracy } from '../../utils/storage';
 
-export const TutorDrawer = ({ currentContext = {} }) => {
-  const [isOpen, setIsOpen] = useState(false);
+export const TutorDrawer = ({ currentContext = {}, isOpen: controlledIsOpen, onClose: controlledOnClose }) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledIsOpen !== undefined;
+  const isOpen = isControlled ? controlledIsOpen : internalOpen;
+  
+  const handleClose = () => {
+    if (isControlled) {
+      controlledOnClose?.();
+    } else {
+      setInternalOpen(false);
+    }
+  };
+
+  const handleOpen = () => {
+    if (!isControlled) {
+      setInternalOpen(true);
+    }
+  };
+
   const [messages, setMessages] = useState(() => getTutorChatHistory());
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,7 +47,7 @@ export const TutorDrawer = ({ currentContext = {} }) => {
   useEffect(() => {
     if (!isOpen) return;
     const onKey = event => {
-      if(event.key === 'Escape') { setIsOpen(false); triggerRef.current?.focus(); }
+      if(event.key === 'Escape') { handleClose(); triggerRef.current?.focus(); }
       if(event.key === 'Tab') {
         const nodes = [...panelRef.current.querySelectorAll('button,input,select,a[href]')].filter(el=>!el.disabled);
         const first=nodes[0], last=nodes.at(-1);
@@ -128,20 +145,22 @@ export const TutorDrawer = ({ currentContext = {} }) => {
 
   return (
     <>
-      {/* Floating Action Trigger Button */}
-      <button ref={triggerRef}
-        onClick={() => setIsOpen(true)}
-        className="tutor-launcher fixed top-4 right-[210px] z-40 study-button secondary"
-        title="Open study tutor"
-      >
-        <span>Tutor</span>
-      </button>
+      {/* Floating Action Trigger Button (only if not controlled by header toolbar) */}
+      {!isControlled && (
+        <button ref={triggerRef}
+          onClick={handleOpen}
+          className="tutor-launcher fixed top-4 right-[210px] z-40 study-button secondary"
+          title="Open study tutor"
+        >
+          <span>Tutor</span>
+        </button>
+      )}
 
       {/* Slide-out Drawer Backdrop */}
       {isOpen && (
         <div 
           className="fixed inset-0 bg-zinc-950/60 backdrop-blur-xs z-50 transition-opacity"
-          onClick={() => { setIsOpen(false); triggerRef.current?.focus(); }}
+          onClick={() => { handleClose(); triggerRef.current?.focus(); }}
         />
       )}
 
@@ -178,7 +197,7 @@ export const TutorDrawer = ({ currentContext = {} }) => {
               ⚙
             </button>
             <button
-              onClick={() => { setIsOpen(false); triggerRef.current?.focus(); }}
+              onClick={() => { handleClose(); triggerRef.current?.focus(); }}
               className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-sm font-bold"
               aria-label="Close tutor"
               title="Close Copilot"

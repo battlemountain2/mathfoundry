@@ -10,6 +10,7 @@ import { learningPaths } from '../../data/learningPaths';
 
 export const Layout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isTutorOpen, setIsTutorOpen] = useState(false);
   const {
     theme,
     setTheme,
@@ -75,7 +76,6 @@ export const Layout = ({ children }) => {
         isOpen={isSidebarOpen}
         onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         compactSidebar={compactSidebar}
-        onToggleCompact={toggleCompactSidebar}
       />
       
       <div className={`${compactSidebar ? 'lg:pl-0' : 'lg:pl-64'} flex flex-col min-h-screen transition-all duration-200`}>
@@ -86,6 +86,7 @@ export const Layout = ({ children }) => {
           onThemeChange={setTheme}
           compactSidebar={compactSidebar}
           onToggleCompactSidebar={toggleCompactSidebar}
+          onOpenTutor={() => setIsTutorOpen(true)}
         />
         
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
@@ -94,7 +95,11 @@ export const Layout = ({ children }) => {
         </main>
 
         {/* Global Engineering Math Copilot */}
-        <TutorDrawer currentContext={{...currentContext,...activity}} />
+        <TutorDrawer 
+          isOpen={isTutorOpen}
+          onClose={() => setIsTutorOpen(false)}
+          currentContext={{...currentContext,...activity}} 
+        />
       </div>
     </div>
   );
