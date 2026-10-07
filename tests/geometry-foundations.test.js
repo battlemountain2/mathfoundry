@@ -247,7 +247,7 @@ test('GEOM.12: Unit 2 lesson (trianglesPythagorasLesson) follows 6-stage Guided 
 });
 
 // ============================================================================
-// GROUP 5: Curated Video Integration
+// GROUP 5: Curated Video Integration & Rich Formatting
 // ============================================================================
 
 test('GEOM.13: Curated video drawer supports geometry units', () => {
@@ -260,4 +260,23 @@ test('GEOM.13: Curated video drawer supports geometry units', () => {
   assert.ok(vid2);
   assert.equal(vid2.creator, 'The Organic Chemistry Tutor');
   assert.ok(vid2.embedId);
+});
+
+test('GEOM.14: processContent converts markdown **bold** and *italic* cleanly without literal asterisks', async () => {
+  const { processContent } = await import('../src/utils/mathHelpers.js');
+
+  const lessonSnippet = 'You can **decompose** complex numbers into friendly sums: $$7 \\times 6 = 42$$';
+  const html = processContent(lessonSnippet);
+
+  assert.ok(!html.includes('**decompose**'), 'Literal asterisks must be converted');
+  assert.ok(html.includes('<strong'), 'Must wrap bold text in strong tag');
+  assert.ok(html.includes('decompose'), 'Must preserve word');
+  assert.ok(html.includes('katex'), 'Must render math alongside markdown');
+
+  // Bold with math inside
+  const mathBold = 'The LCD is **$12$** for both.';
+  const html2 = processContent(mathBold);
+  assert.ok(!html2.includes('**$12$**'));
+  assert.ok(html2.includes('<strong'));
+  assert.ok(html2.includes('katex'));
 });

@@ -17,20 +17,60 @@ export function renderMath(latex, displayMode = false) {
 }
 
 /**
- * Process text containing inline math ($...$) and display math ($$...$$).
- * Returns HTML string with rendered math.
+ * Process text containing inline math ($...$), display math ($$...$$),
+ * and standard markdown (bold **text**, italic *text*, inline code `code`).
+ * Returns HTML string with rendered math and formatted text.
  */
 export function processContent(text, plainText = false) {
   if (!text) return '';
-  if (plainText) text = String(text).replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
 
-  // First, handle display math ($$...$$)
-  let result = text.replace(/\$\$([\s\S]*?)\$\$/g, (_, latex) => {
-    return `<div class="my-4 text-center">${renderMath(latex.trim(), true)}</div>`;
+  const displayBlocks = [];
+  const inlineBlocks = [];
+
+  // 1. Extract display math ($$...$$) first to protect formulas from markdown regexes
+  let result = String(text).replace(/\$\$([\s\S]*?)\$\$/g, (_, latex) => {
+    const idx = displayBlocks.length;
+    displayBlocks.push(latex);
+    return `@@MATH_DISPLAY_${idx}@@`;
   });
 
-  // Then handle inline math ($...$)
-  result = result.replace(/\$([^$]+?)\$/g, (_, latex) => {
+  // 2. Extract inline math ($...$)
+  result = result.replace(/\$([^$\n]+?)\$/g, (_, latex) => {
+    const idx = inlineBlocks.length;
+    inlineBlocks.push(latex);
+    return `@@MATH_INLINE_${idx}@@`;
+  });
+
+  // 3. HTML escape untrusted text if plainText is requested
+  if (plainText) {
+    result = result.replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    }[char]));
+  }
+
+  // 4. Markdown formatting on prose outside math tokens
+  // Bold: **text** or __text__
+  result = result.replace(/\*\*([^*]+?)\*\*/g, '<strong class="font-bold text-[var(--ink)]">$1</strong>');
+  result = result.replace(/__([^_]+?)__/g, '<strong class="font-bold text-[var(--ink)]">$1</strong>');
+
+  // Italic: *text* (avoiding bullet list markers at line starts)
+  result = result.replace(/(^|[^\*])\*([^*\n]+?)\*([^\*]|$)/g, '$1<em class="italic">$2</em>$3');
+
+  // Inline code: `code`
+  result = result.replace(/`([^`\n]+?)`/g, '<code class="px-1.5 py-0.5 rounded bg-[var(--surface-2)] text-[var(--ink)] font-mono text-xs">$1</code>');
+
+  // 5. Restore KaTeX math
+  result = result.replace(/@@MATH_DISPLAY_(\d+)@@/g, (_, idx) => {
+    const latex = displayBlocks[Number(idx)];
+    return `<div class="my-4 text-center overflow-x-auto">${renderMath(latex.trim(), true)}</div>`;
+  });
+
+  result = result.replace(/@@MATH_INLINE_(\d+)@@/g, (_, idx) => {
+    const latex = inlineBlocks[Number(idx)];
     return renderMath(latex.trim(), false);
   });
 
