@@ -8,10 +8,15 @@ import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
 import ThemeComponentSheet from '../components/Study/ThemeComponentSheet';
 
-function download(data,name) {
-  const url=URL.createObjectURL(new Blob([data],{type:'application/json'}));
-  const link=document.createElement('a');link.href=url;link.download=name;link.click();URL.revokeObjectURL(url);
+function download(data, name) {
+  const url = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = name;
+  link.click();
+  URL.revokeObjectURL(url);
 }
+
 export default function Settings() {
   const {
     theme,
@@ -22,16 +27,17 @@ export default function Settings() {
     setCompactSidebar,
     error: themeError,
   } = useTheme();
+
   const [showComponentSheet, setShowComponentSheet] = useState(() => {
     return typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('sheet') === 'true';
   });
   const [showClearModal, setShowClearModal] = useState(false);
-  
+
   // AI Settings state
   const initialSettings = getSettings();
   const [apiKey, setApiKey] = useState(initialSettings.aiApiKey || '');
   const [provider, setProvider] = useState(initialSettings.aiProvider || 'gemini');
-  const [saveError,setSaveError]=useState('');
+  const [saveError, setSaveError] = useState('');
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   // GitHub Gist Sync State
@@ -41,7 +47,9 @@ export default function Settings() {
   const [autoSync, setAutoSync] = useState(initialSync.autoSync || false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState(
-    initialSync.lastSynced ? `Synced ${new Date(initialSync.lastSynced).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''
+    initialSync.lastSynced
+      ? `Synced ${new Date(initialSync.lastSynced).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+      : ''
   );
 
   const handlePushGist = async () => {
@@ -77,8 +85,13 @@ export default function Settings() {
 
   const handleSaveAi = (e) => {
     e.preventDefault();
-    try { setSettings({ aiApiKey: apiKey.trim(), aiProvider: provider });setSaveError(''); }
-    catch(error) {setSaveError(error.message);return;}
+    try {
+      setSettings({ aiApiKey: apiKey.trim(), aiProvider: provider });
+      setSaveError('');
+    } catch (error) {
+      setSaveError(error.message);
+      return;
+    }
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
   };
@@ -92,32 +105,251 @@ export default function Settings() {
 
   return (
     <div className="animate-fade-in max-w-3xl mx-auto px-4 py-6 space-y-6">
+      {/* Page Title & Intro */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: 'var(--ink)' }}>
+        <p className="eyebrow">Personalization & System</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-[var(--ink)] tracking-tight">
           Settings & backup
         </h1>
-        <p className="text-xs study-muted mt-1">
-          Choose your study theme, back up progress, and configure optional AI support.
+        <p className="text-xs sm:text-sm text-[var(--ink-2)] mt-1">
+          Choose your study theme, manage cloud sync and backups, and configure optional AI assistance.
         </p>
       </div>
 
-      {(saveError || themeError) && <p role="alert" className="study-notice">{saveError || themeError}</p>}
-      {/* AI Copilot Setup Card */}
-      <Card className="p-6 space-y-4 shadow-xs">
-        <div className="flex items-center justify-between border-b border-[var(--line)] pb-4">
+      {(saveError || themeError) && (
+        <p role="alert" className="study-notice">
+          {saveError || themeError}
+        </p>
+      )}
+
+      {/* Section 1: Display & Appearance */}
+      <Card className="p-6 space-y-4">
+        <div className="flex items-center gap-2 pb-3 border-b border-[var(--line)]">
+          <h2 className="text-base font-bold text-[var(--ink)]">
+            🎨 Display & Appearance
+          </h2>
+        </div>
+
+        {/* Theme Palette */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-2">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-amber-500 font-bold">⚡</span>
-              <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-                AI Engineering Math Tutor
-              </h2>
+            <div className="font-semibold text-xs text-[var(--ink)]">Color Palette</div>
+            <div className="text-[11px] text-[var(--ink-2)]">
+              Choose Light Paper, Deep Pine Forest, or Original Dark palette
             </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+          </div>
+          <select
+            aria-label="Color theme"
+            value={theme}
+            onChange={(e) => setTheme(e.target.value)}
+            className="h-9 px-3 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] text-[var(--ink)] text-xs font-medium cursor-pointer focus:outline-none focus:border-[var(--accent)] shrink-0"
+          >
+            <option value="light">Light paper</option>
+            <option value="forest">Deep pine forest</option>
+            <option value="dark">Original dark</option>
+          </select>
+        </div>
+
+        {/* Heading Typography Option */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-2 border-t border-[var(--line)]">
+          <div>
+            <div className="font-semibold text-xs text-[var(--ink)]">Heading Typography</div>
+            <div className="text-[11px] text-[var(--ink-2)]">
+              Choose editorial serif or modern sans-serif headings
+            </div>
+          </div>
+          <select
+            aria-label="Heading typography"
+            value={headingStyle}
+            onChange={(e) => setHeadingStyle(e.target.value)}
+            className="h-9 px-3 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] text-[var(--ink)] text-xs font-medium cursor-pointer focus:outline-none focus:border-[var(--accent)] shrink-0"
+          >
+            <option value="serif">Editorial Serif (Georgia)</option>
+            <option value="sans">Modern Sans (Inter)</option>
+          </select>
+        </div>
+
+        {/* Zen Compact Mode Option */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-2 border-t border-[var(--line)]">
+          <div>
+            <div className="font-semibold text-xs text-[var(--ink)]">Zen Workspace Layout</div>
+            <div className="text-[11px] text-[var(--ink-2)]">
+              Choose standard persistent sidebar or compact focus canvas
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setCompactSidebar(!compactSidebar)}
+            className={`h-9 px-3 rounded-lg border text-xs font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 ${
+              compactSidebar
+                ? 'border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)] font-semibold'
+                : 'border-[var(--line)] bg-[var(--surface-2)] text-[var(--ink-2)] hover:text-[var(--ink)] hover:border-[var(--line-strong)]'
+            }`}
+          >
+            <span>{compactSidebar ? '◨ Focus Mode (Active)' : '◫ Standard View'}</span>
+          </button>
+        </div>
+
+        {/* Monospace for Numbers */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-2 border-t border-[var(--line)]">
+          <div>
+            <div className="font-semibold text-xs text-[var(--ink)]">Numeric & Aligned Notation</div>
+            <div className="text-[11px] text-[var(--ink-2)]">High-legibility font for calculations and answers</div>
+          </div>
+          <span className="h-8 px-2.5 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] text-[var(--ink)] text-xs font-mono inline-flex items-center self-start sm:self-auto shrink-0">
+            JetBrains Mono
+          </span>
+        </div>
+
+        {/* Design System Verification Sheet Toggle */}
+        <div className="pt-2 border-t border-[var(--line)]">
+          <button
+            type="button"
+            className="w-full h-9 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] hover:bg-[var(--surface)] text-[var(--ink)] text-xs font-medium transition-colors cursor-pointer"
+            onClick={() => setShowComponentSheet(!showComponentSheet)}
+          >
+            {showComponentSheet ? '▲ Hide Design System & Component Sheet' : '▼ Inspect Theme Component Sheet'}
+          </button>
+        </div>
+      </Card>
+
+      {/* Component Sheet Viewer */}
+      {showComponentSheet && <ThemeComponentSheet currentTheme={theme} />}
+
+      {/* Section 2: Learning Data & Cloud Sync */}
+      <Card className="p-6 space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-[var(--line)]">
+          <h2 className="text-base font-bold text-[var(--ink)]">
+            💾 Learning Data & Sync
+          </h2>
+          {syncStatus && (
+            <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-[var(--surface-2)] text-[var(--accent)] border border-[var(--line)]">
+              {syncStatus}
+            </span>
+          )}
+        </div>
+
+        {/* Local Storage & Data Export */}
+        <div className="space-y-2 py-1">
+          <div className="font-semibold text-xs text-[var(--ink)]">Local Browser Data Backup</div>
+          <p className="text-[11px] text-[var(--ink-2)] leading-relaxed">
+            Progress is saved in your browser's localStorage. Download a backup file to safeguard your study history or transfer to another device.
+          </p>
+          <div className="flex flex-wrap gap-2.5 pt-1">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => download(exportLearningData(), 'mathfoundry-learning-backup.json')}
+            >
+              Download Learning Backup (JSON)
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => download(exportRawData(), 'mathfoundry-raw-recovery.json')}
+            >
+              Download Raw Recovery Data
+            </Button>
+          </div>
+          <p className="text-[11px] text-[var(--ink-2)] opacity-80 pt-1">
+            Raw recovery data can contain your locally saved API key. Keep that file private.
+          </p>
+        </div>
+
+        {/* GitHub Gist Cross-Device Auto-Sync */}
+        <div className="space-y-3 pt-4 border-t border-[var(--line)]">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-semibold text-xs text-[var(--ink)]">Cross-Device Sync (GitHub Gist)</div>
+              <div className="text-[11px] text-[var(--ink-2)]">
+                Sync your learning progress across your laptop and desktop automatically using a private GitHub Gist. Zero server required.
+              </div>
+            </div>
+            <a
+              href="https://github.com/settings/tokens"
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs text-[var(--accent)] hover:underline shrink-0"
+            >
+              Create token on GitHub ↗
+            </a>
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-semibold text-[var(--ink)] mb-1">
+                GitHub Personal Access Token (classic or fine-grained with Gist permission)
+              </label>
+              <input
+                type="password"
+                value={syncToken}
+                onChange={(e) => setSyncToken(e.target.value)}
+                placeholder="ghp_... or github_pat_..."
+                className="w-full max-w-lg h-9 px-3 text-xs rounded-lg border border-[var(--line)] bg-[var(--surface-2)] text-[var(--ink)] focus:outline-none focus:border-[var(--accent)] font-mono"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[var(--ink)] mb-1">
+                Gist ID (auto-created on first push; paste on another computer to pull)
+              </label>
+              <input
+                type="text"
+                value={gistId}
+                onChange={(e) => setGistId(e.target.value)}
+                placeholder="e.g. 7f8a9b2c..."
+                className="w-full max-w-lg h-9 px-3 text-xs rounded-lg border border-[var(--line)] bg-[var(--surface-2)] text-[var(--ink)] focus:outline-none focus:border-[var(--accent)] font-mono"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <input
+                type="checkbox"
+                id="autoSyncToggle"
+                checked={autoSync}
+                onChange={(e) => setAutoSync(e.target.checked)}
+                className="rounded border-[var(--line)] text-[var(--accent)] focus:ring-[var(--accent)]"
+              />
+              <label htmlFor="autoSyncToggle" className="text-xs text-[var(--ink-2)] font-medium cursor-pointer">
+                Enable background auto-sync (silently updates your private Gist after each lesson & practice)
+              </label>
+            </div>
+
+            <div className="flex flex-wrap gap-2 pt-2">
+              <Button
+                size="sm"
+                variant="primary"
+                onClick={handlePushGist}
+                disabled={isSyncing || !syncToken.trim()}
+              >
+                {isSyncing ? 'Syncing…' : 'Push to Gist (Save Cloud Backup)'}
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={handlePullGist}
+                disabled={isSyncing || !syncToken.trim() || !gistId.trim()}
+              >
+                Pull from Gist (Load on this Device)
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Section 3: Optional AI Study Tutor */}
+      <Card className="p-6 space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-[var(--line)]">
+          <div>
+            <h2 className="text-base font-bold text-[var(--ink)]">
+              ⚡ Optional AI Study Tutor
+            </h2>
+            <p className="text-xs text-[var(--ink-2)] mt-0.5">
               Connect your Google Gemini or OpenAI API key to enable Ada, your personal Socratic copilot.
             </p>
           </div>
           {savedSuccess && (
-            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold animate-fade-in">
+            <span className="text-xs text-[var(--good)] font-bold animate-fade-in shrink-0">
               ✓ Saved!
             </span>
           )}
@@ -125,17 +357,17 @@ export default function Settings() {
 
         <form onSubmit={handleSaveAi} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+            <label className="block text-xs font-semibold text-[var(--ink)] mb-1.5">
               Select Provider
             </label>
             <div className="grid grid-cols-2 gap-3 max-w-md">
               <button
                 type="button"
                 onClick={() => setProvider('gemini')}
-                className={`py-2 px-3 rounded-lg border text-xs font-semibold transition-all ${
+                className={`h-9 px-3 rounded-lg border text-xs font-medium transition-all cursor-pointer ${
                   provider === 'gemini'
-                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
-                    : 'bg-zinc-50 dark:bg-zinc-800/60 border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300'
+                    ? 'bg-[var(--accent)] text-white border-[var(--accent)] font-semibold shadow-xs'
+                    : 'bg-[var(--surface-2)] text-[var(--ink-2)] border-[var(--line)] hover:text-[var(--ink)]'
                 }`}
               >
                 Google Gemini
@@ -143,10 +375,10 @@ export default function Settings() {
               <button
                 type="button"
                 onClick={() => setProvider('openai')}
-                className={`py-2 px-3 rounded-lg border text-xs font-semibold transition-all ${
+                className={`h-9 px-3 rounded-lg border text-xs font-medium transition-all cursor-pointer ${
                   provider === 'openai'
-                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
-                    : 'bg-zinc-50 dark:bg-zinc-800/60 border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300'
+                    ? 'bg-[var(--accent)] text-white border-[var(--accent)] font-semibold shadow-xs'
+                    : 'bg-[var(--surface-2)] text-[var(--ink-2)] border-[var(--line)] hover:text-[var(--ink)]'
                 }`}
               >
                 OpenAI (ChatGPT / GPT-4o)
@@ -155,8 +387,8 @@ export default function Settings() {
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+            <div className="flex items-center justify-between mb-1.5 max-w-lg">
+              <label className="text-xs font-semibold text-[var(--ink)]">
                 {provider === 'gemini' ? 'Google Gemini API Key' : 'OpenAI API Key'}
               </label>
               {provider === 'gemini' && (
@@ -164,7 +396,7 @@ export default function Settings() {
                   href="https://aistudio.google.com/app/apikey"
                   target="_blank"
                   rel="noreferrer"
-                  className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                  className="text-xs text-[var(--accent)] hover:underline"
                 >
                   Get API key at Google AI Studio ↗
                 </a>
@@ -176,10 +408,10 @@ export default function Settings() {
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder={provider === 'gemini' ? 'AIzaSy...' : 'sk-...'}
-              className="w-full max-w-lg px-3 py-2 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-indigo-500 font-mono"
+              className="w-full max-w-lg h-9 px-3 text-xs rounded-lg border border-[var(--line)] bg-[var(--surface-2)] text-[var(--ink)] focus:outline-none focus:border-[var(--accent)] font-mono"
             />
-            <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1.5">
-              Stored exclusively in your browser's <code className="text-indigo-500">localStorage</code>. Never proxied through third-party servers.
+            <p className="text-[11px] text-[var(--ink-2)] mt-1.5">
+              Stored exclusively in your browser's <code className="text-[var(--accent)] font-mono">localStorage</code>. Never proxied through third-party servers.
             </p>
           </div>
 
@@ -191,194 +423,18 @@ export default function Settings() {
         </form>
       </Card>
 
-      {/* Appearance Card */}
-      <Card className="p-6 space-y-4">
-        <h2 className="text-base font-bold border-b border-[var(--line)] pb-3" style={{ color: 'var(--ink)' }}>
-          Display & Appearance
-        </h2>
-        
-        {/* Theme Palette */}
-        <div className="flex items-center justify-between py-2">
-          <div>
-            <div className="font-semibold text-xs" style={{ color: 'var(--ink)' }}>Color Palette</div>
-            <div className="text-[11px] study-muted">Choose light paper, deep pine forest, or original dark palette</div>
-          </div>
-          <select aria-label="Color theme" value={theme} onChange={e=>setTheme(e.target.value)} className="study-answer" style={{ width: 'auto', margin: 0 }}>
-            <option value="light">Light paper</option>
-            <option value="forest">Deep pine forest</option>
-            <option value="dark">Original dark</option>
-          </select>
-        </div>
-
-        {/* Heading Typography Option */}
-        <div className="flex items-center justify-between py-2 border-t border-[var(--line)]">
-          <div>
-            <div className="font-semibold text-xs" style={{ color: 'var(--ink)' }}>Heading Typography</div>
-            <div className="text-[11px] study-muted">Choose editorial serif or modern sans-serif headings</div>
-          </div>
-          <select
-            aria-label="Heading typography"
-            value={headingStyle}
-            onChange={(e) => setHeadingStyle(e.target.value)}
-            className="study-answer"
-            style={{ width: 'auto', margin: 0 }}
-          >
-            <option value="serif">Editorial Serif (Georgia)</option>
-            <option value="sans">Modern Sans (Inter)</option>
-          </select>
-        </div>
-
-        {/* Zen Compact Mode Option */}
-        <div className="flex items-center justify-between py-2 border-t border-[var(--line)]">
-          <div>
-            <div className="font-semibold text-xs" style={{ color: 'var(--ink)' }}>Zen Workspace Layout</div>
-            <div className="text-[11px] study-muted">Choose standard persistent sidebar or compact focus canvas</div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setCompactSidebar(!compactSidebar)}
-            className={`zen-compact-toggle ${compactSidebar ? 'active' : ''}`}
-          >
-            {compactSidebar ? '◨ Focus Mode (Active)' : '◫ Standard View'}
-          </button>
-        </div>
-
-        {/* Monospace for Numbers */}
-        <div className="flex items-center justify-between py-2 border-t border-[var(--line)]">
-          <div>
-            <div className="font-semibold text-xs" style={{ color: 'var(--ink)' }}>Numeric & Aligned Notation</div>
-            <div className="text-[11px] study-muted">High-legibility font for calculations and answers</div>
-          </div>
-          <span className="text-xs px-2.5 py-1 rounded border border-[var(--line)] font-mono" style={{ background: 'var(--surface-2)', color: 'var(--ink)' }}>
-            JetBrains Mono
-          </span>
-        </div>
-
-        {/* Design System Verification Sheet Toggle */}
-        <div className="pt-2 border-t border-[var(--line)]">
-          <button
-            type="button"
-            className="study-button secondary"
-            style={{ width: '100%', fontSize: '0.85rem', padding: '10px' }}
-            onClick={() => setShowComponentSheet(!showComponentSheet)}
-          >
-            {showComponentSheet ? '▲ Hide Design System & Component Sheet' : '▼ Inspect Theme Component Sheet'}
-          </button>
-        </div>
-      </Card>
-
-      {/* Component Sheet Viewer */}
-      {showComponentSheet && (
-        <ThemeComponentSheet currentTheme={theme} />
-      )}
-
-      {/* GitHub Gist Cross-Device Auto-Sync */}
-      <Card className="p-6 space-y-4 shadow-xs">
-        <div className="flex items-center justify-between border-b border-[var(--line)] pb-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🔄</span>
-              <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-                Cross-Device Cloud Sync (GitHub Gist)
-              </h2>
-            </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-              Sync your learning progress across your laptop and desktop automatically using a private GitHub Gist. Zero server required.
-            </p>
-          </div>
-          {syncStatus && (
-            <span className="text-xs font-mono font-bold px-2 py-1 rounded bg-[var(--surface-2)] text-[var(--ink)]">
-              {syncStatus}
-            </span>
-          )}
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                GitHub Personal Access Token (classic or fine-grained with Gist permission)
-              </label>
-              <a
-                href="https://github.com/settings/tokens"
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
-              >
-                Create token on GitHub ↗
-              </a>
-            </div>
-            <input
-              type="password"
-              value={syncToken}
-              onChange={(e) => setSyncToken(e.target.value)}
-              placeholder="ghp_... or github_pat_..."
-              className="w-full max-w-lg px-3 py-2 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-indigo-500 font-mono"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
-              Gist ID (auto-created on first push; paste on another computer to pull)
-            </label>
-            <input
-              type="text"
-              value={gistId}
-              onChange={(e) => setGistId(e.target.value)}
-              placeholder="e.g. 7f8a9b2c..."
-              className="w-full max-w-lg px-3 py-2 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-indigo-500 font-mono"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 pt-1">
-            <input
-              type="checkbox"
-              id="autoSyncToggle"
-              checked={autoSync}
-              onChange={(e) => setAutoSync(e.target.checked)}
-              className="rounded border-[var(--line)]"
-            />
-            <label htmlFor="autoSyncToggle" className="text-xs text-[var(--ink-2)] font-medium cursor-pointer">
-              Enable background auto-sync (silently updates your private Gist after each lesson & practice)
-            </label>
-          </div>
-
-          <div className="flex flex-wrap gap-2 pt-2">
-            <Button
-              size="sm"
-              variant="primary"
-              onClick={handlePushGist}
-              disabled={isSyncing || !syncToken.trim()}
-            >
-              {isSyncing ? 'Syncing…' : 'Push to Gist (Save Cloud Backup)'}
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={handlePullGist}
-              disabled={isSyncing || !syncToken.trim() || !gistId.trim()}
-            >
-              Pull from Gist (Load on this Device)
-            </Button>
-          </div>
-        </div>
-      </Card>
-
-      <section className="study-card">
-        <h2>Your learning data</h2><p>Progress is saved in this browser on this address. Download a backup before moving browsers or changing addresses. The learning backup excludes your API key.</p>
-        <div className="study-actions"><button className="study-button" onClick={()=>download(exportLearningData(),'mathfoundry-learning-backup.json')}>Download learning backup</button><button className="study-button secondary" onClick={()=>download(exportRawData(),'mathfoundry-raw-recovery.json')}>Download raw recovery data</button></div>
-        <p className="study-muted">Raw recovery data can contain your locally saved API key. Keep that file private. Import/restore tools are planned; these files preserve the data for recovery.</p>
-      </section>
-      {/* Danger Zone */}
+      {/* Section 4: Memory & Reset (Danger Zone) */}
       <Card className="p-6 space-y-4" style={{ borderColor: 'var(--heat)' }}>
-        <h2 className="text-base font-bold pb-3 border-b border-[var(--line)]" style={{ color: 'var(--heat)' }}>
-          Memory & Reset
-        </h2>
-        
+        <div className="flex items-center gap-2 pb-3 border-b border-[var(--line)]">
+          <h2 className="text-base font-bold text-[var(--heat)]">
+            ⚠️ Memory & Reset
+          </h2>
+        </div>
+
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
           <div>
-            <div className="font-semibold text-xs" style={{ color: 'var(--ink)' }}>Clear All Stored Progress</div>
-            <div className="text-[11px] study-muted">
+            <div className="font-semibold text-xs text-[var(--ink)]">Clear All Stored Progress</div>
+            <div className="text-[11px] text-[var(--ink-2)]">
               Permanently purges completed modules, streaks, diagnostic scores, and chat logs from localStorage.
             </div>
           </div>
@@ -390,10 +446,10 @@ export default function Settings() {
 
       {/* Confirmation Modal */}
       <Modal isOpen={showClearModal} onClose={() => setShowClearModal(false)} title="Reset All Data?">
-        <p className="text-xs text-zinc-600 dark:text-zinc-300 mb-6 font-mono leading-relaxed">
+        <p className="text-xs text-[var(--ink-2)] mb-6 leading-relaxed">
           This will wipe your diagnostic evaluation, module progress, achievement badges, and tutor chat history. This action is irreversible.
         </p>
-        <div className="flex justify-end gap-3 font-mono">
+        <div className="flex justify-end gap-3">
           <Button variant="secondary" size="sm" onClick={() => setShowClearModal(false)}>
             Cancel
           </Button>

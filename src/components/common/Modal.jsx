@@ -22,12 +22,12 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
         onClick={onClose}
       />
       
-      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all duration-200 border border-slate-200 dark:border-slate-700">
-        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+      <div className="relative bg-[var(--surface)] text-[var(--ink)] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all duration-200 border border-[var(--line)]">
+        <div className="px-6 py-4 border-b border-[var(--line)] flex justify-between items-center">
+          <h3 className="text-xl font-bold text-[var(--ink)]">
             {title}
           </h3>
-          <Button variant="ghost" size="sm" onClick={onClose} icon="✕" className="!p-2 text-slate-500" />
+          <Button variant="ghost" size="sm" onClick={onClose} icon="✕" className="!p-2 text-[var(--ink-2)]" />
         </div>
         
         <div className="p-6 max-h-[80vh] overflow-y-auto">
