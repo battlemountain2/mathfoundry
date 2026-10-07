@@ -2,11 +2,14 @@ import React, { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getCourse } from '../../data/courses/courseCatalog';
 import { mathFoundationsUnits, checkUnitPrerequisites, getMathUnit } from '../../data/courses/mathFoundations';
+import { geometryFoundationsUnits, checkGeometryPrerequisites, getGeometryUnit } from '../../data/courses/geometryFoundations';
 import { getAttemptsForUnit, getLessonProgress, getProgress } from '../../utils/storage';
 
 export default function CoursePage() {
   const { courseId } = useParams();
   const course = getCourse(courseId) || getCourse('math');
+  const courseUnits = course.units && course.units.length > 0 ? course.units : mathFoundationsUnits;
+  const isGeometry = course.id === 'geometry';
 
   // Evaluate progress and satisfied prerequisites across all units
   const unitsStatus = useMemo(() => {
@@ -14,23 +17,25 @@ export default function CoursePage() {
     const satisfiedSet = new Set();
 
     // First pass: identify satisfied units
-    mathFoundationsUnits.forEach((unit) => {
-      const attempts = getAttemptsForUnit('math', unit.id);
+    courseUnits.forEach((unit) => {
+      const attempts = getAttemptsForUnit(course.id, unit.id);
       const independentCorrect = attempts.filter((a) => a.isCorrect && !a.assisted).length;
       const lesson = getLessonProgress(unit.unitPath);
       const isQuizPassed = rawProgress?.[unit.id]?.quizPassed || rawProgress?.[unit.unitPath]?.quizPassed;
 
       // Unit is considered satisfied/ready if independently practiced (3+ correct) or quiz passed
-      if (independentCorrect >= 3 || isQuizPassed || (unit.id === 'arithmetic' && attempts.length > 0)) {
+      if (independentCorrect >= 3 || isQuizPassed || (unit.order === 1 && attempts.length > 0)) {
         satisfiedSet.add(unit.id);
         if (unit.legacyConceptId) satisfiedSet.add(unit.legacyConceptId);
       }
     });
 
     // Second pass: evaluate each unit's lock state and current status
-    return mathFoundationsUnits.map((unit) => {
-      const prereqCheck = checkUnitPrerequisites(unit.id, satisfiedSet);
-      const attempts = getAttemptsForUnit('math', unit.id);
+    return courseUnits.map((unit) => {
+      const prereqCheck = isGeometry
+        ? checkGeometryPrerequisites(unit.id, satisfiedSet)
+        : checkUnitPrerequisites(unit.id, satisfiedSet);
+      const attempts = getAttemptsForUnit(course.id, unit.id);
       const independentCorrect = attempts.filter((a) => a.isCorrect && !a.assisted).length;
       const lesson = getLessonProgress(unit.unitPath);
       const isQuizPassed = rawProgress?.[unit.id]?.quizPassed || rawProgress?.[unit.unitPath]?.quizPassed;
@@ -56,7 +61,7 @@ export default function CoursePage() {
         isQuizPassed,
       };
     });
-  }, []);
+  }, [course.id, courseUnits, isGeometry]);
 
   const completedCount = unitsStatus.filter((u) => u.status === 'completed').length;
   const inProgressCount = unitsStatus.filter((u) => u.status === 'in_progress').length;
@@ -179,7 +184,7 @@ export default function CoursePage() {
                       <p className="text-xs text-[var(--ink-3)] mt-2 font-mono">
                         Requires:{' '}
                         {prereqCheck.missingPrerequisites
-                          .map((pId) => getMathUnit(pId)?.title || pId)
+                          .map((pId) => (isGeometry ? getGeometryUnit(pId)?.title : getMathUnit(pId)?.title) || pId)
                           .join(', ')}
                       </p>
                     )}

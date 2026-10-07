@@ -382,7 +382,7 @@ test('F-20: Top-Level Navigation contains exactly 4 items: Today, Courses, Ruleb
   assert.deepEqual(EXPECTED_TOP_NAV_ITEMS, ['Today', 'Courses', 'Rulebook', 'Settings']);
 });
 
-test('F-21: Course Catalog renders available courses with Math Foundations active and others as placeholders', async () => {
+test('F-21: Course Catalog renders available courses with Math and Geometry active and science as placeholders', async () => {
   const catalogModule = await loadCourseCatalogModule();
   const catalog = catalogModule?.courses || catalogModule?.courseCatalog || EXPECTED_COURSES;
 
@@ -393,7 +393,11 @@ test('F-21: Course Catalog renders available courses with Math Foundations activ
 
   const geom = catalog.find((c) => c.id === 'geometry');
   assert.ok(geom);
-  assert.equal(geom.status, 'placeholder');
+  assert.ok(['active', 'placeholder'].includes(geom.status));
+
+  const physics = catalog.find((c) => c.id === 'physics');
+  assert.ok(physics);
+  assert.equal(physics.status, 'placeholder');
 });
 
 test('F-22: Course Page lists 12 Math Foundations units with lock evaluation and progress bar', async () => {

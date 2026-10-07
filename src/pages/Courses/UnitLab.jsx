@@ -2,13 +2,16 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getCourse } from '../../data/courses/courseCatalog';
 import { getMathUnit } from '../../data/courses/mathFoundations';
+import { getGeometryUnit } from '../../data/courses/geometryFoundations';
 import NumberLineLab from '../../components/Study/NumberLineLab';
 import FractionBarVisualizer from '../../components/Study/FractionBarVisualizer';
+import AngleExplorer from '../../components/Study/Geometry/AngleExplorer';
+import PythagoreanVisualizer from '../../components/Study/Geometry/PythagoreanVisualizer';
 
 export default function UnitLab() {
   const { courseId, unitId } = useParams();
   const course = getCourse(courseId) || getCourse('math');
-  const unit = getMathUnit(unitId);
+  const unit = courseId === 'geometry' ? getGeometryUnit(unitId) : getMathUnit(unitId);
 
   if (!unit) {
     return (
@@ -20,6 +23,24 @@ export default function UnitLab() {
       </div>
     );
   }
+
+  const labTitle =
+    unit.labType === 'number-line'
+      ? 'Number Line Lab'
+      : unit.labType === 'angle-explorer'
+        ? 'Angle & Transversal Lab'
+        : unit.labType === 'pythagoras'
+          ? 'Pythagorean Proof Lab'
+          : 'Fraction Bar Lab';
+
+  const labDescription =
+    unit.labType === 'number-line'
+      ? 'Experiment with positioning signed values, zooming subdivisions, and snapping across the continuous number line.'
+      : unit.labType === 'angle-explorer'
+        ? 'Experiment with tilting transversals across parallel lines and observe how angle pairs conserve equality.'
+        : unit.labType === 'pythagoras'
+          ? 'Adjust right triangle legs, inspect square tile grids, and verify spatial area conservation (a² + b² = c²).'
+          : 'Manipulate fractional partitions to build equal-sized pieces before combining wholes.';
 
   return (
     <div className="study-page animate-fade-in max-w-4xl mx-auto py-6">
@@ -44,13 +65,11 @@ export default function UnitLab() {
         <div className="flex items-center gap-2.5">
           <span className="text-2xl">🔬</span>
           <h1 className="text-2xl sm:text-3xl font-bold text-[var(--ink)] tracking-tight">
-            {unit.labType === 'number-line' ? 'Number Line Lab' : 'Fraction Bar Lab'}
+            {labTitle}
           </h1>
         </div>
         <p className="text-sm text-[var(--ink-2)] mt-1">
-          {unit.labType === 'number-line'
-            ? 'Experiment with positioning signed values, zooming subdivisions, and snapping across the continuous number line.'
-            : 'Manipulate fractional partitions to build equal-sized pieces before combining wholes.'}
+          {labDescription}
         </p>
       </header>
 
@@ -64,6 +83,10 @@ export default function UnitLab() {
             prompt="Place -3/4 on the number line. Use the arrow keys or drag the point."
             embedded={false}
           />
+        ) : unit.labType === 'angle-explorer' ? (
+          <AngleExplorer embedded={false} />
+        ) : unit.labType === 'pythagoras' ? (
+          <PythagoreanVisualizer embedded={false} />
         ) : (
           <FractionBarVisualizer />
         )}

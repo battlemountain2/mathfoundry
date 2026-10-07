@@ -7,6 +7,7 @@
  */
 
 import { makeProblem } from '../data/foundations.js';
+import { makeGeometryProblem } from '../data/geometryProblems.js';
 import { getAttemptsForUnit } from './storage.js';
 
 /**
@@ -18,7 +19,16 @@ import { getAttemptsForUnit } from './storage.js';
  * @returns {Array<object>} Array of 6 randomized problem objects
  */
 export function generateUnitPracticeSet(conceptId, unitId, courseId = 'math') {
-  const targetConcept = conceptId || 'arithmetic';
+  const isGeometry =
+    courseId === 'geometry' ||
+    ['angles-lines', 'triangles-pythagoras', 'area-perimeter', 'circles-radians', 'volume-surface-area', 'coordinate-geometry'].includes(unitId) ||
+    ['angles-lines', 'triangles-pythagoras', 'area-perimeter', 'circles-radians', 'volume-surface-area', 'coordinate-geometry'].includes(conceptId);
+
+  const problemMaker = isGeometry
+    ? (target, seed, fmt) => makeGeometryProblem(unitId || target, seed, fmt)
+    : (target, seed, fmt) => makeProblem(target, seed, fmt);
+
+  const targetConcept = conceptId || (isGeometry ? 'angles-lines' : 'arithmetic');
   const unitAttempts = getAttemptsForUnit(courseId, unitId || conceptId);
 
   // Identify any unmastered misses in this unit (last 10 attempts)
@@ -35,7 +45,7 @@ export function generateUnitPracticeSet(conceptId, unitId, courseId = 'math') {
     const lastMiss = recentMisses[recentMisses.length - 1];
     // Find or regenerate a variation of that problem
     const seedOffset = Math.floor(Math.random() * 20) + 1;
-    const reinforcementProblem = makeProblem(targetConcept, seedOffset, 'numeric');
+    const reinforcementProblem = problemMaker(targetConcept, seedOffset, 'numeric');
     reinforcementProblem.isReinforcement = true;
     reinforcementProblem.reinforcementNote = 'Targeting recent slip';
     questions.push(reinforcementProblem);
@@ -47,7 +57,7 @@ export function generateUnitPracticeSet(conceptId, unitId, courseId = 'math') {
   const hasRule = questions.some((q) => q.format === 'rule');
   if (!hasRule && questions.length < 6) {
     const ruleSeed = Math.floor(Math.random() * 10);
-    const ruleProblem = makeProblem(targetConcept, ruleSeed, 'rule');
+    const ruleProblem = problemMaker(targetConcept, ruleSeed, 'rule');
     questions.push(ruleProblem);
     usedQuestions.add(ruleProblem.question);
   }
@@ -58,7 +68,7 @@ export function generateUnitPracticeSet(conceptId, unitId, courseId = 'math') {
     attempts++;
     // Generate a diverse pseudo-random seed
     const randomSeed = Math.floor(Math.random() * 500) + (attempts * 7);
-    const candidate = makeProblem(targetConcept, randomSeed, 'numeric');
+    const candidate = problemMaker(targetConcept, randomSeed, 'numeric');
 
     if (!usedQuestions.has(candidate.question)) {
       usedQuestions.add(candidate.question);
@@ -69,7 +79,7 @@ export function generateUnitPracticeSet(conceptId, unitId, courseId = 'math') {
   // Fallback if 6 not filled
   while (questions.length < 6) {
     const fallbackSeed = questions.length + 10;
-    questions.push(makeProblem(targetConcept, fallbackSeed, 'numeric'));
+    questions.push(problemMaker(targetConcept, fallbackSeed, 'numeric'));
   }
 
   return questions;

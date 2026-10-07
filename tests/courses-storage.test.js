@@ -746,7 +746,7 @@ test('M1.20: Unit quiz persistence saves and retrieves quiz results under store.
 // GROUP 6: Course Catalog Exports & Placeholders (Requirement R3, AC 123)
 // ============================================================================
 
-test('M1.21: Course catalog exports math as active with 12 units, and geometry, physics, and chemistry as placeholders', () => {
+test('M1.21: Course catalog exports math (12 units) and geometry (6 units) as active, and physics and chemistry as placeholders', () => {
   assert.equal(courseCatalog.length, 4);
   assert.equal(getCourses().length, 4);
 
@@ -759,12 +759,16 @@ test('M1.21: Course catalog exports math as active with 12 units, and geometry, 
   assert.equal(isCourseActive('math'), true);
   assert.equal(math.units.length, 12);
 
-  // Placeholder courses
+  // Active geometry course
   const geometry = getCourse('geometry');
   assert.ok(geometry);
-  assert.equal(geometry.status, 'placeholder');
-  assert.equal(isCourseActive('geometry'), false);
+  assert.equal(geometry.status, 'active');
+  assert.equal(geometry.unitCount, 6);
+  assert.equal(geometry.path, '/courses/geometry');
+  assert.equal(isCourseActive('geometry'), true);
+  assert.equal(geometry.units.length, 6);
 
+  // Placeholder courses
   const physics = getCourse('physics');
   assert.ok(physics);
   assert.equal(physics.status, 'placeholder');
@@ -777,8 +781,9 @@ test('M1.21: Course catalog exports math as active with 12 units, and geometry, 
 
   // Active course filter
   const activeCourses = getActiveCourses();
-  assert.equal(activeCourses.length, 1);
-  assert.equal(activeCourses[0].id, 'math');
+  assert.equal(activeCourses.length, 2);
+  assert.ok(activeCourses.some((c) => c.id === 'math'));
+  assert.ok(activeCourses.some((c) => c.id === 'geometry'));
 });
 
 // ============================================================================

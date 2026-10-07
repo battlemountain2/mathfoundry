@@ -2,7 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getCourse } from '../../data/courses/courseCatalog';
 import { getMathUnit, getNextMathUnit } from '../../data/courses/mathFoundations';
+import { getGeometryUnit, getNextGeometryUnit } from '../../data/courses/geometryFoundations';
 import { makeProblem } from '../../data/foundations';
+import { makeGeometryProblem } from '../../data/geometryProblems';
 import { setModuleProgress, saveLearningAttempt } from '../../utils/storage';
 import { equivalentAnswer } from '../../utils/answerChecking';
 
@@ -10,16 +12,25 @@ export default function UnitQuiz() {
   const { courseId, unitId } = useParams();
   const navigate = useNavigate();
   const course = getCourse(courseId) || getCourse('math');
-  const unit = getMathUnit(unitId);
-  const nextUnit = unit ? getNextMathUnit(unit.id) : null;
+  const isGeometry = courseId === 'geometry';
+  const unit = isGeometry ? getGeometryUnit(unitId) : getMathUnit(unitId);
+  const nextUnit = unit
+    ? isGeometry
+      ? getNextGeometryUnit(unit.id)
+      : getNextMathUnit(unit.id)
+    : null;
 
   // 4 quiz questions
-  const targetConcept = unit?.legacyConceptId || 'arithmetic';
+  const targetConcept = unit?.legacyConceptId || unit?.id || (isGeometry ? 'angles-lines' : 'arithmetic');
   const questions = useMemo(() => {
+    const problemMaker = isGeometry
+      ? (target, seed, fmt) => makeGeometryProblem(unit?.id || target, seed, fmt)
+      : (target, seed, fmt) => makeProblem(target, seed, fmt);
+
     return Array.from({ length: 4 }, (_, i) =>
-      makeProblem(targetConcept, 20 + i, i === 0 ? 'rule' : 'numeric')
+      problemMaker(targetConcept, 20 + i, i === 0 ? 'rule' : 'numeric')
     );
-  }, [targetConcept]);
+  }, [targetConcept, isGeometry, unit?.id]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [input, setInput] = useState('');

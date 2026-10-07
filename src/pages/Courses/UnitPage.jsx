@@ -2,13 +2,15 @@ import React, { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getCourse } from '../../data/courses/courseCatalog';
 import { getMathUnit, checkUnitPrerequisites } from '../../data/courses/mathFoundations';
+import { getGeometryUnit, checkGeometryPrerequisites } from '../../data/courses/geometryFoundations';
 import { getAttemptsForUnit, getLessonProgress, getProgress } from '../../utils/storage';
 import VideoDrawer from '../../components/Study/VideoDrawer';
 
 export default function UnitPage() {
   const { courseId, unitId } = useParams();
   const course = getCourse(courseId) || getCourse('math');
-  const unit = getMathUnit(unitId);
+  const isGeometry = courseId === 'geometry';
+  const unit = isGeometry ? getGeometryUnit(unitId) : getMathUnit(unitId);
 
   const { lessonProgress, attempts, missedAttempts, independentCount, isQuizPassed, prereqCheck } = useMemo(() => {
     if (!unit) {
@@ -30,7 +32,7 @@ export default function UnitPage() {
     const quizPassed = Boolean(progress?.[unit.id]?.quizPassed || progress?.[unit.unitPath]?.quizPassed);
 
     // Prereq check
-    const check = checkUnitPrerequisites(unit.id);
+    const check = isGeometry ? checkGeometryPrerequisites(unit.id) : checkUnitPrerequisites(unit.id);
 
     return {
       lessonProgress: lesson,
@@ -90,7 +92,9 @@ export default function UnitPage() {
         {prereqCheck.isLocked && prereqCheck.missingPrerequisites.length > 0 && (
           <div className="mt-4 p-3.5 rounded-xl border border-[var(--heat)] bg-[var(--heat-soft)] text-xs text-[var(--ink)]">
             <span className="font-bold">Prerequisite Notice:</span> We recommend completing{' '}
-            {prereqCheck.missingPrerequisites.map((p) => getMathUnit(p)?.title || p).join(', ')}{' '}
+            {prereqCheck.missingPrerequisites
+              .map((p) => (isGeometry ? getGeometryUnit(p)?.title : getMathUnit(p)?.title) || p)
+              .join(', ')}{' '}
             before attempting this unit independently.
           </div>
         )}
@@ -159,7 +163,13 @@ export default function UnitPage() {
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-lg">🔬</span>
                   <h2 className="text-lg font-bold text-[var(--ink)]">
-                    {unit.labType === 'number-line' ? 'Number Line Lab' : 'Fraction Bar Lab'}
+                    {unit.labType === 'number-line'
+                      ? 'Number Line Lab'
+                      : unit.labType === 'angle-explorer'
+                        ? 'Angle & Transversal Lab'
+                        : unit.labType === 'pythagoras'
+                          ? 'Pythagorean Proof Lab'
+                          : 'Fraction Bar Lab'}
                   </h2>
                   <span className="study-badge text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[var(--accent-soft)] text-[var(--accent)]">
                     Interactive Lab
@@ -168,7 +178,11 @@ export default function UnitPage() {
                 <p className="text-sm text-[var(--ink-2)]">
                   {unit.labType === 'number-line'
                     ? 'Explore magnitude, signed numbers, and fractional tick snapping on an interactive axis.'
-                    : 'Repartition wholes and combine fractional pieces visually.'}
+                    : unit.labType === 'angle-explorer'
+                      ? 'Tilt transversals across parallel lines to observe vertical, alternate interior, and consecutive angle invariants.'
+                      : unit.labType === 'pythagoras'
+                        ? 'Adjust right triangle legs, inspect square tile grids, and verify spatial area conservation.'
+                        : 'Repartition wholes and combine fractional pieces visually.'}
                 </p>
               </div>
 

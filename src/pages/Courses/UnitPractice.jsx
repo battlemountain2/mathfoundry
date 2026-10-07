@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getCourse } from '../../data/courses/courseCatalog';
 import { getMathUnit } from '../../data/courses/mathFoundations';
+import { getGeometryUnit } from '../../data/courses/geometryFoundations';
 import { makeProblem } from '../../data/foundations';
 import { generateUnitPracticeSet } from '../../utils/problemGenerator';
 import { saveLearningAttempt, updateAttemptReflectiveCause, getLearningAttempts } from '../../utils/storage';
@@ -22,13 +23,14 @@ export default function UnitPractice() {
   const { courseId, unitId } = useParams();
   const navigate = useNavigate();
   const course = getCourse(courseId) || getCourse('math');
-  const unit = getMathUnit(unitId);
+  const isGeometry = courseId === 'geometry';
+  const unit = isGeometry ? getGeometryUnit(unitId) : getMathUnit(unitId);
 
   // Generate randomized 6 problems with spaced repetition reinforcement
-  const targetConcept = unit?.legacyConceptId || 'arithmetic';
+  const targetConcept = unit?.legacyConceptId || unit?.id || (isGeometry ? 'angles-lines' : 'arithmetic');
   const questions = useMemo(() => {
-    return generateUnitPracticeSet(targetConcept, unit?.id, courseId);
-  }, [targetConcept, unit?.id, courseId]);
+    return generateUnitPracticeSet(targetConcept, unit?.id, courseId || (isGeometry ? 'geometry' : 'math'));
+  }, [targetConcept, unit?.id, courseId, isGeometry]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [input, setInput] = useState('');
@@ -77,7 +79,7 @@ export default function UnitPractice() {
       id: attemptId,
       conceptId: currentQ.conceptId,
       unitId: unit?.id,
-      unitPath: unit?.unitPath || `math/${unit?.id}`,
+      unitPath: unit?.unitPath || (isGeometry ? `geometry/${unit?.id}` : `math/${unit?.id}`),
       problemId: currentQ.id,
       question: currentQ.question,
       submittedAnswer: finalAnswer,

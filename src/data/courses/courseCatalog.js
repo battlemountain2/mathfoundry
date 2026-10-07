@@ -7,6 +7,7 @@
  */
 
 import { mathFoundationsUnits } from './mathFoundations.js';
+import { geometryFoundationsUnits } from './geometryFoundations.js';
 
 export const courseCatalog = [
   {
@@ -33,12 +34,12 @@ export const courseCatalog = [
     description: 'Explore angles, triangles, polygons, coordinate systems, perimeter, area, and physical spatial relationships essential for visual engineering.',
     icon: '📐',
     category: 'mathematics',
-    status: 'placeholder',
-    unitCount: 10,
+    status: 'active',
+    unitCount: geometryFoundationsUnits.length,
     path: '/courses/geometry',
-    units: [],
+    units: geometryFoundationsUnits,
     accentColor: 'emerald',
-    badge: 'Coming Soon',
+    badge: '6 Units',
     estimatedHours: 5,
   },
   {

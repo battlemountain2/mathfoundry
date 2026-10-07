@@ -79,10 +79,34 @@ export const curatedUnitVideos = {
       'Check division by multiplying your quotient by the original divisor',
     ],
   },
+  'angles-lines': {
+    title: 'Angles Formed by a Transversal with Parallel Lines',
+    creator: 'The Organic Chemistry Tutor',
+    channel: 'Geometry Foundations',
+    embedId: 'H-E__4Z2dY4',
+    duration: '12 min',
+    takeaways: [
+      'Vertical angles across the intersection vertex are always strictly equal',
+      'Alternate interior angles between parallel lines form an identical Z-pattern',
+      'Consecutive interior angles on the same side add up to 180°',
+    ],
+  },
+  'triangles-pythagoras': {
+    title: 'The Pythagorean Theorem Explained with Examples',
+    creator: 'The Organic Chemistry Tutor',
+    channel: 'Geometry Foundations',
+    embedId: 'AA6RfgP-AHU',
+    duration: '13 min',
+    takeaways: [
+      'In any right triangle, a² + b² = c² where c is the hypotenuse opposite 90°',
+      'Memorize common integer triplets: 3-4-5, 5-12-13, and 6-8-10',
+      'Square both legs before adding; take the square root to find diagonal distance',
+    ],
+  },
 };
 
 export function getCuratedVideo(unitId) {
   if (!unitId) return null;
-  const cleanId = unitId.replace(/^math\//, '');
+  const cleanId = unitId.replace(/^(math|geometry)\//, '');
   return curatedUnitVideos[cleanId] || null;
 }

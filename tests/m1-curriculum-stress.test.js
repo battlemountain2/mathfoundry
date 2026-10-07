@@ -659,8 +659,16 @@ test('CHALLENGE 6.1: Course catalog exports required 4 courses with active/place
   assert.equal(mathCourse.units.length, 12);
   assert.equal(isCourseActive('math'), true);
 
+  // Geometry course must be active with 6 units
+  const geomCourse = getCourse('geometry');
+  assert.ok(geomCourse);
+  assert.equal(geomCourse.status, 'active');
+  assert.equal(geomCourse.unitCount, 6);
+  assert.equal(geomCourse.units.length, 6);
+  assert.equal(isCourseActive('geometry'), true);
+
   // Placeholders
-  for (const placeholderId of ['geometry', 'physics', 'chemistry']) {
+  for (const placeholderId of ['physics', 'chemistry']) {
     const course = getCourse(placeholderId);
     assert.ok(course, `Course ${placeholderId} must exist`);
     assert.equal(course.status, 'placeholder');

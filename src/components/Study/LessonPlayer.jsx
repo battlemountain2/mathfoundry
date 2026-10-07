@@ -17,6 +17,8 @@ import { useNavigate } from 'react-router-dom';
 import MathBlock from '../Lesson/MathBlock';
 import FractionBarVisualizer from './FractionBarVisualizer';
 import NumberLineLab from './NumberLineLab';
+import AngleExplorer from './Geometry/AngleExplorer';
+import PythagoreanVisualizer from './Geometry/PythagoreanVisualizer';
 import { addSubtractFractionsLesson } from '../../data/lessons/addSubtractFractions';
 import {
   getLessonProgress,
@@ -50,6 +52,36 @@ function ExplainStepView({ step }) {
         <MathBlock content={step.content} />
       </div>
 
+      {/* 3-Part Card (Visual Model, Mathematical Step, Engineering Rationale) */}
+      {step.threePartCard && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-4 rounded-2xl border border-[var(--line)] bg-[var(--surface-2)]">
+          <div className="p-3.5 rounded-xl bg-[var(--surface)] border border-[var(--line)] space-y-1.5">
+            <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-[var(--accent)] block">
+              1. Visual Model
+            </span>
+            <p className="text-xs text-[var(--ink)] leading-relaxed">
+              {step.threePartCard.visual}
+            </p>
+          </div>
+          <div className="p-3.5 rounded-xl bg-[var(--surface)] border border-[var(--line)] space-y-1.5">
+            <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-[var(--good)] block">
+              2. Mathematical Step
+            </span>
+            <div className="text-xs text-[var(--ink)] leading-relaxed">
+              <MathBlock content={step.threePartCard.math} />
+            </div>
+          </div>
+          <div className="p-3.5 rounded-xl bg-[var(--surface)] border border-[var(--line)] space-y-1.5">
+            <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-[var(--heat)] block">
+              3. Engineering Rationale
+            </span>
+            <p className="text-xs text-[var(--ink-2)] leading-relaxed">
+              {step.threePartCard.rationale}
+            </p>
+          </div>
+        </div>
+      )}
+
       {step.callout && (
         <div className="p-4 sm:p-5 rounded-xl border border-[var(--line)] bg-[var(--surface-2)] text-[var(--ink)]">
           {step.callout.title && (
@@ -74,6 +106,10 @@ function VisualStepView({ step }) {
     step.visualizer === 'fraction-bars' || step.component === 'FractionBarVisualizer';
   const isNumberLine =
     step.visualizer === 'number-line' || step.component === 'NumberLineLab';
+  const isAngleExplorer =
+    step.visualizer === 'angle-explorer' || step.component === 'AngleExplorer';
+  const isPythagoras =
+    step.visualizer === 'pythagoras' || step.component === 'PythagoreanVisualizer';
 
   return (
     <div className="space-y-6">
@@ -107,7 +143,49 @@ function VisualStepView({ step }) {
             {...step.props}
           />
         )}
+        {isAngleExplorer && (
+          <AngleExplorer
+            embedded={true}
+            {...step.props}
+          />
+        )}
+        {isPythagoras && (
+          <PythagoreanVisualizer
+            embedded={true}
+            {...step.props}
+          />
+        )}
       </div>
+
+      {/* 3-Part Card on Visual Steps */}
+      {step.threePartCard && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-4 rounded-2xl border border-[var(--line)] bg-[var(--surface-2)]">
+          <div className="p-3.5 rounded-xl bg-[var(--surface)] border border-[var(--line)] space-y-1.5">
+            <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-[var(--accent)] block">
+              1. Visual Model
+            </span>
+            <p className="text-xs text-[var(--ink)] leading-relaxed">
+              {step.threePartCard.visual}
+            </p>
+          </div>
+          <div className="p-3.5 rounded-xl bg-[var(--surface)] border border-[var(--line)] space-y-1.5">
+            <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-[var(--good)] block">
+              2. Mathematical Step
+            </span>
+            <div className="text-xs text-[var(--ink)] leading-relaxed">
+              <MathBlock content={step.threePartCard.math} />
+            </div>
+          </div>
+          <div className="p-3.5 rounded-xl bg-[var(--surface)] border border-[var(--line)] space-y-1.5">
+            <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-[var(--heat)] block">
+              3. Engineering Rationale
+            </span>
+            <p className="text-xs text-[var(--ink-2)] leading-relaxed">
+              {step.threePartCard.rationale}
+            </p>
+          </div>
+        </div>
+      )}
 
       {step.callout && (
         <div className="p-4 rounded-xl border border-[var(--line)] bg-[var(--surface-2)] text-[var(--ink)]">

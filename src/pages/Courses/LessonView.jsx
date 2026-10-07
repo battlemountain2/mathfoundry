@@ -3,10 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import LessonPlayer from '../../components/Study/LessonPlayer';
 import { addSubtractFractionsLesson } from '../../data/lessons/addSubtractFractions';
 import { arithmeticLesson } from '../../data/lessons/arithmetic';
+import { anglesLinesLesson } from '../../data/lessons/anglesLines';
+import { trianglesPythagorasLesson } from '../../data/lessons/trianglesPythagoras';
 
 const lessonRegistry = {
   'arithmetic': arithmeticLesson,
   'add-subtract-fractions': addSubtractFractionsLesson,
+  'angles-lines': anglesLinesLesson,
+  'triangles-pythagoras': trianglesPythagorasLesson,
 };
 
 export default function LessonView() {
