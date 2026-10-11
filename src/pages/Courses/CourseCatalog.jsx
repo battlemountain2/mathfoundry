@@ -6,7 +6,7 @@ export default function CourseCatalog() {
   const courses = getCourses();
 
   return (
-    <div className="study-page animate-fade-in max-w-5xl mx-auto py-6">
+    <div className="study-page v3-catalog animate-fade-in max-w-5xl mx-auto py-6">
       <header className="mb-8">
         <p className="eyebrow">Structured Curriculum</p>
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[var(--ink)] mb-3">
@@ -32,9 +32,7 @@ export default function CourseCatalog() {
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-3xl p-2.5 rounded-xl bg-[var(--surface-2)] inline-block">
-                    {course.icon}
-                  </span>
+                  <span className="eyebrow">{course.category}</span>
                   <span
                     className={`study-badge px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${
                       isActive ? 'bg-[var(--accent-soft)] text-[var(--accent)]' : 'bg-[var(--surface-2)] text-[var(--ink-3)]'
@@ -57,7 +55,7 @@ export default function CourseCatalog() {
 
               <div className="pt-4 border-t border-[var(--line)] flex items-center justify-between">
                 <span className="font-mono text-xs text-[var(--ink-3)]">
-                  ~{course.estimatedHours} hrs study
+                  {isActive ? `${course.units.filter(u => u.hasPractice).length} units with practice` : 'A future subject'}
                 </span>
 
                 {isActive ? (
@@ -71,7 +69,7 @@ export default function CourseCatalog() {
                   </Link>
                 ) : (
                   <span className="text-xs font-semibold text-[var(--ink-3)] px-3 py-1.5 rounded-lg bg-[var(--surface-2)]">
-                    Unlocks with Math
+                    Content in preparation
                   </span>
                 )}
               </div>

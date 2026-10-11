@@ -23,6 +23,7 @@ export default function UnitLab() {
       </div>
     );
   }
+  if (!unit.hasLab) return <div className="study-page"><p className="eyebrow">Content in preparation</p><h1>A visual lab is not ready for this topic yet.</h1><Link className="study-button secondary" to={`/courses/${course.id}/${unit.id}`}>Return to this unit</Link></div>;
 
   const labTitle =
     unit.labType === 'number-line'
@@ -77,10 +78,10 @@ export default function UnitLab() {
       <div className="mt-6">
         {unit.labType === 'number-line' ? (
           <NumberLineLab
-            range={[-2, 2]}
+            range={unit.id === 'negative-numbers' ? [-2, 2] : [0, 1]}
             subdivisions={4}
-            targetValue={-0.75}
-            prompt="Place -3/4 on the number line. Use the arrow keys or drag the point."
+            targetValue={unit.id === 'negative-numbers' ? -0.75 : 0.75}
+            prompt={`Place ${unit.id === 'negative-numbers' ? '-' : ''}3/4 on the number line. Use the arrow keys or drag the point.`}
             embedded={false}
           />
         ) : unit.labType === 'angle-explorer' ? (
@@ -99,13 +100,13 @@ export default function UnitLab() {
         >
           ← Return to {unit.title}
         </Link>
-        <Link
+        {unit.hasPractice && <Link
           to={`/courses/${course.id}/${unit.id}/practice`}
           className="study-button px-5 py-2 rounded-xl text-xs font-semibold"
           style={{ backgroundColor: 'var(--accent)', color: 'var(--surface)' }}
         >
           Start Practice →
-        </Link>
+        </Link>}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import MathBlock from '../../Lesson/MathBlock';
 
-export const StepSequence = ({ question, onAnswer, showResult, isCorrect }) => {
+export const StepSequence = ({ question, onAnswer, showResult }) => {
   const [displayOrder] = useState(() => {
     const ids = question.steps.map((_, i) => i);
     for(let i=ids.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [ids[i],ids[j]]=[ids[j],ids[i]]; }

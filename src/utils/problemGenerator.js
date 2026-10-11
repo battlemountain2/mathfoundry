@@ -41,13 +41,11 @@ export function generateUnitPracticeSet(conceptId, unitId, courseId = 'math') {
 
   // If there is a recent missed question, re-inject 1 reinforcement question
   if (recentMisses.length > 0) {
-    // Pick the most recent miss
-    const lastMiss = recentMisses[recentMisses.length - 1];
     // Find or regenerate a variation of that problem
     const seedOffset = Math.floor(Math.random() * 20) + 1;
     const reinforcementProblem = problemMaker(targetConcept, seedOffset, 'numeric');
     reinforcementProblem.isReinforcement = true;
-    reinforcementProblem.reinforcementNote = 'Targeting recent slip';
+    reinforcementProblem.reinforcementNote = 'Revisit this topic after a recent miss';
     questions.push(reinforcementProblem);
     usedQuestions.add(reinforcementProblem.question);
   }

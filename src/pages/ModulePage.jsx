@@ -31,6 +31,11 @@ const moduleMap = {
 
 export default function ModulePage() {
   const { moduleId } = useParams();
+  return <ModuleContent key={moduleId} />;
+}
+
+function ModuleContent() {
+  const { moduleId } = useParams();
   const navigate = useNavigate();
   const { updateModuleProgress, progress } = useProgress();
   const [moduleData, setModuleData] = useState(null);
@@ -43,9 +48,6 @@ export default function ModulePage() {
 
   useEffect(() => {
     let cancelled = false;
-    setQuizResults(null);
-    setLoading(true);
-    setError(null);
 
     const loadModule = async () => {
       try {

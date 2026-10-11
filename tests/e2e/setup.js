@@ -209,7 +209,7 @@ export async function loadStorageModule() {
     } catch {
       return live;
     }
-  } catch (err) {
+  } catch {
     return null;
   }
 }

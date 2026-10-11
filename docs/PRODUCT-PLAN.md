@@ -1,4 +1,12 @@
-# MathFoundry product plan
+# Athena product plan (formerly MathFoundry)
+
+October 11 next priorities: Bry accepted more problem variety and personalization/review across all supported topics. Standalone backup-file import is out of scope. Plan preservation of existing progress as part of the future Daymark integration instead. The accepted combined entry is Daymark's daily overview with an easy switch to Athena's study desk. Integration remains on hold until the plan and both Git baselines are settled.
+
+October 9 accepted direction: the full study experience should be consistent across supported topics, with strong topic-specific visuals. Bry selected Athena as the name and a blend of modern studio, restrained classical/editorial details, and technical diagram precision; a small owl emblem is being tried in the sidebar/favicon. Existing three themes remain. See [the Athena implementation report](IMPLEMENTATION-ATHENA-2026-10-09.md) for the cross-topic working milestone. Later curriculum expansion remains distinct from the introductory practice now available. Codex is authorized to build directly; the earlier Antigravity role split below is historical.
+
+Latest scope: [Foundry v3 vision](FOUNDRY-V3-VISION.md). Bry wants a major cohesive redesign. Confirmed additions: optional try-first checks before explanations and feedback after each unit-quiz question, preserving first-response evidence and learner-controlled solution reveal.
+
+October 7 update: [Current cohesion review and proposed build ticket](COHESION-REVIEW-2026-10-07.md) supersedes older status/priority claims below. Confirmed: continuous sessions with skip/explore freedom; mistake review starts with the answer and key issue, with expandable steps and a visual explanation; computer with paper is primary, phone supports quick reviews. Preserve earlier confirmed preferences.
 
 Living plan, October 2, 2026. Owner of design/learning discussion: Codex with Bry. Implementation: Antigravity. This document supersedes conflicting earlier visual proposals. Existing working features are documented in IMPLEMENTATION-COHESION-2026-10-02.md; proposed work below is not yet shipped.
 

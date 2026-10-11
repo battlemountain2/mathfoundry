@@ -76,7 +76,7 @@ export const moduleData = {
       title: 'Engineering Applications',
       content: `
         <h3>Why this matters</h3>
-        <p>Systems of equations are the bedrock of engineering analysis. In electrical engineering, <strong>Kirchhoff\'s Laws</strong> dictate the flow of current and voltage drops across a circuit, naturally forming systems of linear equations.</p>
+        <p>Systems of equations are the bedrock of engineering analysis. In electrical engineering, <strong>Kirchhoff's Laws</strong> dictate the flow of current and voltage drops across a circuit, naturally forming systems of linear equations.</p>
         <p>In chemical engineering, <strong>Material Balances</strong> track the inflow and outflow of multiple chemical species in a reactor. If you have 3 unknown flow rates, you set up 3 balance equations and solve the system.</p>
       `,
       keyTakeaways: [

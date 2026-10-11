@@ -1,6 +1,23 @@
-# MathFoundry project guidance
+# Athena project guidance (formerly MathFoundry)
 
-Current collaboration direction (October 2): Codex handles planning/design discussion and review; Antigravity handles implementation. Codex should update planning/handoff documents rather than app code unless Bry explicitly changes this assignment. Start new build work from `ANTIGRAVITY_HANDOFF.md` and `docs/PRODUCT-PLAN.md`; they identify current priorities and distinguish confirmed choices from proposals.
+October 11 next scope: prioritize problem variety and curriculum-wide personalization/review. Bry excluded standalone backup-file import; preserve existing learning data through the planned Daymark integration. The merge itself remains on hold pending a solid plan and settled Git baselines.
+
+October 11 debugging milestone: `docs/DEBUG-CLEANUP-2026-10-11.md` records recall/session validation, stale-tab write guards, pending cloud-restore protection, shared modal focus handling, phone navigation fixes and clearer recall review. Checks: 257 tests + 67 workflow simulations, clean lint/build. Phone-size Chromium checks passed at 384px content width; physical iPhone/Safari and live cloud/AI remain unverified. Daymark integration stays on hold pending Bry's Git baselines and solid plan; accepted entry is Daymark's daily overview with an easy switch to Athena's study desk. Preserve all saved data and unrelated changes.
+
+October 9 cohesion/debug milestone: `docs/COHESION-CLEANUP-2026-10-09.md` records the latest implementation, verification and limits. Settings/Ada share Athena themes, the desk model follows the resumed topic, guides preserve the current activity, and shared store subscriptions keep appearance/progress/rulebook consistent. Saved-data normalization and cloud snapshot restoration were hardened. Current checks: 250 tests + 67 workflow simulations pass, lint has zero warnings/errors, and build succeeds without a chunk-size warning. The main JS chunk is about 258 kB; this is not total lesson transfer size. A fresh phone-layout check and live cloud/AI checks remain outstanding. Preserve the older data keys and raw records; do not treat snapshot backup as history merging.
+
+
+October 9 identity and scope: Bry selected Athena alongside their Hermes file explorer. Blend modern studio controls, restrained editorial/architectural details, and precise academic diagrams. A small geometric owl is being tried in the wordmark/favicon; keep navigation itself text-only and preserve Paper, Charcoal, and Forest. The shared teaching flow must cover every supported topic, not just fractions. New topics should include an introduction, checked distinct example, parameter-matched visual, practice, review, and fresh repair. Current cross-topic work is documented in `docs/IMPLEMENTATION-ATHENA-2026-10-09.md`. Preserve existing `mathfoundry_data` keys, backups, and saved records through the rename.
+
+October 7 build authorization supersedes the earlier role split: Bry explicitly asked Codex to build using GPT-6.1 Sol. Codex may implement and verify the agreed v3 plan directly. Preserve data and existing unrelated edits; the original Antigravity planning documents remain design references. The first v3 milestone and verification are recorded in `docs/IMPLEMENTATION-V3-2026-10-09.md`; this is a working milestone, not the entire v3 curriculum.
+
+- Final v3 typography preference: no pixel/bit font from the reference. Keep JetBrains Mono for numerical UI and compact labels; use readable body type and proper mathematical typesetting. The latest working state and remaining build order are at the top of ANTIGRAVITY_HANDOFF.md.
+
+- V3 visual confirmation: Modern Studio with Making Software's illustrated textbook feel and Zen's calm controls, using Foundry's own themes. Desktop help uses an optional resizable side panel; mobile help expands below the problem with restrained/reduced-motion-aware animation. Rule Match should be a calm puzzle game usable on phone and PC; recognition must stay distinct from independent problem-solving evidence. See docs/FOUNDRY-V3-VISION.md for connected recall, engineering-project, and paper-review proposals.
+
+- October 7 v3 direction: Bry accepts an optional “Let me try first” check to bypass familiar explanations and wants feedback after each unit-quiz question. Preserve first responses and assistance distinctions; incorrect answers still follow hint/retry with learner-controlled solution reveal. See docs/FOUNDRY-V3-VISION.md for the accepted major v3 experience.
+
+Historical collaboration direction (October 2, superseded by October 7 authorization): Codex handled planning/design discussion and review; Antigravity handled implementation. Start new build work from `ANTIGRAVITY_HANDOFF.md` and `docs/PRODUCT-PLAN.md`; they identify current priorities and distinguish confirmed choices from proposals.
 
 Read `docs/ROADMAP.md` before planning or changing learning behavior or UI. It records Bry's accepted product direction, proposed phases, and unresolved decisions. Bry authorized implementation on October 2, 2026. Read `docs/IMPLEMENTATION-2026-10-02.md` for the first working milestone and docs/IMPLEMENTATION-COHESION-2026-10-02.md for the subsequent cohesion build and remaining scope.
 
@@ -26,3 +43,5 @@ Read `docs/ROADMAP.md` before planning or changing learning behavior or UI. It r
 - Bry accepts occasional optional intermediate-step input to help explain mistakes. Keep paper-first solving, allow skipping and valid alternate methods, and distinguish observed steps from inferred causes.
 
 - Solution reveal is learner-controlled even after repeated incorrect attempts. Offer “Walk me through it,” retry, and pause; never auto-reveal based on attempt count or elapsed time.
+
+- October 7 confirmed: prefer a continuous study session with freedom to skip/explore; preserve position. Mistake review opens with the submitted answer and key issue, with expandable full steps and a relevant visual explanation. Do not infer an exact error cause without evidence. Prioritize computer plus paper; phone is for quick reviews. See docs/COHESION-REVIEW-2026-10-07.md for the latest review and proposed build ticket.

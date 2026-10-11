@@ -1,5 +1,6 @@
 export default function Header({
   onMenuToggle,
+  isSidebarOpen,
   theme,
   onThemeChange,
   compactSidebar,
@@ -15,9 +16,10 @@ export default function Header({
             type="button"
             className="h-9 px-3 rounded-lg border border-[var(--line)] bg-[var(--surface-2)] text-[var(--ink)] hover:bg-[var(--surface)] text-xs font-medium lg:hidden flex items-center gap-1.5 transition-colors cursor-pointer"
             aria-label="Open navigation"
+            aria-expanded={isSidebarOpen}
+            aria-controls="study-sidebar"
             onClick={onMenuToggle}
           >
-            <span>☰</span>
             <span>Menu</span>
           </button>
 
@@ -25,17 +27,24 @@ export default function Header({
           <button
             type="button"
             className={`zen-compact-toggle h-9 px-3 rounded-lg border text-xs font-medium hidden lg:inline-flex items-center gap-1.5 transition-colors cursor-pointer ${
-              compactSidebar ? 'active border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)] font-semibold' : 'border-[var(--line)] bg-[var(--surface-2)] text-[var(--ink-2)] hover:text-[var(--ink)] hover:border-[var(--line-strong)]'
+              compactSidebar
+                ? "active border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)] font-semibold"
+                : "border-[var(--line)] bg-[var(--surface-2)] text-[var(--ink-2)] hover:text-[var(--ink)] hover:border-[var(--line-strong)]"
             }`}
             onClick={onToggleCompactSidebar}
-            title={compactSidebar ? 'Expand sidebar (Standard view)' : 'Collapse sidebar (Zen focus mode)'}
+            title={
+              compactSidebar
+                ? "Expand sidebar (Standard view)"
+                : "Collapse sidebar (Zen focus mode)"
+            }
             aria-label="Toggle Zen compact sidebar"
           >
-            <span className="text-sm leading-none">{compactSidebar ? '◨' : '◫'}</span>
-            <span>{compactSidebar ? 'Expand' : 'Focus'}</span>
+            <span>{compactSidebar ? "Expand" : "Focus"}</span>
           </button>
 
-          <span className="hidden sm:inline-block text-[var(--ink-2)] text-xs font-normal">Your study space</span>
+          <span className="hidden sm:inline-block text-[var(--ink-2)] text-xs font-normal">
+            Your study space
+          </span>
         </div>
 
         {/* Right Side: Tutor & Theme Controls */}
@@ -48,7 +57,6 @@ export default function Header({
               title="Open Ada Study Tutor"
               aria-label="Open Ada Study Tutor"
             >
-              <span className="text-indigo-500 font-bold text-sm leading-none">∑</span>
               <span>Tutor</span>
             </button>
           )}

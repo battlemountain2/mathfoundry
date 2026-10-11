@@ -165,7 +165,7 @@ async function callOpenAiCompatibleApi({ provider, apiKey, message, history, sys
 
   if (isRouter) {
     headers['HTTP-Referer'] = 'https://mathfoundry.dev';
-    headers['X-Title'] = 'MathFoundry';
+    headers['X-Title'] = 'Athena';
   }
 
   const response = await fetch(url, {

@@ -7,7 +7,7 @@ import { equivalentAnswer, numericValue, analyzeIntermediateStep } from '../util
 import { getProblemHint } from '../utils/hints';
 import SessionReview from '../components/Study/SessionReview';
 import FractionBarVisualizer from '../components/Study/FractionBarVisualizer';
-import { useStudyActivity } from '../components/Study/ActivityContext';
+import { useStudyActivity } from '../hooks/useStudyActivity';
 
 const REFLECTIVE_OPTIONS = [
   { id: 'calc-slip', label: 'Calculation slip', icon: '🧮' },

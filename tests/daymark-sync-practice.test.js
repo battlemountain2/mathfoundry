@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { generateUnitPracticeSet } from '../src/utils/problemGenerator.js';
-import { getCuratedVideo, curatedUnitVideos } from '../src/data/courses/curatedVideos.js';
+import { getCuratedVideo } from '../src/data/courses/curatedVideos.js';
 import { getSyncConfig, saveSyncConfig } from '../src/utils/githubSync.js';
 import * as storage from '../src/utils/storage.js';
 
@@ -47,7 +47,7 @@ test('generateUnitPracticeSet: re-injects a recent missed question as reinforcem
   assert.equal(practiceSet.length, 6);
   const reinforcement = practiceSet.find((q) => q.isReinforcement);
   assert.ok(reinforcement, 'Reinforcement problem is injected into practice set');
-  assert.equal(reinforcement.reinforcementNote, 'Targeting recent slip');
+  assert.equal(reinforcement.reinforcementNote, 'Revisit this topic after a recent miss');
 });
 
 test('curatedUnitVideos: provides structured videos for core units', () => {

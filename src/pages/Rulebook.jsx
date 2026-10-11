@@ -4,14 +4,11 @@ import {
   getRulebook,
   saveRulebookEntry,
   removeRulebookEntry,
-  getFoundationSession,
-  setFoundationSession,
-  getRepairDraft,
-  setRepairDraft,
-  toUnitPath,
 } from "../utils/storage";
 import { RULEBOOK_CATEGORIES } from "../data/rulebookData.js";
 import MathBlock from "../components/Lesson/MathBlock";
+import { useStoreChange } from "../hooks/useStoreChange";
+import { studyTopicLink } from "../utils/studyNavigation";
 
 function Entry({
   entry,
@@ -19,30 +16,27 @@ function Entry({
   from,
   activeId,
   defaultExpanded,
-  onRefresh,
   onError,
 }) {
   const [notes, setNotes] = useState(entry.notes ?? entry.suggestedNotes ?? "");
   const [isEditingNotes, setIsEditingNotes] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(isHighlighted || defaultExpanded);
+  const expansionDefault = Boolean(isHighlighted || defaultExpanded);
+  const [expansion, setExpansion] = useState(null);
+  const isExpanded =
+    expansion?.default === expansionDefault
+      ? expansion.value
+      : expansionDefault;
+  function toggleExpanded() {
+    setExpansion({ default: expansionDefault, value: !isExpanded });
+  }
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [savedFeedback, setSavedFeedback] = useState(false);
-
-  // Sync expanded state if highlighted or global view mode changes
-  useEffect(() => {
-    if (isHighlighted) {
-      setIsExpanded(true);
-    } else {
-      setIsExpanded(defaultExpanded);
-    }
-  }, [isHighlighted, defaultExpanded]);
 
   function save() {
     try {
       saveRulebookEntry({ ...entry, notes });
       setSavedFeedback(true);
       setTimeout(() => setSavedFeedback(false), 2500);
-      onRefresh();
     } catch (e) {
       onError(e.message);
     }
@@ -50,13 +44,13 @@ function Entry({
 
   const categoryLabel =
     RULEBOOK_CATEGORIES.find((c) => c.id === entry.category)?.label ||
-    (entry.conceptId ? "Foundations" : entry.moduleId ? "Geometry" : "Custom Note");
+    (entry.conceptId
+      ? "Foundations"
+      : entry.moduleId
+        ? "Geometry"
+        : "Custom Note");
 
-  const practicePath = entry.conceptId
-    ? `/courses/${toUnitPath(entry.conceptId) || `math/${entry.conceptId}`}/practice`
-    : entry.moduleId
-      ? `/courses/geometry/${entry.moduleId}/practice`
-      : "/courses";
+  const practiceLink = studyTopicLink(entry);
 
   return (
     <article
@@ -73,7 +67,10 @@ function Entry({
             {entry.notes?.trim() && (
               <span
                 className="study-badge text-xs"
-                style={{ background: "var(--accent-soft)", color: "var(--accent)" }}
+                style={{
+                  background: "var(--accent-soft)",
+                  color: "var(--accent)",
+                }}
               >
                 📝 Has Note
               </span>
@@ -91,7 +88,7 @@ function Entry({
 
         <button
           type="button"
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={toggleExpanded}
           className="text-xs text-[var(--ink-2)] hover:text-[var(--ink)] bg-[var(--surface-2)] hover:bg-[var(--surface)] border border-[var(--line)] px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0"
           title={isExpanded ? "Collapse card details" : "Expand card details"}
           aria-expanded={isExpanded}
@@ -136,11 +133,14 @@ function Entry({
           {entry.example && (
             <details className="rulebook-example-box my-3 p-3.5 rounded-xl border border-[var(--line)] bg-[var(--surface-2)]">
               <summary className="cursor-pointer font-semibold text-xs uppercase tracking-wider text-[var(--accent)] select-none">
-                💡 View worked example: <span className="text-[var(--ink)] normal-case font-medium">{entry.example.question}</span>
+                View worked example
               </summary>
+              <MathBlock content={entry.example.question} />
               <ol className="list-decimal pl-5 space-y-1.5 mt-3 text-sm text-[var(--ink-2)] leading-relaxed">
                 {entry.example.steps.map((step) => (
-                  <li key={step}>{step}</li>
+                  <li key={step}>
+                    <MathBlock content={step} />
+                  </li>
                 ))}
               </ol>
             </details>
@@ -162,7 +162,9 @@ function Entry({
                     Edit note
                   </button>
                 </div>
-                <p className="text-sm text-[var(--ink)] whitespace-pre-wrap leading-relaxed">{notes}</p>
+                <p className="text-sm text-[var(--ink)] whitespace-pre-wrap leading-relaxed">
+                  {notes}
+                </p>
               </div>
             ) : !isEditingNotes ? (
               <button
@@ -237,25 +239,31 @@ function Entry({
         <button
           type="button"
           className="text-xs text-[var(--accent)] hover:underline font-medium cursor-pointer"
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={toggleExpanded}
         >
-          {isExpanded ? "▴ Less details" : "▾ More details (when to use, pitfalls, example)"}
+          {isExpanded
+            ? "▴ Less details"
+            : "▾ More details (when to use, pitfalls, example)"}
         </button>
 
-        <Link className="study-text-button text-xs ml-auto" to={practicePath}>
-          Practice this topic →
+        <Link
+          className="study-text-button text-xs ml-auto"
+          to={practiceLink.path}
+        >
+          {practiceLink.label}
         </Link>
 
         {confirmRemove ? (
           <div className="flex items-center gap-2 ml-2">
-            <span className="text-xs text-rose-500 font-medium">Remove rule?</span>
+            <span className="text-xs text-rose-500 font-medium">
+              Remove rule?
+            </span>
             <button
               type="button"
               className="text-xs text-rose-600 dark:text-rose-400 font-bold hover:underline cursor-pointer"
               onClick={() => {
                 try {
                   removeRulebookEntry(entry.id);
-                  onRefresh();
                 } catch (e) {
                   onError(e.message);
                 }
@@ -292,43 +300,15 @@ export default function Rulebook() {
   const activeId = searchParams.get("activeId");
   const activeRuleId = searchParams.get("ruleId");
 
-  const [entries, setEntries] = useState(getRulebook);
+  useStoreChange();
+  const entries = getRulebook();
   const [error, setError] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("detailed"); // 'compact' or 'detailed'
 
-  // Scoped assistance: ONLY mark active session as assisted if explicitly referred from active study
-  useEffect(() => {
-    if (!from || !activeId) return;
-    try {
-      if (from === "foundations") {
-        const block = getFoundationSession();
-        if (
-          block &&
-          block.id === activeId &&
-          block.questions?.[block.index] &&
-          !block.checked &&
-          !block.assisted
-        ) {
-          setFoundationSession({ ...block, assisted: true });
-        }
-      } else if (from === "repair") {
-        const repair = getRepairDraft(activeId);
-        if (
-          repair &&
-          repair.id === activeId &&
-          repair.stage === "practice" &&
-          !repair.checked &&
-          !repair.assisted
-        ) {
-          setRepairDraft({ ...repair, assisted: true });
-        }
-      }
-    } catch (e) {
-      setError(e.message);
-    }
-  }, [from, activeId]);
+  // Support is recorded by the originating study action before navigation.
+  // Browsing the rulebook itself never changes unrelated attempt evidence.
 
   // Scroll to active rule if present
   useEffect(() => {
@@ -338,7 +318,7 @@ export default function Rulebook() {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     }
-  }, [activeRuleId, entries]);
+  }, [activeRuleId]);
 
   const categories = [
     { id: "all", label: "All Rules" },
@@ -361,7 +341,13 @@ export default function Rulebook() {
       const matchPitfall = entry.pitfall?.toLowerCase().includes(q);
       const matchNotes = entry.notes?.toLowerCase().includes(q);
       const matchExplanation = entry.explanation?.toLowerCase().includes(q);
-      return matchTitle || matchWhen || matchPitfall || matchNotes || matchExplanation;
+      return (
+        matchTitle ||
+        matchWhen ||
+        matchPitfall ||
+        matchNotes ||
+        matchExplanation
+      );
     }
     return true;
   });
@@ -374,15 +360,23 @@ export default function Rulebook() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
           <p className="eyebrow">Useful methods, within reach</p>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[var(--ink)] tracking-tight">Your rulebook</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[var(--ink)] tracking-tight">
+            Your rulebook
+          </h1>
           <p className="study-intro text-sm sm:text-base mt-1 text-[var(--ink-2)] max-w-xl">
             Checked procedures, diagnostic triggers, and personal memory cues.
           </p>
         </div>
         <div className="flex items-center gap-2.5 self-start sm:self-auto bg-[var(--surface-2)] border border-[var(--line)] px-3 py-1.5 rounded-xl text-xs text-[var(--ink-2)]">
-          <span className="font-semibold text-[var(--ink)]">{entries.length}</span> methods
+          <span className="font-semibold text-[var(--ink)]">
+            {entries.length}
+          </span>{" "}
+          methods
           <span>·</span>
-          <span className="font-semibold text-[var(--ink)]">{notesCount}</span> notes
+          <span className="font-semibold text-[var(--ink)]">
+            {notesCount}
+          </span>{" "}
+          notes
         </div>
       </div>
 
@@ -390,10 +384,18 @@ export default function Rulebook() {
       {from === "repair" && activeId && (
         <aside className="return-study-banner mb-6">
           <div className="return-study-info">
-            <span className="study-badge supported">Consulting rulebook for active repair</span>
-            <p>Support has been recorded for your repair task. Review the method, then return to solve your follow-up.</p>
+            <span className="study-badge supported">
+              Consulting rulebook for active repair
+            </span>
+            <p>
+              Support has been recorded for your repair task. Review the method,
+              then return to solve your follow-up.
+            </p>
           </div>
-          <Link className="study-button py-2 px-4 text-xs" to={`/repair?draftId=${encodeURIComponent(activeId)}`}>
+          <Link
+            className="study-button py-2 px-4 text-xs"
+            to={`/repair?draftId=${encodeURIComponent(activeId)}`}
+          >
             ← Return to active repair task
           </Link>
         </aside>
@@ -402,8 +404,13 @@ export default function Rulebook() {
       {from === "foundations" && activeId && (
         <aside className="return-study-banner mb-6">
           <div className="return-study-info">
-            <span className="study-badge supported">Consulting rulebook for active foundations</span>
-            <p>Support has been recorded for this question. Read the method and return to proceed.</p>
+            <span className="study-badge supported">
+              Consulting rulebook for active foundations
+            </span>
+            <p>
+              Support has been recorded for this question. Read the method and
+              return to proceed.
+            </p>
           </div>
           <Link className="study-button py-2 px-4 text-xs" to="/foundations">
             ← Return to foundation session
@@ -418,7 +425,10 @@ export default function Rulebook() {
       )}
 
       {/* Search and Category Filter Toolbar */}
-      <section className="rulebook-controls-section mb-6 space-y-3" aria-label="Rulebook filters">
+      <section
+        className="rulebook-controls-section mb-6 space-y-3"
+        aria-label="Rulebook filters"
+      >
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           {/* Search Field */}
           <div className="relative flex-1">
@@ -474,7 +484,10 @@ export default function Rulebook() {
         </div>
 
         {/* Category Pills */}
-        <nav className="rulebook-category-nav flex flex-wrap gap-2 pt-1" aria-label="Rule categories">
+        <nav
+          className="rulebook-category-nav flex flex-wrap gap-2 pt-1"
+          aria-label="Rule categories"
+        >
           {categories.map((c) => {
             const count =
               c.id === "all"
@@ -490,7 +503,9 @@ export default function Rulebook() {
                 onClick={() => setSelectedCategory(c.id)}
               >
                 <span>{c.label}</span>
-                <span className="opacity-75 text-xs ml-1 font-mono">({count})</span>
+                <span className="opacity-75 text-xs ml-1 font-mono">
+                  ({count})
+                </span>
               </button>
             );
           })}
@@ -520,7 +535,9 @@ export default function Rulebook() {
       {!filteredEntries.length && (
         <section className="study-card text-center py-12 px-6">
           <div className="text-3xl mb-3">📖</div>
-          <h2 className="text-xl font-bold text-[var(--ink)] mb-2">No matching rules found</h2>
+          <h2 className="text-xl font-bold text-[var(--ink)] mb-2">
+            No matching rules found
+          </h2>
           <p className="text-sm text-[var(--ink-2)] max-w-md mx-auto mb-6">
             {searchQuery
               ? `No entries match "${searchQuery}". Try a different keyword or topic.`
@@ -553,7 +570,6 @@ export default function Rulebook() {
             from={from}
             activeId={activeId}
             defaultExpanded={viewMode === "detailed"}
-            onRefresh={() => setEntries(getRulebook())}
             onError={setError}
           />
         ))}

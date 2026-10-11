@@ -1,343 +1,44 @@
-import React, { useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { getCourse } from '../../data/courses/courseCatalog';
-import { getMathUnit, checkUnitPrerequisites } from '../../data/courses/mathFoundations';
-import { getGeometryUnit, checkGeometryPrerequisites } from '../../data/courses/geometryFoundations';
-import { getAttemptsForUnit, getLessonProgress, getProgress } from '../../utils/storage';
+import { getMathUnit } from '../../data/courses/mathFoundations';
+import { getGeometryUnit } from '../../data/courses/geometryFoundations';
+import { getAttemptsForUnit, getLessonProgress, getStudySession } from '../../utils/storage';
 import VideoDrawer from '../../components/Study/VideoDrawer';
 
 export default function UnitPage() {
   const { courseId, unitId } = useParams();
-  const course = getCourse(courseId) || getCourse('math');
-  const isGeometry = courseId === 'geometry';
-  const unit = isGeometry ? getGeometryUnit(unitId) : getMathUnit(unitId);
+  const course = getCourse(courseId);
+  const lookup = courseId === 'geometry' ? getGeometryUnit : getMathUnit;
+  const unit = course?.status === 'active' ? lookup(unitId) : null;
+  if (!unit) return <div className="study-page"><h1>Unit not found</h1><Link to="/courses">Browse courses</Link></div>;
 
-  const { lessonProgress, attempts, missedAttempts, independentCount, isQuizPassed, prereqCheck } = useMemo(() => {
-    if (!unit) {
-      return {
-        lessonProgress: null,
-        attempts: [],
-        missedAttempts: [],
-        independentCount: 0,
-        isQuizPassed: false,
-        prereqCheck: { isLocked: false, missingPrerequisites: [] },
-      };
-    }
+  const base = `/courses/${course.id}/${unit.id}`;
+  const attempts = getAttemptsForUnit(course.id, unit.id);
+  const independent = attempts.filter(a => a.isCorrect && !a.assisted && !a.skipped).length;
+  const supported = attempts.filter(a => a.assisted && !a.skipped).length;
+  const misses = attempts.filter(a => !a.isCorrect && !a.skipped).length;
+  const lesson = getLessonProgress(unit.unitPath);
+  const session = getStudySession(`${courseId}/${unitId}:practice`);
+  const resumable = session && !session.completed;
+  const preparations = unit.prerequisites.map(id => lookup(id)).filter(Boolean);
+  const labTitle = {'number-line':'Number line', 'angle-explorer':'Angles & transversals', 'pythagoras':'Pythagorean proof'}[unit.labType] || 'Fraction bars';
 
-    const lesson = getLessonProgress(unit.unitPath);
-    const unitAttempts = getAttemptsForUnit(courseId || 'math', unit.id);
-    const missed = unitAttempts.filter((a) => !a.isCorrect);
-    const independent = unitAttempts.filter((a) => a.isCorrect && !a.assisted).length;
-    const progress = getProgress();
-    const quizPassed = Boolean(progress?.[unit.id]?.quizPassed || progress?.[unit.unitPath]?.quizPassed);
-
-    // Prereq check
-    const check = isGeometry ? checkGeometryPrerequisites(unit.id) : checkUnitPrerequisites(unit.id);
-
-    return {
-      lessonProgress: lesson,
-      attempts: unitAttempts,
-      missedAttempts: missed,
-      independentCount: independent,
-      isQuizPassed: quizPassed,
-      prereqCheck: check,
-    };
-  }, [courseId, unitId, unit]);
-
-  if (!unit) {
-    return (
-      <div className="study-page py-12 text-center">
-        <h1 className="text-2xl font-bold text-[var(--ink)] mb-4">Unit not found</h1>
-        <Link to={`/courses/${courseId || 'math'}`} className="study-button">
-          ← Back to Course
-        </Link>
-      </div>
-    );
-  }
-
-  return (
-    <div className="study-page animate-fade-in max-w-3xl mx-auto py-6">
-      {/* Breadcrumb Navigation */}
-      <nav className="mb-6 flex items-center gap-2 text-xs font-semibold text-[var(--ink-3)]">
-        <Link to="/courses" className="hover:text-[var(--ink)] transition-colors">
-          Courses
-        </Link>
-        <span>/</span>
-        <Link to={`/courses/${course.id}`} className="hover:text-[var(--ink)] transition-colors">
-          {course.title}
-        </Link>
-        <span>/</span>
-        <span className="text-[var(--ink)]">{unit.title}</span>
-      </nav>
-
-      {/* Unit Header */}
-      <header className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <span className="text-3xl p-2 rounded-xl bg-[var(--surface-2)] inline-block">
-            {unit.icon}
-          </span>
-          <div>
-            <span className="font-mono text-xs uppercase text-[var(--ink-3)] font-semibold">
-              Unit {unit.order}
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-bold text-[var(--ink)] tracking-tight">
-              {unit.title}
-            </h1>
-          </div>
-        </div>
-        <p className="text-base text-[var(--ink-2)] mt-2 leading-relaxed">
-          {unit.description}
-        </p>
-
-        {prereqCheck.isLocked && prereqCheck.missingPrerequisites.length > 0 && (
-          <div className="mt-4 p-3.5 rounded-xl border border-[var(--heat)] bg-[var(--heat-soft)] text-xs text-[var(--ink)]">
-            <span className="font-bold">Prerequisite Notice:</span> We recommend completing{' '}
-            {prereqCheck.missingPrerequisites
-              .map((p) => (isGeometry ? getGeometryUnit(p)?.title : getMathUnit(p)?.title) || p)
-              .join(', ')}{' '}
-            before attempting this unit independently.
-          </div>
-        )}
-      </header>
-
-      {/* Stacked Unit Sections (Khan Academy Style) */}
-      <div className="space-y-4">
-        {/* Section 1: Guided Lesson */}
-        <div className="study-card p-6 rounded-2xl border border-[var(--line)] bg-[var(--surface)]">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">📖</span>
-                <h2 className="text-lg font-bold text-[var(--ink)]">Interactive Lesson</h2>
-                {lessonProgress?.completed ? (
-                  <span className="study-badge text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[var(--good-soft)] text-[var(--good)]">
-                    ✓ Completed
-                  </span>
-                ) : lessonProgress?.currentStepIndex > 0 ? (
-                  <span className="study-badge text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[var(--accent-soft)] text-[var(--accent)]">
-                    ⏳ In Progress
-                  </span>
-                ) : (
-                  <span className="study-badge text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[var(--surface-2)] text-[var(--ink-3)]">
-                    Not Started
-                  </span>
-                )}
-              </div>
-              <p className="text-sm text-[var(--ink-2)]">
-                {unit.hasLesson
-                  ? 'Step-by-step interactive walkthrough with visual models and micro-checks.'
-                  : 'Conceptual introduction and core procedure rules.'}
-              </p>
-            </div>
-
-            <div className="shrink-0">
-              {unit.hasLesson ? (
-                <Link
-                  to={`/courses/${course.id}/${unit.id}/lesson`}
-                  className="study-button inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-transform active:scale-95"
-                  style={{ backgroundColor: 'var(--accent)', color: 'var(--surface)' }}
-                >
-                  {lessonProgress?.completed
-                    ? 'Review Lesson'
-                    : lessonProgress?.currentStepIndex > 0
-                      ? 'Resume Lesson →'
-                      : 'Start Lesson →'}
-                </Link>
-              ) : (
-                <Link
-                  to={`/courses/${course.id}/${unit.id}/practice`}
-                  className="study-button secondary inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border border-[var(--line)] text-[var(--ink)]"
-                >
-                  Start Practice →
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Section 2: Interactive Lab (if unit has lab) */}
-        {unit.hasLab && (
-          <div className="study-card p-6 rounded-2xl border border-[var(--line)] bg-[var(--surface)]">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-lg">🔬</span>
-                  <h2 className="text-lg font-bold text-[var(--ink)]">
-                    {unit.labType === 'number-line'
-                      ? 'Number Line Lab'
-                      : unit.labType === 'angle-explorer'
-                        ? 'Angle & Transversal Lab'
-                        : unit.labType === 'pythagoras'
-                          ? 'Pythagorean Proof Lab'
-                          : 'Fraction Bar Lab'}
-                  </h2>
-                  <span className="study-badge text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[var(--accent-soft)] text-[var(--accent)]">
-                    Interactive Lab
-                  </span>
-                </div>
-                <p className="text-sm text-[var(--ink-2)]">
-                  {unit.labType === 'number-line'
-                    ? 'Explore magnitude, signed numbers, and fractional tick snapping on an interactive axis.'
-                    : unit.labType === 'angle-explorer'
-                      ? 'Tilt transversals across parallel lines to observe vertical, alternate interior, and consecutive angle invariants.'
-                      : unit.labType === 'pythagoras'
-                        ? 'Adjust right triangle legs, inspect square tile grids, and verify spatial area conservation.'
-                        : 'Repartition wholes and combine fractional pieces visually.'}
-                </p>
-              </div>
-
-              <div className="shrink-0">
-                <Link
-                  to={`/courses/${course.id}/${unit.id}/lab`}
-                  className="study-button secondary px-4 py-2 rounded-xl text-sm font-semibold border border-[var(--line)] text-[var(--ink)] hover:bg-[var(--surface-2)] transition-colors inline-block"
-                >
-                  Open Lab →
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Section 3: Practice */}
-        <div className="study-card p-6 rounded-2xl border border-[var(--line)] bg-[var(--surface)]">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">✏️</span>
-                <h2 className="text-lg font-bold text-[var(--ink)]">Independent Practice</h2>
-                {independentCount >= 6 ? (
-                  <span className="study-badge text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[var(--good-soft)] text-[var(--good)]">
-                    Solid ({independentCount} solved)
-                  </span>
-                ) : (
-                  <span className="study-badge text-[10px] font-mono px-2 py-0.5 rounded bg-[var(--surface-2)] text-[var(--ink-3)]">
-                    {attempts.length} attempts · {independentCount} independent
-                  </span>
-                )}
-              </div>
-              <p className="text-sm text-[var(--ink-2)]">
-                Paper-first problem solving with targeted hints and solution walkthroughs.
-              </p>
-            </div>
-
-            <div className="shrink-0">
-              <Link
-                to={`/courses/${course.id}/${unit.id}/practice`}
-                className="study-button inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-transform active:scale-95"
-                style={{ backgroundColor: 'var(--accent)', color: 'var(--surface)' }}
-              >
-                {attempts.length > 0 ? 'Continue Practice →' : 'Start Practice →'}
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Section 4: Unit Review & Mistakes */}
-        <div className="study-card p-6 rounded-2xl border border-[var(--line)] bg-[var(--surface)]">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">📋</span>
-                <h2 className="text-lg font-bold text-[var(--ink)]">Unit Review</h2>
-                {missedAttempts.length > 0 ? (
-                  <span className="study-badge text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[var(--heat-soft)] text-[var(--heat)]">
-                    {missedAttempts.length} Missed
-                  </span>
-                ) : (
-                  <span className="study-badge text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[var(--good-soft)] text-[var(--good)]">
-                    No Misses
-                  </span>
-                )}
-              </div>
-              <p className="text-sm text-[var(--ink-2)]">
-                {missedAttempts.length > 0
-                  ? `You have ${missedAttempts.length} questions recorded with mistakes in this unit.`
-                  : 'All recorded practice in this unit has been verified or repaired.'}
-              </p>
-            </div>
-
-            <div className="shrink-0">
-              {missedAttempts.length > 0 ? (
-                <Link
-                  to={`/repair`}
-                  className="study-button secondary px-4 py-2 rounded-xl text-sm font-semibold border border-[var(--heat)] text-[var(--heat)] hover:bg-[var(--heat-soft)] transition-colors inline-block"
-                >
-                  Repair Mistakes →
-                </Link>
-              ) : (
-                <Link
-                  to={`/review`}
-                  className="study-button secondary px-4 py-2 rounded-xl text-sm font-semibold border border-[var(--line)] text-[var(--ink-2)] hover:bg-[var(--surface-2)] transition-colors inline-block"
-                >
-                  View History
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Section 5: Unit Quiz */}
-        <div className="study-card p-6 rounded-2xl border border-[var(--line)] bg-[var(--surface)]">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">📝</span>
-                <h2 className="text-lg font-bold text-[var(--ink)]">Unit Quiz</h2>
-                {isQuizPassed ? (
-                  <span className="study-badge text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[var(--good-soft)] text-[var(--good)]">
-                    ✓ Passed
-                  </span>
-                ) : (
-                  <span className="study-badge text-[10px] font-mono px-2 py-0.5 rounded bg-[var(--surface-2)] text-[var(--ink-3)]">
-                    3–5 questions
-                  </span>
-                )}
-              </div>
-              <p className="text-sm text-[var(--ink-2)]">
-                Low-pressure checkpoint confirming comprehension before unlocking subsequent topics.
-              </p>
-            </div>
-
-            <div className="shrink-0">
-              <Link
-                to={`/courses/${course.id}/${unit.id}/quiz`}
-                className="study-button inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-transform active:scale-95"
-                style={{ backgroundColor: 'var(--accent)', color: 'var(--surface)' }}
-              >
-                {isQuizPassed ? 'Retake Quiz' : 'Take Quiz →'}
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Section 6: See It in Action (Engineering & Real-World Connections) */}
-        <div className="study-card p-6 rounded-2xl border border-[var(--line)] bg-[var(--surface-2)]">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-lg">🔧</span>
-            <h2 className="text-base font-bold text-[var(--ink)]">See It in Action</h2>
-          </div>
-          <p className="text-xs text-[var(--ink-2)] leading-relaxed mb-3">
-            Real engineering and applied problems that rely directly on this unit:
-          </p>
-          <ul className="space-y-2 text-xs text-[var(--ink-2)]">
-            <li className="flex items-start gap-2">
-              <span className="text-[var(--accent)] font-bold">•</span>
-              <span>
-                <strong>Scale Drawings & Blueprints:</strong> Converting fractional meter dimensions on architectural schematics into physical measurements.
-              </span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-[var(--accent)] font-bold">•</span>
-              <span>
-                <strong>Material Stock Cutting:</strong> Calculating leftover kerf and stock lengths when subdividing materials into unequal portions.
-              </span>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      {/* Floating Video Reference Drawer */}
-      <VideoDrawer unitId={unit?.id} />
-    </div>
-  );
+  return <div className="v3-unit">
+    <nav className="v3-breadcrumb" aria-label="Breadcrumb"><Link to="/courses">Courses</Link><span>/</span><Link to={`/courses/${course.id}`}>{course.title}</Link></nav>
+    <header className="v3-unit-heading"><p className="eyebrow">Unit {String(unit.order).padStart(2, '0')} · Your pace</p><h1>{unit.title}</h1><p className="study-intro">{unit.description}</p>
+      {unit.hasPractice ? <div className="study-actions"><Link className="study-button" to={`${base}/practice`}>{resumable ? `Resume question ${session.index + 1}` : 'Start a study session'}</Link>{unit.hasPractice && <Link className="study-button secondary" to={`${base}/lesson`}>{lesson?.completed ? 'Revisit the explanation' : 'Start with an explanation'}</Link>}</div> : <p className="study-notice">Practice and unit checks are still being authored for this topic.</p>}
+      <p className="study-muted">Paper welcome. Open support when you need it, or try a problem first.</p>
+    </header>
+    {preparations.length > 0 && <section className="v3-preparation"><span className="eyebrow">Useful preparation</span><div>{preparations.map(p => <Link key={p.id} to={`/courses/${course.id}/${p.id}`}>{p.title}</Link>)}</div><p className="study-muted">These topics connect to this unit. You’re free to explore in any order.</p></section>}
+    <section className="v3-unit-activities" aria-label="Ways to study">
+      {unit.hasPractice && <article><p className="eyebrow">Understand</p><h2>See how the idea works</h2><p>A brief introduction, a matching visual, and one worked example before a different problem.</p><Link className="study-text-button" to={`${base}/lesson`}>Open the guided introduction</Link></article>}
+      {unit.hasLesson && <article><p className="eyebrow">Go deeper</p><h2>Explore the full lesson</h2><p>Additional authored explanations and guided activities.</p><Link className="study-text-button" to={`${base}/lesson/deep`}>Open the full lesson</Link></article>}
+      {unit.hasLab && <article><p className="eyebrow">Explore</p><h2>{labTitle}</h2><p>Change the model and notice what stays the same.</p><Link className="study-text-button" to={`${base}/lab`}>Open the visual lab</Link></article>}
+      {unit.legacyConceptId && <article><p className="eyebrow">Remember</p><h2>Refresh the rules</h2><p>Six untimed puzzles. Recognition is recorded separately from solving.</p><Link className="study-text-button" to={`/recall?focus=${unit.legacyConceptId}`}>Open Rule Match</Link></article>}
+      {unit.hasPractice && unit.hasQuiz && <article><p className="eyebrow">Check</p><h2>Try a unit check</h2><p>Four questions with feedback after each. First answers and helped retries stay separate.</p><Link className="study-text-button" to={`${base}/quiz`}>Start a unit check</Link></article>}
+      <article><p className="eyebrow">Reflect</p><h2>Look back at your work</h2><p>{attempts.length ? `${independent} independent correct submissions · ${supported} supported submissions · ${misses} incorrect submissions.` : 'No recorded attempts in this unit yet.'}</p><p className="study-muted">These are practice observations. Later independent recall still matters.</p><Link className="study-text-button" to={`/review?unit=${encodeURIComponent(unit.unitPath)}`}>Review answers & repair mistakes</Link></article>
+      {unit.legacyConceptId === 'addition' && <article><p className="eyebrow">Connect</p><h2>Measured pieces</h2><p>Add material lengths and reason about what remains. A small step toward engineering.</p><Link className="study-text-button" to={`${base}/application`}>Try an engineering connection</Link></article>}
+    </section>
+    <VideoDrawer unitId={unit.id}/>
+  </div>;
 }

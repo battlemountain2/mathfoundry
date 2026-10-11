@@ -58,7 +58,7 @@ export function processContent(text, plainText = false) {
   result = result.replace(/__([^_]+?)__/g, '<strong class="font-bold text-[var(--ink)]">$1</strong>');
 
   // Italic: *text* (avoiding bullet list markers at line starts)
-  result = result.replace(/(^|[^\*])\*([^*\n]+?)\*([^\*]|$)/g, '$1<em class="italic">$2</em>$3');
+  result = result.replace(/(^|[^*])\*([^*\n]+?)\*([^*]|$)/g, '$1<em class="italic">$2</em>$3');
 
   // Inline code: `code`
   result = result.replace(/`([^`\n]+?)`/g, '<code class="px-1.5 py-0.5 rounded bg-[var(--surface-2)] text-[var(--ink)] font-mono text-xs">$1</code>');

@@ -376,7 +376,7 @@ test('STRESS-4: mathfoundry_data_before_v2 snapshot is created and never overwri
 // SUITE 5: Empirical Adversarial Failure Modes (Exposing Implementation Bugs)
 // ============================================================================
 
-test('STRESS-DEFECT-1: Legacy practice attempts with moduleId fail canonical unitPath and unitId virtualization', () => {
+test('Legacy practice attempts with moduleId resolve canonical unitPath and unitId', () => {
   // Practice sessions in MathFoundry store answers with { moduleId: 'addition' }, { moduleId: 'equivalence' }, etc.
   const practiceAttempts = [
     { id: 'p-equiv', moduleId: 'equivalence', format: 'fill', isCorrect: true },
@@ -441,7 +441,7 @@ test('STRESS-DEFECT-1: Legacy practice attempts with moduleId fail canonical uni
   );
 });
 
-test('STRESS-DEFECT-2: Array with null/sparse elements in legacy arrays causes unhandled TypeError in getAllLearningAttempts', () => {
+test('Null/sparse elements in legacy arrays are safely skipped by getAllLearningAttempts', () => {
   // If legacy localStorage has sparse or null array elements
   resetStorage({
     schemaVersion: 2,
@@ -457,7 +457,7 @@ test('STRESS-DEFECT-2: Array with null/sparse elements in legacy arrays causes u
   }, 'getAllLearningAttempts must not throw unhandled TypeError when encountering null entries in arrays');
 });
 
-test('STRESS-DEFECT-3: saveLessonProgress with null data throws unhandled TypeError', () => {
+test('saveLessonProgress safely accepts null data', () => {
   resetStorage({ schemaVersion: 2 });
 
   // Calling saveLessonProgress with null data (e.g. from an uninitialized component prop)

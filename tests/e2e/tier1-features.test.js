@@ -6,8 +6,6 @@ import {
   EXPECTED_COURSES,
   EXPECTED_MATH_UNITS,
   EXPECTED_LEGACY_MAPPINGS,
-  REVERSE_LEGACY_MAPPINGS,
-  LESSON_STEP_TYPES,
   THEME_PALETTES,
   calculateNumberLineTicks,
   clampValue,
@@ -18,11 +16,10 @@ import {
   loadStorageModule,
   loadCourseCatalogModule,
   loadMathFoundationsModule,
-  loadFractionLessonModule,
-} from './setup.js';
+  loadFractionLessonModule } from './setup.js';
 import { processContent } from '../../src/utils/mathHelpers.js';
-import { equivalentAnswer, numericValue } from '../../src/utils/answerChecking.js';
-import { makeProblem, concepts } from '../../src/data/foundations.js';
+import { equivalentAnswer } from '../../src/utils/answerChecking.js';
+import { makeProblem } from '../../src/data/foundations.js';
 
 // Reset mock storage before each run
 test.beforeEach(() => {
@@ -578,7 +575,7 @@ test('F-32: Units 1-6 Functional Content provides working problem generators for
   }
 });
 
-test('F-33: Units 7-12 Scaffold Stubs provide complete metadata and placeholder stubs', async () => {
+test('F-33: Units 7-12 provide complete metadata and introductory practice', async () => {
   const mathModule = await loadMathFoundationsModule();
   const units = mathModule?.mathFoundationsUnits || EXPECTED_MATH_UNITS;
 
@@ -589,7 +586,7 @@ test('F-33: Units 7-12 Scaffold Stubs provide complete metadata and placeholder 
     assert.ok(unit.id, 'Stub unit has id');
     assert.ok(unit.title, 'Stub unit has title');
     assert.ok(Array.isArray(unit.prerequisites), 'Stub unit has prerequisites array');
-    assert.equal(unit.hasPractice, false, 'Stub unit practice marked as stub/coming soon');
+    assert.equal(unit.hasPractice, true, 'Introductory practice is available');
   }
 });
 

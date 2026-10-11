@@ -7,46 +7,17 @@
  * signed numbers and fractions, and 3-theme token compliance.
  */
 
-import React, { useState, useRef, useCallback, useId } from 'react';
+import React, { useState, useRef, useCallback, useId } from "react";
 import {
   calculateNumberLineTicks,
   clampValue,
   snapToTick,
   verifyNumberLinePlacement,
-  calculateKeyboardStep,
   handleKeyboardNavigation,
-  calculateZoom,
   calculateZoomSubdivisions,
-  valueToPercent,
-  percentToValue,
-  gcd,
   formatValueAsFraction,
-  formatFraction,
-  getNumberLineAriaProps,
-  resolveNumberLineConfig,
-  getInitialNumberLineState,
-} from '../../utils/numberLine.js';
-import { sound } from '../../utils/audioEffects.js';
-
-// Re-export pure helpers so consumers can access them from the component module
-export {
-  calculateNumberLineTicks,
-  clampValue,
-  snapToTick,
-  verifyNumberLinePlacement,
-  calculateKeyboardStep,
-  handleKeyboardNavigation,
-  calculateZoom,
-  calculateZoomSubdivisions,
-  valueToPercent,
-  percentToValue,
-  gcd,
-  formatValueAsFraction,
-  formatFraction,
-  getNumberLineAriaProps,
-  resolveNumberLineConfig,
-  getInitialNumberLineState,
-};
+} from "../../utils/numberLine.js";
+import { sound } from "../../utils/audioEffects.js";
 
 /**
  * NumberLineLab Component
@@ -71,7 +42,7 @@ export default function NumberLineLab({
   embedded = false,
   initialValue = null,
   readOnly = false,
-  className = '',
+  className = "",
   onVerify = null,
   onPositionChange = null,
 }) {
@@ -112,7 +83,7 @@ export default function NumberLineLab({
       const clamped = clampValue(val, min, max);
       return paddingX + ((clamped - min) / (max - min)) * trackWidth;
     },
-    [min, max]
+    [min, max],
   );
 
   const xToValue = useCallback(
@@ -122,7 +93,7 @@ export default function NumberLineLab({
       const ratio = (clampedX - paddingX) / trackWidth;
       return clampValue(min + ratio * (max - min), min, max);
     },
-    [min, max]
+    [min, max],
   );
 
   const triggerSnapPulse = useCallback(() => {
@@ -146,7 +117,7 @@ export default function NumberLineLab({
         }
       }
     },
-    [onPositionChange, triggerSnapPulse]
+    [onPositionChange, triggerSnapPulse],
   );
 
   // Pointer position to coordinate
@@ -158,7 +129,7 @@ export default function NumberLineLab({
       const svgX = ((clientX - rect.left) / rect.width) * 800;
       return xToValue(svgX);
     },
-    [min, xToValue]
+    [min, xToValue],
   );
 
   // Pointer Handlers
@@ -206,7 +177,7 @@ export default function NumberLineLab({
       e.key,
       e.shiftKey,
       [min, max],
-      currentZoom
+      currentZoom,
     );
 
     if (result.handled) {
@@ -242,35 +213,37 @@ export default function NumberLineLab({
 
   // Zoom Controls (F-16, E-12)
   const handleZoomIn = () => {
-    setCurrentZoom((prev) => calculateZoomSubdivisions(prev, 'in', 1, 16));
+    setCurrentZoom((prev) => calculateZoomSubdivisions(prev, "in", 1, 16));
   };
 
   const handleZoomOut = () => {
-    setCurrentZoom((prev) => calculateZoomSubdivisions(prev, 'out', 1, 16));
+    setCurrentZoom((prev) => calculateZoomSubdivisions(prev, "out", 1, 16));
   };
 
   const thumbX = valueToX(placedValue);
   const formattedVal = formatValueAsFraction(placedValue, currentZoom);
   const hasTarget = targetValue !== null && targetValue !== undefined;
-  const targetFormatted = hasTarget ? formatValueAsFraction(targetValue, currentZoom) : null;
+  const targetFormatted = hasTarget
+    ? formatValueAsFraction(targetValue, currentZoom)
+    : null;
   const canZoomIn = currentZoom < 16;
   const canZoomOut = currentZoom > 1;
 
   // Determine thumb fill color based on verification state
   const thumbColor = verifyResult
     ? verifyResult.correct
-      ? 'var(--good)'
-      : 'var(--heat)'
-    : 'var(--accent)';
+      ? "var(--good)"
+      : "var(--heat)"
+    : "var(--accent)";
 
   return (
     <div
       className={`number-line-lab select-none rounded-2xl border transition-colors ${
         embedded
-          ? 'p-3.5 bg-[var(--surface)] border-[var(--line)]'
-          : 'study-card p-6 bg-[var(--surface)] border-[var(--line)] shadow-sm'
+          ? "p-3.5 bg-[var(--surface)] border-[var(--line)]"
+          : "study-card p-6 bg-[var(--surface)] border-[var(--line)] shadow-sm"
       } ${className}`}
-      style={{ color: 'var(--ink)' }}
+      style={{ color: "var(--ink)" }}
       data-testid="number-line-lab"
     >
       {/* Header & Prompt Section */}
@@ -280,11 +253,15 @@ export default function NumberLineLab({
             <p className="eyebrow text-xs uppercase tracking-wider text-[var(--ink-3)] font-semibold">
               Interactive Concept Lab
             </p>
-            <h3 className="text-xl font-bold tracking-tight text-[var(--ink)]" style={{ margin: '2px 0 0' }}>
+            <h3
+              className="text-xl font-bold tracking-tight text-[var(--ink)]"
+              style={{ margin: "2px 0 0" }}
+            >
               Number Line Laboratory
             </h3>
             <p className="text-xs text-[var(--ink-2)] mt-0.5">
-              Drag or use Arrow keys to position point (Shift + Arrow for fine adjustments)
+              Drag or use Arrow keys to position point (Shift + Arrow for fine
+              adjustments)
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -308,12 +285,12 @@ export default function NumberLineLab({
             <div
               className={`text-xs px-3 py-1 rounded-md font-semibold ${
                 verifyResult.correct
-                  ? 'bg-[var(--accent-soft)] text-[var(--good)] border border-[var(--good)]'
-                  : 'bg-[var(--surface-2)] text-[var(--heat)] border border-[var(--heat)]'
+                  ? "bg-[var(--accent-soft)] text-[var(--good)] border border-[var(--good)]"
+                  : "bg-[var(--surface-2)] text-[var(--heat)] border border-[var(--heat)]"
               }`}
             >
               {verifyResult.correct
-                ? '✓ Correct placement!'
+                ? "✓ Correct placement!"
                 : `Off by ${verifyResult.diff.toFixed(3)} — Try again`}
             </div>
           )}
@@ -332,7 +309,14 @@ export default function NumberLineLab({
           onPointerCancel={handlePointerUp}
         >
           {/* Transparent hit area covering entire axis region */}
-          <rect x="0" y="20" width="800" height="120" fill="transparent" aria-hidden="true" />
+          <rect
+            x="0"
+            y="20"
+            width="800"
+            height="120"
+            fill="transparent"
+            aria-hidden="true"
+          />
 
           {/* Left Arrowhead */}
           <polygon
@@ -395,19 +379,19 @@ export default function NumberLineLab({
                 y1={axisY - 26}
                 x2={valueToX(targetValue)}
                 y2={axisY + 26}
-                stroke={verifyResult.correct ? 'var(--good)' : 'var(--heat)'}
+                stroke={verifyResult.correct ? "var(--good)" : "var(--heat)"}
                 strokeWidth="2.5"
                 strokeDasharray="4 3"
               />
               <polygon
                 points="-5,-4 5,-4 0,4"
                 transform={`translate(${valueToX(targetValue)}, ${axisY - 28})`}
-                fill={verifyResult.correct ? 'var(--good)' : 'var(--heat)'}
+                fill={verifyResult.correct ? "var(--good)" : "var(--heat)"}
               />
               <text
                 x={valueToX(targetValue)}
                 y={axisY - 34}
-                fill={verifyResult.correct ? 'var(--good)' : 'var(--heat)'}
+                fill={verifyResult.correct ? "var(--good)" : "var(--heat)"}
                 fontSize="11"
                 fontWeight="700"
                 textAnchor="middle"
@@ -429,8 +413,8 @@ export default function NumberLineLab({
                   y1={tick.isMajor ? axisY - 18 : axisY - 9}
                   x2={tx}
                   y2={tick.isMajor ? axisY + 18 : axisY + 9}
-                  stroke={tick.isMajor ? 'var(--ink)' : 'var(--line-strong)'}
-                  strokeWidth={tick.isMajor ? '2.5' : '1.5'}
+                  stroke={tick.isMajor ? "var(--ink)" : "var(--line-strong)"}
+                  strokeWidth={tick.isMajor ? "2.5" : "1.5"}
                   strokeLinecap="round"
                 />
 
@@ -482,8 +466,8 @@ export default function NumberLineLab({
             transform={`translate(${thumbX}, ${axisY})`}
             className="focus:outline-none"
             style={{
-              cursor: isDragging ? 'grabbing' : 'grab',
-              outline: 'none',
+              cursor: isDragging ? "grabbing" : "grab",
+              outline: "none",
             }}
           >
             {/* Extended invisible pointer target */}
@@ -507,7 +491,11 @@ export default function NumberLineLab({
               stroke="var(--surface)"
               strokeWidth="2.5"
               className={`motion-reduce:transition-none transition-transform duration-100 ${
-                isDragging ? 'scale-125' : snapFeedback ? 'scale-115' : 'scale-100'
+                isDragging
+                  ? "scale-125"
+                  : snapFeedback
+                    ? "scale-115"
+                    : "scale-100"
               }`}
               aria-hidden="true"
             />
@@ -516,7 +504,11 @@ export default function NumberLineLab({
             <circle r="3" fill="var(--surface)" aria-hidden="true" />
 
             {/* Floating Value Tooltip Bubble */}
-            <g transform="translate(0, -32)" className="pointer-events-none" aria-hidden="true">
+            <g
+              transform="translate(0, -32)"
+              className="pointer-events-none"
+              aria-hidden="true"
+            >
               <rect
                 x="-28"
                 y="-13"
@@ -549,9 +541,13 @@ export default function NumberLineLab({
         {/* Left: Numerical Readout */}
         <div className="flex items-center gap-3">
           <span className="text-xs font-mono text-[var(--ink-2)]">
-            Position:{' '}
-            <strong className="text-[var(--ink)] text-sm">{formattedVal}</strong>{' '}
-            <span className="text-[var(--ink-3)]">({placedValue.toFixed(3)})</span>
+            Position:{" "}
+            <strong className="text-[var(--ink)] text-sm">
+              {formattedVal}
+            </strong>{" "}
+            <span className="text-[var(--ink-3)]">
+              ({placedValue.toFixed(3)})
+            </span>
           </span>
         </div>
 
@@ -603,8 +599,8 @@ export default function NumberLineLab({
               disabled={readOnly}
               className="study-button px-4 py-1 rounded-lg text-xs font-semibold transition-transform active:scale-95 disabled:opacity-40"
               style={{
-                backgroundColor: 'var(--accent)',
-                color: 'var(--surface)',
+                backgroundColor: "var(--accent)",
+                color: "var(--surface)",
               }}
             >
               Check

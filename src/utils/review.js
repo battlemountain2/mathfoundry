@@ -1,3 +1,6 @@
+import { getMathUnit } from '../data/courses/mathFoundations.js';
+import { getGeometryUnit } from '../data/courses/geometryFoundations.js';
+
 // Human-readable answers retain format-specific meaning, rather than raw indices.
 export function displayAnswer(problem, answer) {
   if (answer === null || answer === undefined) return "Not answered";
@@ -45,10 +48,11 @@ export function foundationHistory(attempts) {
   const groups = new Map();
   for (const attempt of attempts) {
     const id = attempt.sessionId || "legacy-foundations";
+    const unit=getMathUnit(attempt.unitPath || attempt.unitId || attempt.conceptId) || getGeometryUnit(attempt.unitPath || attempt.unitId || attempt.conceptId);
     if (!groups.has(id))
       groups.set(id, {
         id,
-        title: "Arithmetic & fractions",
+        title:unit ? `${unit.title}${attempt.mode === 'repair' ? ' · Repair follow-up' : ''}` : "Arithmetic & fractions",
         answers: [],
         timestamp: attempt.timestamp,
       });

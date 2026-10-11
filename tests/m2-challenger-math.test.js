@@ -17,21 +17,15 @@ import assert from 'node:assert/strict';
 
 import {
   calculateNumberLineTicks,
-  clampValue,
   snapToTick,
   verifyNumberLinePlacement,
   calculateKeyboardStep,
   handleKeyboardNavigation,
   calculateZoom,
-  calculateZoomSubdivisions,
   valueToPercent,
   percentToValue,
-  gcd,
   formatValueAsFraction,
-  getNumberLineAriaProps,
-  resolveNumberLineConfig,
-  getInitialNumberLineState,
-} from '../src/utils/numberLine.js';
+  getInitialNumberLineState } from '../src/utils/numberLine.js';
 
 // Seeded deterministic pseudo-random number generator (Mulberry32)
 function createPrng(seed = 133742) {

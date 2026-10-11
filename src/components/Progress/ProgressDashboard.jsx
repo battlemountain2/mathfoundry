@@ -307,7 +307,7 @@ export const ProgressDashboard = ({ progress = {}, diagnosticResults = null, str
           </div>
 
           <div className="space-y-3">
-            {displayedModules.map((mod, idx) => {
+            {displayedModules.map((mod) => {
               const modProg = progress[mod.id] || {};
               const totalLessons = mod.totalLessons || 4;
               const lessonsDone = modProg.lessonsCompleted || (modProg.completed ? totalLessons : 0);

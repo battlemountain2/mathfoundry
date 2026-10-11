@@ -2,12 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   setupMockLocalStorage,
-  EXPECTED_MATH_UNITS,
-  calculateNumberLineTicks,
-  verifyNumberLinePlacement,
   evaluateUnitLockState,
-  loadStorageModule,
-} from './setup.js';
+  loadStorageModule } from './setup.js';
 import { equivalentAnswer } from '../../src/utils/answerChecking.js';
 
 test.beforeEach(() => {
@@ -23,15 +19,7 @@ test('T3.01: NumberLineLab inside LessonPlayer - slider keyboard navigation does
   let lessonStepIndex = 2; // step 3 (interact)
   let sliderPosition = 0;
   
-  const step = {
-    type: 'interact',
-    component: 'NumberLineLab',
-    props: {
-      range: [-1, 1],
-      subdivisions: 4,
-      targetValue: 0.5,
-    },
-  };
+
 
   // Keyboard event handler inside NumberLineLab
   function onSliderKeyDown(e) {
@@ -216,7 +204,6 @@ test('T3.07: Unit Quiz Evaluation - Quiz scores record and contribute to unit co
 
 test('T3.08: Today Recommendation Priority Dynamics - Priority transitions from lesson to practice to review', async () => {
   setupMockLocalStorage();
-  const storage = await loadStorageModule();
 
   function computeNextAction(unitPath, lessonState, attempts, mistakes) {
     if (mistakes.length > 0) {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useStudyActivity } from '../Study/ActivityContext';
+import { useStudyActivity } from '../../hooks/useStudyActivity';
 import { MathBlock } from './MathBlock';
 import { InteractiveCanvas } from './InteractiveCanvas';
 import { PracticeProblems } from './PracticeProblems';
@@ -14,7 +14,6 @@ export const LessonView = ({ moduleData, onComplete, progress, onLessonComplete 
   useStudyActivity({moduleId:moduleData?.id,moduleTitle:moduleData?.title,lessonTitle:typeof activeTab === 'number' ? lessons[activeTab]?.title : activeTab,lessonTakeaways:typeof activeTab === 'number' ? lessons[activeTab]?.keyTakeaways : []});
   if (!moduleData) return null;
 
-  const totalTabs = lessons.length; // 0..n-1 = lessons, 'practice' = practice, 'quiz' = quiz
 
   const currentLesson = typeof activeTab === 'number' ? lessons[activeTab] : null;
   

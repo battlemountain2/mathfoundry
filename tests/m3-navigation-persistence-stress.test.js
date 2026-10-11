@@ -18,10 +18,7 @@ import {
   getNextStepIndex,
   getPreviousStepIndex,
   resolveInitialLessonState,
-  getLessonPracticeUrl,
-  createRulebookPayload,
-  validateLessonSchema,
-} from '../src/utils/lessonPlayer.js';
+  createRulebookPayload } from '../src/utils/lessonPlayer.js';
 import { addSubtractFractionsLesson, getStep } from '../src/data/lessons/addition.js';
 
 // ============================================================================
@@ -157,7 +154,6 @@ test('NAV-STRESS 1.2: 1,000 rapid backward "prev" clicks clamp at step 0 (underf
 
 test('NAV-STRESS 1.3: 1,000 randomized & burst navigation transitions strictly preserve boundary invariants', () => {
   const totalSteps = 8;
-  const unitPath = 'math/add-subtract-fractions';
   let currentStepIndex = 0;
 
   // Pseudo-random deterministic sequence of forward and backward clicks

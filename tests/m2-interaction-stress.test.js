@@ -12,20 +12,13 @@ import assert from 'node:assert/strict';
 import {
   calculateNumberLineTicks,
   clampValue,
-  snapToTick,
   verifyNumberLinePlacement,
   calculateKeyboardStep,
   handleKeyboardNavigation,
   calculateZoom,
   calculateZoomSubdivisions,
-  valueToPercent,
-  percentToValue,
-  gcd,
-  formatValueAsFraction,
-  getNumberLineAriaProps,
   resolveNumberLineConfig,
-  getInitialNumberLineState,
-} from '../src/utils/numberLine.js';
+  getInitialNumberLineState } from '../src/utils/numberLine.js';
 import { sound } from '../src/utils/audioEffects.js';
 
 // ============================================================================
@@ -573,7 +566,6 @@ test('ADV-4.03: Reset behavior across diverse axis domains', () => {
   assert.equal(negInit.placedValue, -10);
 
   // Custom initialValue prop respects boundary clamping
-  const customInit = getInitialNumberLineState({ range: [-2, 2], initialValue: 1.5 });
   // Note: getInitialNumberLineState uses defaultOrigin; component state uses initialValue
   const config = resolveNumberLineConfig({ range: [-2, 2], initialValue: 1.5 });
   assert.deepEqual(config.range, [-2, 2]);

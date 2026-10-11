@@ -9,10 +9,12 @@ const Home = lazy(() => import('./pages/Home'));
 const CourseCatalog = lazy(() => import('./pages/Courses/CourseCatalog'));
 const CoursePage = lazy(() => import('./pages/Courses/CoursePage'));
 const UnitPage = lazy(() => import('./pages/Courses/UnitPage'));
+const DeepLessonView = lazy(() => import('./pages/Courses/DeepLessonView'));
 const LessonView = lazy(() => import('./pages/Courses/LessonView'));
 const UnitPractice = lazy(() => import('./pages/Courses/UnitPractice'));
 const UnitLab = lazy(() => import('./pages/Courses/UnitLab'));
 const UnitQuiz = lazy(() => import('./pages/Courses/UnitQuiz'));
+const Recall = lazy(() => import('./pages/Recall'));
 const Review = lazy(() => import('./pages/Review'));
 const Repair = lazy(() => import('./pages/Repair'));
 const Rulebook = lazy(() => import('./pages/Rulebook'));
@@ -40,12 +42,15 @@ function App() {
               <Route path="/courses" element={<CourseCatalog />} />
               <Route path="/courses/:courseId" element={<CoursePage />} />
               <Route path="/courses/:courseId/:unitId" element={<UnitPage />} />
+              <Route path="/courses/:courseId/:unitId/lesson/deep" element={<DeepLessonView />} />
               <Route path="/courses/:courseId/:unitId/lesson" element={<LessonView />} />
               <Route path="/courses/:courseId/:unitId/practice" element={<UnitPractice />} />
               <Route path="/courses/:courseId/:unitId/lab" element={<UnitLab />} />
               <Route path="/courses/:courseId/:unitId/quiz" element={<UnitQuiz />} />
 
               {/* Cross-Subject Study Tools */}
+              <Route path="/recall" element={<Recall />} />
+              <Route path="/courses/:courseId/:unitId/application" element={<UnitPractice />} />
               <Route path="/rulebook" element={<Rulebook />} />
               <Route path="/repair" element={<Repair />} />
               <Route path="/review" element={<Review />} />

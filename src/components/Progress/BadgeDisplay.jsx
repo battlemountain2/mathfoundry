@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card } from '../common/Card';
+import { } from '../common/Card';
 import { learningPaths } from '../../data/learningPaths';
 
 export const BadgeDisplay = ({ progress = {}, diagnosticResults = null, streak = 0 }) => {

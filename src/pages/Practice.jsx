@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import AdaptivePractice from '../components/Practice/AdaptivePractice';
 import { generateAdaptiveSession } from '../utils/adaptiveEngine';
@@ -25,7 +25,7 @@ export const Practice = () => {
   const masteryData = getMastery() || {};
 
   // Pre-compute what will be targeted
-  const sessionPreview = useMemo(() => {
+  const sessionPreview = (() => {
     const supported = new Set(practiceBank.map(q=>q.moduleId));
     const weakAreas = (diagnosticResults?.weakAreas || []).filter(area=>supported.has(area));
     const weakFormats = Object.entries(formatPerformance)
@@ -35,7 +35,7 @@ export const Practice = () => {
     const totalSessions = practiceHistory.length;
     
     return { weakAreas, weakFormats, lastScore, totalSessions };
-  }, [diagnosticResults, formatPerformance, practiceHistory]);
+  })();
 
   const startPractice = () => {
     const questions = generateAdaptiveSession({

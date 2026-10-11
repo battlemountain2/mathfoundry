@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   getRepairDrafts,
+  completeRepairDraft,
+  getCompletedRepairs,
   getRepairDraft,
   setRepairDraft,
   removeRepairDraft,
@@ -25,7 +27,10 @@ import {
 import { displayAnswer, expectedAnswer } from "../utils/review";
 import { getProblemHint } from "../utils/hints";
 import MathBlock from "../components/Lesson/MathBlock";
-import { useStudyActivity } from "../components/Study/ActivityContext";
+import { useStudyActivity } from "../hooks/useStudyActivity";
+import ProblemFigure from "../components/Study/ProblemFigure";
+import { studyTimestamp } from "../utils/studySession";
+import { enrichStudyProblem } from "../utils/studyTeaching";
 
 export default function Repair() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -36,27 +41,36 @@ export default function Repair() {
   const [draftOverride, setDraftOverride] = useState(null);
   const [error, setError] = useState("");
 
-  const activeId =
-    draftIdParam && drafts.some((d) => d.id === draftIdParam)
+  const activeId = draftIdParam
+    ? drafts.some((d) => d.id === draftIdParam)
       ? draftIdParam
-      : selectedId && drafts.some((d) => d.id === selectedId)
-        ? selectedId
-        : drafts[0]?.id || null;
+      : null
+    : selectedId && drafts.some((d) => d.id === selectedId)
+      ? selectedId
+      : drafts[0]?.id || null;
 
+  const completedRecord = Object.values(getCompletedRepairs()).find(
+    (r) => r.draftId === draftIdParam,
+  );
+  const savedCompletion = completedRecord?.draft;
   const draft =
-    draftOverride && draftOverride.id === activeId
+    savedCompletion ||
+    (draftOverride?.completed
       ? draftOverride
-      : activeId
-        ? getRepairDraft(activeId)
-        : null;
+      : draftOverride && draftOverride.id === activeId
+        ? draftOverride
+        : activeId
+          ? getRepairDraft(activeId)
+          : null);
 
-  const q = draft?.problem;
+  const q = enrichStudyProblem(draft?.problem);
 
   useStudyActivity({
     moduleTitle: "Repair session",
     question: draft?.stage === "review" ? draft?.source?.question : q?.question,
     submittedAnswer: draft?.checked ? draft.input : null,
-    feedback: draft?.checked ? q?.explanation : null,
+    feedback:
+      draft?.showSolution || draft?.attempt?.isCorrect ? q?.explanation : null,
   });
 
   function switchDraft(id) {
@@ -82,7 +96,7 @@ export default function Repair() {
 
   function persist(next) {
     try {
-      setRepairDraft(next);
+      if (!next.completed) setRepairDraft(next);
       setDraftOverride(next);
       setDrafts(getRepairDrafts());
       setError("");
@@ -93,7 +107,7 @@ export default function Repair() {
 
   function check(e) {
     e.preventDefault();
-    if (draft.checked || draft.input === "") return;
+    if (draft.checked || draft.completed || draft.input === "") return;
     const choice = Boolean(q.options);
     if (!choice && numericValue(draft.input) === null) {
       setError("Enter a number or fraction.");
@@ -106,13 +120,18 @@ export default function Repair() {
         : equivalentAnswer(raw, q.answer)
       : checkPracticeAnswer(q, raw);
     const attemptsCount = (draft.attemptsOnCurrent || 0) + 1;
-    const isHelped = Boolean(draft.assisted || attemptsCount > 1 || draft.showHint);
+    const isHelped = Boolean(
+      draft.assisted || attemptsCount > 1 || draft.showHint,
+    );
     const initialAnswer = draft.initialAnswer ?? displayAnswer(q, raw);
 
     const attempt = {
-      id: `${draft.id}:follow-up`,
+      id: `${draft.id}:follow-up:${attemptsCount}`,
+      sourceAttemptId: draft.source.id,
       sessionId: draft.id,
       conceptId: q.conceptId,
+      unitId: q.unitId || draft.source.unitId,
+      unitPath: q.unitPath || draft.source.unitPath,
       moduleId: q.moduleId,
       problemId: q.id,
       problem: q,
@@ -126,7 +145,7 @@ export default function Repair() {
       assisted: isHelped,
       mode: "repair",
       format: q.format,
-      timestamp: new Date().toISOString(),
+      timestamp: studyTimestamp(),
     };
 
     try {
@@ -143,7 +162,7 @@ export default function Repair() {
 
       if (correct) {
         // Remove completed draft from pending drafts so it won't linger
-        removeRepairDraft(draft.id);
+        completeRepairDraft(draft, attempt);
         const remaining = getRepairDrafts();
         setDrafts(remaining);
         persist({
@@ -191,7 +210,13 @@ export default function Repair() {
       <div className="study-page">
         <p className="eyebrow">Targeted mastery recovery</p>
         <h1>Repair a skill</h1>
-        <p>You have no active repair tasks in progress. Choose a missed problem from session review to begin.</p>
+        <p>
+          {completedRecord
+            ? "This follow-up is already complete. Its original mistake remains in your history."
+            : draftIdParam
+              ? "This repair is no longer pending. Open your history to choose the problem you want to revisit."
+              : "You have no active repair tasks in progress. Choose a missed problem from session review to begin."}
+        </p>
         <div className="study-actions">
           <Link className="study-button" to="/review">
             Open session history
@@ -214,19 +239,36 @@ export default function Repair() {
         evidence.
       </p>
 
+      {draft.source?.sessionId && (
+        <Link
+          className="study-text-button"
+          to={`/review?session=${encodeURIComponent(draft.source.sessionId)}&attempt=${encodeURIComponent(draft.source.id)}`}
+        >
+          Return to source block
+        </Link>
+      )}
+
       {/* Multiple repair drafts switcher */}
       {drafts.length > 1 && (
         <section className="repair-draft-selector" aria-label="Pending repairs">
           <div className="repair-selector-header">
-            <span className="repair-selector-title">Pending Repairs ({drafts.length})</span>
-            <span className="study-muted text-xs">Switch between active drafts</span>
+            <span className="repair-selector-title">
+              Pending Repairs ({drafts.length})
+            </span>
+            <span className="study-muted text-xs">
+              Switch between active drafts
+            </span>
           </div>
           <div className="repair-pills-row">
             {drafts.map((d, idx) => {
               const isActive = d.id === draft.id;
               const title = d.subskill
-                ? d.subskill.replace(/-/g, " ")
-                : d.problem?.conceptId || d.problem?.moduleId || `Task ${idx + 1}`;
+                ? d.subskill === "linear-equations-twostep"
+                  ? "Two-step equations"
+                  : d.subskill.replace(/-/g, " ")
+                : d.problem?.conceptId ||
+                  d.problem?.moduleId ||
+                  `Task ${idx + 1}`;
               return (
                 <button
                   key={d.id}
@@ -252,7 +294,14 @@ export default function Repair() {
 
       {draft.stage === "review" ? (
         <section className="study-card">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 12,
+            }}
+          >
             <h2>Start with your original problem</h2>
             <button
               type="button"
@@ -267,9 +316,14 @@ export default function Repair() {
           <MathBlock content={draft.source.question} />
           <p>
             Your answer:{" "}
-            <strong>{String(draft.source.submittedAnswer ?? "Not answered")}</strong>
+            <strong>
+              {String(draft.source.submittedAnswer ?? "Not answered")}
+            </strong>
           </p>
-          <p>Expected: <strong>{draft.source.expectedAnswer ?? "Not recorded"}</strong></p>
+          <p>
+            Expected:{" "}
+            <strong>{draft.source.expectedAnswer ?? "Not recorded"}</strong>
+          </p>
           <MathBlock
             content={
               draft.source.explanation ||
@@ -279,10 +333,15 @@ export default function Repair() {
           {q.example && (
             <div className="worked-example">
               <h3>A worked example</h3>
-              <p>{q.example.question}</p>
+              <MathBlock content={q.example.question} />
+              {q.example.visual && (
+                <ProblemFigure key={q.example.id} problem={q.example} />
+              )}
               <ol>
                 {q.example.steps.map((step) => (
-                  <li key={step}>{step}</li>
+                  <li key={step}>
+                    <MathBlock content={step} />
+                  </li>
                 ))}
               </ol>
             </div>
@@ -300,7 +359,9 @@ export default function Repair() {
             <Link
               className="study-text-button"
               to={`/rulebook?from=repair&activeId=${encodeURIComponent(draft.id)}${
-                draft.rulebookId ? `&ruleId=${encodeURIComponent(draft.rulebookId)}` : ""
+                draft.rulebookId
+                  ? `&ruleId=${encodeURIComponent(draft.rulebookId)}`
+                  : ""
               }`}
             >
               Consult rulebook entry
@@ -309,16 +370,52 @@ export default function Repair() {
         </section>
       ) : (
         <section className="study-card problem-card">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <p className="eyebrow" style={{ margin: 0 }}>Fresh follow-up · Paper welcome</p>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 12,
+            }}
+          >
+            <p className="eyebrow" style={{ margin: 0 }}>
+              Fresh follow-up · Paper welcome
+            </p>
             {draft.subskill && (
-              <span className="study-badge neutral" style={{ textTransform: "capitalize" }}>
-                {draft.subskill.replace(/-/g, " ")}
+              <span
+                className="study-badge neutral"
+                style={{ textTransform: "capitalize" }}
+              >
+                {draft.subskill === "linear-equations-twostep"
+                  ? "Two-step equations"
+                  : draft.subskill.replace(/-/g, " ")}
               </span>
             )}
           </div>
 
-          <h2>{q.question}</h2>
+          <h2>
+            <MathBlock content={q.question} />
+          </h2>
+          {q.visual && (
+            <div className="repair-visual">
+              <button
+                className="study-text-button"
+                aria-expanded={Boolean(draft.showVisual)}
+                onClick={() =>
+                  persist({
+                    ...draft,
+                    showVisual: !draft.showVisual,
+                    assisted: draft.checked ? draft.assisted : true,
+                  })
+                }
+              >
+                {draft.showVisual
+                  ? "Hide the model"
+                  : "Explore this problem visually"}
+              </button>
+              {draft.showVisual && <ProblemFigure key={q.id} problem={q} />}
+            </div>
+          )}
           <form onSubmit={check}>
             {q.options ? (
               <fieldset className="study-options" disabled={draft.checked}>
@@ -355,7 +452,9 @@ export default function Repair() {
                   <button
                     type="button"
                     className="study-button secondary"
-                    onClick={() => persist({ ...draft, assisted: true })}
+                    onClick={() =>
+                      persist({ ...draft, assisted: true, showExample: true })
+                    }
                   >
                     Help me remember
                   </button>
@@ -363,20 +462,30 @@ export default function Repair() {
                 <Link
                   className="study-text-button"
                   to={`/rulebook?from=repair&activeId=${encodeURIComponent(draft.id)}${
-                    draft.rulebookId ? `&ruleId=${encodeURIComponent(draft.rulebookId)}` : ""
+                    draft.rulebookId
+                      ? `&ruleId=${encodeURIComponent(draft.rulebookId)}`
+                      : ""
                   }`}
-                  onClick={() => persist({ ...draft, assisted: true })}
+                  onClick={(event) => {
+                    if (!persist({ ...draft, assisted: true }))
+                      event.preventDefault();
+                  }}
                 >
                   Consult rulebook
                 </Link>
               </div>
             )}
-            {draft.assisted && !draft.checked && q.example && (
+            {draft.showExample && !draft.checked && q.example && (
               <div className="worked-example">
-                <p>{q.example.question}</p>
+                <MathBlock content={q.example.question} />
+                {q.example.visual && (
+                  <ProblemFigure key={q.example.id} problem={q.example} />
+                )}
                 <ol>
                   {q.example.steps.map((step) => (
-                    <li key={step}>{step}</li>
+                    <li key={step}>
+                      <MathBlock content={step} />
+                    </li>
                   ))}
                 </ol>
                 <p className="study-muted">
@@ -396,9 +505,12 @@ export default function Repair() {
             >
               {draft.attempt?.isCorrect ? (
                 <>
-                  <div className="study-badge correct" style={{ marginBottom: 8 }}>
+                  <div
+                    className="study-badge correct"
+                    style={{ marginBottom: 8 }}
+                  >
                     {draft.assisted || (draft.attemptsOnCurrent || 0) > 1
-                      ? "✓ Correct after hint"
+                      ? "✓ Correct with support"
                       : "✓ Correct"}
                   </div>
                   <h3>
@@ -409,7 +521,9 @@ export default function Repair() {
                   <div className="answer-comparison-box">
                     <div className="comparison-col your-answer is-correct">
                       <span className="comparison-label">Your answer</span>
-                      <span className="comparison-value">{draft.attempt?.submittedAnswer}</span>
+                      <span className="comparison-value">
+                        {draft.attempt?.submittedAnswer}
+                      </span>
                     </div>
                   </div>
                   <MathBlock content={q.explanation} />
@@ -417,7 +531,8 @@ export default function Repair() {
                     {draft.assisted
                       ? "Recorded as supported practice."
                       : "Recorded as an independent follow-up."}{" "}
-                    The original mistake remains preserved in your record for diagnostic clarity.
+                    The original mistake remains preserved in your record for
+                    diagnostic clarity.
                   </p>
                   <div className="study-actions" style={{ marginTop: 16 }}>
                     {remainingDrafts.length > 0 ? (
@@ -426,14 +541,15 @@ export default function Repair() {
                         className="study-button"
                         onClick={() => switchDraft(remainingDrafts[0].id)}
                       >
-                        Continue to next repair ({remainingDrafts.length} remaining) →
+                        Continue to next repair ({remainingDrafts.length}{" "}
+                        remaining) →
                       </button>
                     ) : (
                       <Link
                         className="study-button"
                         to={
                           draft.source?.sessionId
-                            ? `/review?session=${encodeURIComponent(draft.source.sessionId)}`
+                            ? `/review?session=${encodeURIComponent(draft.source.sessionId)}&attempt=${encodeURIComponent(draft.source.id)}`
                             : "/review"
                         }
                       >
@@ -447,12 +563,16 @@ export default function Repair() {
                 </>
               ) : !draft.showSolution ? (
                 <>
-                  <div className="study-badge incorrect" style={{ marginBottom: 8 }}>
+                  <div
+                    className="study-badge incorrect"
+                    style={{ marginBottom: 8 }}
+                  >
                     ✗ Incorrect
                   </div>
                   <h3>Not quite</h3>
                   <p>
-                    Your answer: <strong>{draft.attempt?.submittedAnswer}</strong>
+                    Your answer:{" "}
+                    <strong>{draft.attempt?.submittedAnswer}</strong>
                   </p>
 
                   <div className="hint-callout">
@@ -461,7 +581,9 @@ export default function Repair() {
                   </div>
 
                   <div className="reflective-cause-container">
-                    <span className="reflective-label">What happened here? (Optional · Diagnostic only)</span>
+                    <span className="reflective-label">
+                      What happened here? (Optional · Diagnostic only)
+                    </span>
                     <div className="reflective-pill-row">
                       {REFLECTIVE_OPTIONS.map((c) => (
                         <button
@@ -475,8 +597,16 @@ export default function Repair() {
                       ))}
                     </div>
                     {draft.attempt?.reflectiveCause && (
-                      <p className="study-muted text-xs" style={{ marginTop: 6, color: "var(--accent)" }}>
-                        ✓ Recorded: {REFLECTIVE_OPTIONS.find((c) => c.id === draft.attempt.reflectiveCause)?.label}
+                      <p
+                        className="study-muted text-xs"
+                        style={{ marginTop: 6, color: "var(--accent)" }}
+                      >
+                        ✓ Recorded:{" "}
+                        {
+                          REFLECTIVE_OPTIONS.find(
+                            (c) => c.id === draft.attempt.reflectiveCause,
+                          )?.label
+                        }
                       </p>
                     )}
                   </div>
@@ -485,13 +615,18 @@ export default function Repair() {
                     <button className="study-button" onClick={handleRetry}>
                       Try again
                     </button>
-                    <button className="study-button secondary" onClick={handleWalkThrough}>
+                    <button
+                      className="study-button secondary"
+                      onClick={handleWalkThrough}
+                    >
                       Walk me through it
                     </button>
                     <Link
                       className="study-text-button"
                       to={`/rulebook?from=repair&activeId=${encodeURIComponent(draft.id)}${
-                        draft.rulebookId ? `&ruleId=${encodeURIComponent(draft.rulebookId)}` : ""
+                        draft.rulebookId
+                          ? `&ruleId=${encodeURIComponent(draft.rulebookId)}`
+                          : ""
                       }`}
                     >
                       Consult rulebook
@@ -500,23 +635,32 @@ export default function Repair() {
                 </>
               ) : (
                 <>
-                  <div className="study-badge incorrect" style={{ marginBottom: 8 }}>
+                  <div
+                    className="study-badge incorrect"
+                    style={{ marginBottom: 8 }}
+                  >
                     ✗ Solution Revealed
                   </div>
                   <h3>Walk me through it</h3>
                   <div className="answer-comparison-box">
                     <div className="comparison-col your-answer is-wrong">
                       <span className="comparison-label">Your answer</span>
-                      <span className="comparison-value">{draft.attempt?.submittedAnswer}</span>
+                      <span className="comparison-value">
+                        {draft.attempt?.submittedAnswer}
+                      </span>
                     </div>
                     <div className="comparison-col expected-answer">
                       <span className="comparison-label">Expected answer</span>
-                      <span className="comparison-value">{draft.attempt?.expectedAnswer}</span>
+                      <span className="comparison-value">
+                        {draft.attempt?.expectedAnswer}
+                      </span>
                     </div>
                   </div>
 
                   <div className="reflective-cause-container">
-                    <span className="reflective-label">What happened here? (Optional · Diagnostic only)</span>
+                    <span className="reflective-label">
+                      What happened here? (Optional · Diagnostic only)
+                    </span>
                     <div className="reflective-pill-row">
                       {REFLECTIVE_OPTIONS.map((c) => (
                         <button
@@ -530,8 +674,16 @@ export default function Repair() {
                       ))}
                     </div>
                     {draft.attempt?.reflectiveCause && (
-                      <p className="study-muted text-xs" style={{ marginTop: 6, color: "var(--accent)" }}>
-                        ✓ Recorded: {REFLECTIVE_OPTIONS.find((c) => c.id === draft.attempt.reflectiveCause)?.label}
+                      <p
+                        className="study-muted text-xs"
+                        style={{ marginTop: 6, color: "var(--accent)" }}
+                      >
+                        ✓ Recorded:{" "}
+                        {
+                          REFLECTIVE_OPTIONS.find(
+                            (c) => c.id === draft.attempt.reflectiveCause,
+                          )?.label
+                        }
                       </p>
                     )}
                   </div>
@@ -546,7 +698,7 @@ export default function Repair() {
                       className="study-button"
                       to={
                         draft.source?.sessionId
-                          ? `/review?session=${encodeURIComponent(draft.source.sessionId)}`
+                          ? `/review?session=${encodeURIComponent(draft.source.sessionId)}&attempt=${encodeURIComponent(draft.source.id)}`
                           : "/review"
                       }
                     >

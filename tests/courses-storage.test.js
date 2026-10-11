@@ -414,13 +414,13 @@ test('M1.11: 12-unit Math Foundations course definitions have consecutive orders
     assert.equal(typeof unit.hasPractice, 'boolean');
     assert.equal(typeof unit.hasQuiz, 'boolean');
 
-    // Units 1-6 have legacy concept IDs and practice content
+    // Legacy concept IDs remain stable; all twelve units now have introductory practice.
     if (idx < 6) {
       assert.ok(unit.legacyConceptId !== null, `Unit ${unit.id} must have legacyConceptId`);
       assert.equal(unit.hasPractice, true);
     } else {
       assert.equal(unit.legacyConceptId, null);
-      assert.equal(unit.hasPractice, false);
+      assert.equal(unit.hasPractice, true);
     }
 
     // Authored lessons are active for Unit 1 and Unit 4

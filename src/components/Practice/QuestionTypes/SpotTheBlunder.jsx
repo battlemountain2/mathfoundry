@@ -1,7 +1,7 @@
 import React from 'react';
 import MathBlock from '../../Lesson/MathBlock';
 
-export const SpotTheBlunder = ({ question, onAnswer, showResult, isCorrect }) => {
+export const SpotTheBlunder = ({ question, onAnswer, showResult }) => {
   return (
     <div className="flex flex-col gap-4 text-zinc-900 dark:text-zinc-100 font-mono">
       <div className="text-lg">

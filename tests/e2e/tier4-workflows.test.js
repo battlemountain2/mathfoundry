@@ -82,32 +82,25 @@ test('T4.02: Complete Guided Lesson Flow - All 8 steps completed, rulebook saved
     { step: 7, type: 'transition', title: 'Start Practice' },
   ];
 
-  let currentStep = 0;
   const recordedMicroChecks = {};
 
   // Step 0 -> Step 1 (Explain)
-  currentStep = 1;
 
   // Step 1 -> Step 2 (Visual)
-  currentStep = 2;
 
   // Step 2 -> Step 3 (Interact)
-  currentStep = 3;
 
   // Step 3 (Micro-check 1): Answer LCD
   const mc1 = lessonPlan[3];
   assert.ok(equivalentAnswer(mc1.submitted, mc1.expected));
   recordedMicroChecks['step3'] = mc1.submitted;
-  currentStep = 4;
 
   // Step 4 -> Step 5 (Explain)
-  currentStep = 5;
 
   // Step 5 (Micro-check 2): Answer sum
   const mc2 = lessonPlan[5];
   assert.ok(equivalentAnswer(mc2.submitted, mc2.expected));
   recordedMicroChecks['step5'] = mc2.submitted;
-  currentStep = 6;
 
   // Step 6 (Key Rule): Save to Rulebook
   storage.saveRulebookEntry({
@@ -116,7 +109,6 @@ test('T4.02: Complete Guided Lesson Flow - All 8 steps completed, rulebook saved
     title: 'Adding and Subtracting Fractions',
     explanation: 'Find common denominator, convert numerators, combine.',
   });
-  currentStep = 7;
 
   // Step 7 (Transition): Complete lesson
   if (typeof storage?.saveLessonProgress === 'function') {
@@ -198,13 +190,7 @@ test('T4.04: Mistake Review & Repair Loop - Practice mistake is reflected, queue
   assert.ok(recentMistakes);
 
   // 3. Learner performs targeted repair
-  const repairRecord = {
-    id: 'repair-1',
-    sourceAttemptId: 'miss-fractions-1',
-    subskill: 'fraction-addition',
-    isResolved: true,
-    resolvedAt: new Date().toISOString(),
-  };
+
 
   // After repair, reflective cause is updated or marked resolved
   if (typeof storage?.updateAttemptReflectiveCause === 'function') {

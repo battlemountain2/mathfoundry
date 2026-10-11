@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import MathBlock from '../../Lesson/MathBlock';
 
-export const TrueFalseReason = ({ question, onAnswer, showResult, isCorrect }) => {
+export const TrueFalseReason = ({ question, onAnswer, showResult }) => {
   const [isTrue, setIsTrue] = useState(null);
 
   return (

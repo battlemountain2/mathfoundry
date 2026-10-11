@@ -13,7 +13,6 @@ import { practiceBank } from '../data/practiceBank.js';
  * @returns {Array} Selected and shuffled questions
  */
 export function generateAdaptiveSession({
-  progress = {},
   diagnosticResults = null,
   practiceHistory = [],
   formatPerformance = {},

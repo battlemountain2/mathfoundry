@@ -5,7 +5,7 @@ import QuizEngine from '../components/Quiz/QuizEngine';
 import ResultsPanel from '../components/Quiz/ResultsPanel';
 import { setDiagnosticResults, getDiagnosticResults } from '../utils/storage';
 import { useProgress } from '../hooks/useProgress';
-import Card from '../components/common/Card';
+
 import Button from '../components/common/Button';
 
 export default function Diagnostic() {

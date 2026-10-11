@@ -17,7 +17,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import * as storage from '../src/utils/storage.js';
-import { equivalentAnswer, numericValue } from '../src/utils/answerChecking.js';
+import { equivalentAnswer } from '../src/utils/answerChecking.js';
 import { processContent } from '../src/utils/mathHelpers.js';
 
 // ============================================================================

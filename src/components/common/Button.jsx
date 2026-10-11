@@ -14,10 +14,10 @@ export const Button = ({
   const baseClasses = 'inline-flex items-center justify-center font-sans font-semibold tracking-tight rounded-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] cursor-pointer select-none';
   
   const variants = {
-    primary: 'bg-[var(--accent)] hover:opacity-90 text-white border border-[var(--accent)] shadow-xs active:translate-y-0.5',
+    primary: 'bg-[var(--accent)] hover:opacity-90 text-[var(--surface)] border border-[var(--accent)] shadow-xs active:translate-y-0.5',
     secondary: 'bg-[var(--surface-2)] hover:bg-[var(--surface)] text-[var(--ink)] border border-[var(--line)] hover:border-[var(--line-strong)] active:translate-y-0.5',
-    success: 'bg-[var(--good)] hover:opacity-90 text-white border border-[var(--good)] shadow-xs active:translate-y-0.5',
-    danger: 'bg-[var(--heat)] hover:opacity-90 text-white border border-[var(--heat)] shadow-xs active:translate-y-0.5',
+    success: 'bg-[var(--good)] hover:opacity-90 text-[var(--surface)] border border-[var(--good)] shadow-xs active:translate-y-0.5',
+    danger: 'bg-[var(--heat)] hover:opacity-90 text-[var(--surface)] border border-[var(--heat)] shadow-xs active:translate-y-0.5',
     ghost: 'bg-transparent text-[var(--ink-2)] hover:bg-[var(--surface-2)] hover:text-[var(--ink)] border border-transparent',
   };
   

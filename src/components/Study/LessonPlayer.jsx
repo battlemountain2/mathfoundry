@@ -12,26 +12,26 @@
  * - transition: Concluding takeaways linking directly to unit practice
  */
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import MathBlock from '../Lesson/MathBlock';
-import FractionBarVisualizer from './FractionBarVisualizer';
-import NumberLineLab from './NumberLineLab';
-import AngleExplorer from './Geometry/AngleExplorer';
-import PythagoreanVisualizer from './Geometry/PythagoreanVisualizer';
-import { addSubtractFractionsLesson } from '../../data/lessons/addSubtractFractions';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import MathBlock from "../Lesson/MathBlock";
+import FractionBarVisualizer from "./FractionBarVisualizer";
+import NumberLineLab from "./NumberLineLab";
+import AngleExplorer from "./Geometry/AngleExplorer";
+import PythagoreanVisualizer from "./Geometry/PythagoreanVisualizer";
+import { addSubtractFractionsLesson } from "../../data/lessons/addSubtractFractions";
 import {
   getLessonProgress,
   saveLessonProgress,
   completeLesson,
   getRulebook,
   saveRulebookEntry,
-} from '../../utils/storage';
+} from "../../utils/storage";
 import {
   createRulebookPayload,
   getLessonPracticeUrl,
-} from '../../utils/lessonPlayer';
-import { equivalentAnswer } from '../../utils/answerChecking';
+} from "../../utils/lessonPlayer";
+import { equivalentAnswer } from "../../utils/answerChecking";
 
 /**
  * Step View: EXPLAIN
@@ -103,13 +103,15 @@ function ExplainStepView({ step }) {
  */
 function VisualStepView({ step }) {
   const isFractionBars =
-    step.visualizer === 'fraction-bars' || step.component === 'FractionBarVisualizer';
+    step.visualizer === "fraction-bars" ||
+    step.component === "FractionBarVisualizer";
   const isNumberLine =
-    step.visualizer === 'number-line' || step.component === 'NumberLineLab';
+    step.visualizer === "number-line" || step.component === "NumberLineLab";
   const isAngleExplorer =
-    step.visualizer === 'angle-explorer' || step.component === 'AngleExplorer';
+    step.visualizer === "angle-explorer" || step.component === "AngleExplorer";
   const isPythagoras =
-    step.visualizer === 'pythagoras' || step.component === 'PythagoreanVisualizer';
+    step.visualizer === "pythagoras" ||
+    step.component === "PythagoreanVisualizer";
 
   return (
     <div className="space-y-6">
@@ -137,23 +139,10 @@ function VisualStepView({ step }) {
             onComplete={() => {}}
           />
         )}
-        {isNumberLine && (
-          <NumberLineLab
-            embedded={true}
-            {...step.props}
-          />
-        )}
-        {isAngleExplorer && (
-          <AngleExplorer
-            embedded={true}
-            {...step.props}
-          />
-        )}
+        {isNumberLine && <NumberLineLab embedded={true} {...step.props} />}
+        {isAngleExplorer && <AngleExplorer embedded={true} {...step.props} />}
         {isPythagoras && (
-          <PythagoreanVisualizer
-            embedded={true}
-            {...step.props}
-          />
+          <PythagoreanVisualizer embedded={true} {...step.props} />
         )}
       </div>
 
@@ -210,7 +199,7 @@ function InteractStepView({ step }) {
   const availablePartitions = step.availablePartitions || [2, 3, 4, 5, 6, 12];
   const targetPartition = step.targetPartition || 6;
   const [selectedPartition, setSelectedPartition] = useState(
-    step.userPartition || step.initialPartition || 2
+    step.userPartition || step.initialPartition || 2,
   );
 
   const f1 = step.fractions?.[0] || { n: 1, d: 2 };
@@ -220,7 +209,8 @@ function InteractStepView({ step }) {
   const dividesF2 = (selectedPartition * f2.n) % f2.d === 0;
   const f1Units = dividesF1 ? (selectedPartition * f1.n) / f1.d : null;
   const f2Units = dividesF2 ? (selectedPartition * f2.n) / f2.d : null;
-  const isMatch = selectedPartition === targetPartition || (dividesF1 && dividesF2);
+  const isMatch =
+    selectedPartition === targetPartition || (dividesF1 && dividesF2);
 
   return (
     <div className="space-y-6">
@@ -252,8 +242,8 @@ function InteractStepView({ step }) {
               onClick={() => setSelectedPartition(p)}
               className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
                 selectedPartition === p
-                  ? 'bg-[var(--accent)] text-[var(--surface)] shadow-sm scale-105'
-                  : 'bg-[var(--surface-2)] text-[var(--ink)] border border-[var(--line)] hover:bg-[var(--line)]'
+                  ? "bg-[var(--accent)] text-[var(--surface)] shadow-sm scale-105"
+                  : "bg-[var(--surface-2)] text-[var(--ink)] border border-[var(--line)] hover:bg-[var(--line)]"
               }`}
             >
               {p} parts
@@ -271,7 +261,7 @@ function InteractStepView({ step }) {
               </span>
               <span
                 style={{
-                  color: dividesF1 ? 'var(--good)' : 'var(--heat)',
+                  color: dividesF1 ? "var(--good)" : "var(--heat)",
                 }}
               >
                 {dividesF1
@@ -281,7 +271,9 @@ function InteractStepView({ step }) {
             </div>
             <div
               className="h-10 rounded-lg border border-[var(--line)] overflow-hidden bg-[var(--surface-2)] grid"
-              style={{ gridTemplateColumns: `repeat(${selectedPartition}, 1fr)` }}
+              style={{
+                gridTemplateColumns: `repeat(${selectedPartition}, 1fr)`,
+              }}
             >
               {Array.from({ length: selectedPartition }, (_, i) => {
                 const isFilled = dividesF1 && i < f1Units;
@@ -290,8 +282,10 @@ function InteractStepView({ step }) {
                     key={i}
                     className="flex items-center justify-center text-[10px] font-mono border-r border-dashed border-[var(--line)] last:border-r-0"
                     style={{
-                      backgroundColor: isFilled ? 'var(--accent)' : 'transparent',
-                      color: isFilled ? 'var(--surface)' : 'var(--ink-3)',
+                      backgroundColor: isFilled
+                        ? "var(--accent)"
+                        : "transparent",
+                      color: isFilled ? "var(--surface)" : "var(--ink-3)",
                     }}
                   >
                     1/{selectedPartition}
@@ -309,7 +303,7 @@ function InteractStepView({ step }) {
               </span>
               <span
                 style={{
-                  color: dividesF2 ? 'var(--good)' : 'var(--heat)',
+                  color: dividesF2 ? "var(--good)" : "var(--heat)",
                 }}
               >
                 {dividesF2
@@ -319,7 +313,9 @@ function InteractStepView({ step }) {
             </div>
             <div
               className="h-10 rounded-lg border border-[var(--line)] overflow-hidden bg-[var(--surface-2)] grid"
-              style={{ gridTemplateColumns: `repeat(${selectedPartition}, 1fr)` }}
+              style={{
+                gridTemplateColumns: `repeat(${selectedPartition}, 1fr)`,
+              }}
             >
               {Array.from({ length: selectedPartition }, (_, i) => {
                 const isFilled = dividesF2 && i < f2Units;
@@ -328,8 +324,10 @@ function InteractStepView({ step }) {
                     key={i}
                     className="flex items-center justify-center text-[10px] font-mono border-r border-dashed border-[var(--line)] last:border-r-0"
                     style={{
-                      backgroundColor: isFilled ? 'var(--accent)' : 'transparent',
-                      color: isFilled ? 'var(--surface)' : 'var(--ink-3)',
+                      backgroundColor: isFilled
+                        ? "var(--accent)"
+                        : "transparent",
+                      color: isFilled ? "var(--surface)" : "var(--ink-3)",
                     }}
                   >
                     1/{selectedPartition}
@@ -372,7 +370,7 @@ function InteractStepView({ step }) {
  * Step View: MICRO-CHECK (Formative Engagement - ZERO learningAttempts writes)
  */
 function MicroCheckStepView({ step, stepKey, savedAnswer, onSubmitAnswer }) {
-  const [inputVal, setInputVal] = useState(savedAnswer || '');
+  const [inputVal, setInputVal] = useState(savedAnswer || "");
   const [feedback, setFeedback] = useState(() => {
     if (savedAnswer) {
       const isCorrect = equivalentAnswer(savedAnswer, step.expectedAnswer);
@@ -380,26 +378,13 @@ function MicroCheckStepView({ step, stepKey, savedAnswer, onSubmitAnswer }) {
         checked: true,
         isCorrect,
         message: isCorrect
-          ? 'Correct! Well done.'
-          : (step.pitfallWarning || 'Not quite. Check your calculation and try again.'),
+          ? "Correct! Well done."
+          : step.pitfallWarning ||
+            "Not quite. Check your calculation and try again.",
       };
     }
-    return { checked: false, isCorrect: false, message: '' };
+    return { checked: false, isCorrect: false, message: "" };
   });
-
-  useEffect(() => {
-    if (savedAnswer && savedAnswer !== inputVal) {
-      setInputVal(savedAnswer);
-      const isCorrect = equivalentAnswer(savedAnswer, step.expectedAnswer);
-      setFeedback({
-        checked: true,
-        isCorrect,
-        message: isCorrect
-          ? 'Correct! Well done.'
-          : (step.pitfallWarning || 'Not quite. Check your calculation and try again.'),
-      });
-    }
-  }, [savedAnswer]);
 
   function handleCheck(e) {
     e.preventDefault();
@@ -410,8 +395,9 @@ function MicroCheckStepView({ step, stepKey, savedAnswer, onSubmitAnswer }) {
       checked: true,
       isCorrect,
       message: isCorrect
-        ? 'Correct! Well done.'
-        : (step.pitfallWarning || 'Not quite. Check your calculation and try again.'),
+        ? "Correct! Well done."
+        : step.pitfallWarning ||
+          "Not quite. Check your calculation and try again.",
     });
     onSubmitAnswer(stepKey, trimmed);
   }
@@ -433,12 +419,15 @@ function MicroCheckStepView({ step, stepKey, savedAnswer, onSubmitAnswer }) {
       </div>
 
       {/* Input & Form */}
-      <form onSubmit={handleCheck} className="flex flex-col sm:flex-row gap-3 max-w-md">
+      <form
+        onSubmit={handleCheck}
+        className="flex flex-col sm:flex-row gap-3 max-w-md"
+      >
         <input
           type="text"
           value={inputVal}
           onChange={(e) => setInputVal(e.target.value)}
-          placeholder={step.placeholder || 'Enter your answer'}
+          placeholder={step.placeholder || "Enter your answer"}
           className="study-answer flex-1 px-4 py-2.5 rounded-xl border border-[var(--line)] bg-[var(--surface-2)] text-[var(--ink)] font-mono text-base focus:outline-none focus:border-[var(--accent)]"
         />
         <button
@@ -446,8 +435,8 @@ function MicroCheckStepView({ step, stepKey, savedAnswer, onSubmitAnswer }) {
           disabled={!inputVal.trim()}
           className="study-button px-5 py-2.5 rounded-xl text-sm font-semibold transition-transform active:scale-95 disabled:opacity-40"
           style={{
-            backgroundColor: 'var(--accent)',
-            color: 'var(--surface)',
+            backgroundColor: "var(--accent)",
+            color: "var(--surface)",
           }}
         >
           Check Answer
@@ -459,13 +448,13 @@ function MicroCheckStepView({ step, stepKey, savedAnswer, onSubmitAnswer }) {
         <div
           className={`p-4 rounded-xl border transition-all ${
             feedback.isCorrect
-              ? 'border-[var(--good)] bg-[var(--surface-2)] text-[var(--good)]'
-              : 'border-[var(--heat)] bg-[var(--surface-2)] text-[var(--heat)]'
+              ? "border-[var(--good)] bg-[var(--surface-2)] text-[var(--good)]"
+              : "border-[var(--heat)] bg-[var(--surface-2)] text-[var(--heat)]"
           }`}
         >
           <div className="flex items-center gap-2 font-bold text-sm mb-1">
-            <span>{feedback.isCorrect ? '✓' : '✗'}</span>
-            <span>{feedback.isCorrect ? 'Correct!' : 'Try Again'}</span>
+            <span>{feedback.isCorrect ? "✓" : "✗"}</span>
+            <span>{feedback.isCorrect ? "Correct!" : "Try Again"}</span>
           </div>
           <p className="text-xs sm:text-sm text-[var(--ink-2)] m-0 leading-relaxed">
             {feedback.isCorrect
@@ -501,11 +490,11 @@ function KeyRuleStepView({ step, isSaved, onSaveRule }) {
           disabled={isSaved}
           className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
             isSaved
-              ? 'bg-[var(--surface-2)] text-[var(--good)] border border-[var(--good)] cursor-default'
-              : 'bg-[var(--accent)] text-[var(--surface)] hover:opacity-90 shadow-sm active:scale-95'
+              ? "bg-[var(--surface-2)] text-[var(--good)] border border-[var(--good)] cursor-default"
+              : "bg-[var(--accent)] text-[var(--surface)] hover:opacity-90 shadow-sm active:scale-95"
           }`}
         >
-          {isSaved ? '✓ Saved to Rulebook' : 'Save to Rulebook'}
+          {isSaved ? "✓ Saved to Rulebook" : "Save to Rulebook"}
         </button>
       </div>
 
@@ -534,8 +523,10 @@ function KeyRuleStepView({ step, isSaved, onSaveRule }) {
           <ul className="space-y-1.5 text-sm text-[var(--ink-2)]">
             {step.coreSteps.map((st, i) => (
               <li key={i} className="flex items-start gap-2">
-                <span className="font-semibold text-[var(--accent)]">{i + 1}.</span>
-                <span>{st.replace(/^\d+\.\s*/, '')}</span>
+                <span className="font-semibold text-[var(--accent)]">
+                  {i + 1}.
+                </span>
+                <span>{st.replace(/^\d+\.\s*/, "")}</span>
               </li>
             ))}
           </ul>
@@ -547,9 +538,7 @@ function KeyRuleStepView({ step, isSaved, onSaveRule }) {
           <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--ink-3)] mb-1">
             When to Use
           </h4>
-          <p className="text-sm text-[var(--ink-2)]">
-            {step.whenToUse}
-          </p>
+          <p className="text-sm text-[var(--ink-2)]">{step.whenToUse}</p>
         </div>
       )}
 
@@ -558,9 +547,7 @@ function KeyRuleStepView({ step, isSaved, onSaveRule }) {
           <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--heat)] mb-1">
             Common Pitfall
           </h4>
-          <p className="text-sm text-[var(--ink-2)] m-0">
-            {step.pitfall}
-          </p>
+          <p className="text-sm text-[var(--ink-2)] m-0">{step.pitfall}</p>
         </div>
       )}
     </div>
@@ -594,7 +581,10 @@ function TransitionStepView({ step, onStartPractice }) {
           </h4>
           <ul className="space-y-2.5">
             {(step.detailedSummary || step.summary).map((item, idx) => (
-              <li key={idx} className="flex items-start gap-2.5 text-sm text-[var(--ink)]">
+              <li
+                key={idx}
+                className="flex items-start gap-2.5 text-sm text-[var(--ink)]"
+              >
                 <span className="text-[var(--good)] font-bold mt-0.5">✓</span>
                 <span>{item}</span>
               </li>
@@ -609,11 +599,11 @@ function TransitionStepView({ step, onStartPractice }) {
           onClick={onStartPractice}
           className="study-button px-6 py-3 rounded-xl text-base font-semibold transition-transform active:scale-95 shadow-md"
           style={{
-            backgroundColor: 'var(--accent)',
-            color: 'var(--surface)',
+            backgroundColor: "var(--accent)",
+            color: "var(--surface)",
           }}
         >
-          {step.callToAction || 'Start Unit Practice →'}
+          {step.callToAction || "Start Unit Practice →"}
         </button>
       </div>
     </div>
@@ -623,25 +613,26 @@ function TransitionStepView({ step, onStartPractice }) {
 /**
  * Main LessonPlayer Component
  */
-export default function LessonPlayer({
+function LessonPlayerContent({
   lesson = addSubtractFractionsLesson,
-  unitPath = 'math/add-subtract-fractions',
-  courseId = 'math',
-  unitId = 'add-subtract-fractions',
+  unitPath = "math/add-subtract-fractions",
+  courseId = "math",
+  unitId = "add-subtract-fractions",
   onExit = null,
   onComplete = null,
 }) {
   const navigate = useNavigate();
 
   const activeLesson = lesson || addSubtractFractionsLesson;
-  const activeUnitPath = unitPath || activeLesson.unitPath || `${courseId}/${unitId}`;
+  const activeUnitPath =
+    unitPath || activeLesson.unitPath || `${courseId}/${unitId}`;
   const steps = activeLesson.steps || [];
   const totalSteps = Math.max(1, steps.length);
 
   // Initialize step index from stored progress
   const [currentStepIndex, setCurrentStepIndex] = useState(() => {
     const saved = getLessonProgress(activeUnitPath);
-    if (saved && typeof saved.currentStepIndex === 'number') {
+    if (saved && typeof saved.currentStepIndex === "number") {
       return Math.max(0, Math.min(totalSteps - 1, saved.currentStepIndex));
     }
     return 0;
@@ -650,7 +641,8 @@ export default function LessonPlayer({
   // Initialize micro-check answers from storage
   const [microCheckAnswers, setMicroCheckAnswers] = useState(() => {
     const saved = getLessonProgress(activeUnitPath);
-    return saved?.microCheckAnswers && typeof saved.microCheckAnswers === 'object'
+    return saved?.microCheckAnswers &&
+      typeof saved.microCheckAnswers === "object"
       ? { ...saved.microCheckAnswers }
       : {};
   });
@@ -666,17 +658,6 @@ export default function LessonPlayer({
     }
     return map;
   });
-
-  // Re-sync on unitPath change
-  useEffect(() => {
-    const saved = getLessonProgress(activeUnitPath);
-    if (saved && typeof saved.currentStepIndex === 'number') {
-      setCurrentStepIndex(Math.max(0, Math.min(totalSteps - 1, saved.currentStepIndex)));
-    }
-    if (saved?.microCheckAnswers) {
-      setMicroCheckAnswers(saved.microCheckAnswers);
-    }
-  }, [activeUnitPath, totalSteps]);
 
   const currentStep = steps[currentStepIndex] || steps[0] || {};
   const isFirstStep = currentStepIndex === 0;
@@ -698,8 +679,8 @@ export default function LessonPlayer({
       const nextIdx = currentStepIndex - 1;
       setCurrentStepIndex(nextIdx);
       saveLessonProgress(activeUnitPath, { currentStepIndex: nextIdx });
-      if (typeof window !== 'undefined') {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
     }
   }
@@ -709,8 +690,8 @@ export default function LessonPlayer({
       const nextIdx = currentStepIndex + 1;
       setCurrentStepIndex(nextIdx);
       saveLessonProgress(activeUnitPath, { currentStepIndex: nextIdx });
-      if (typeof window !== 'undefined') {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
     } else {
       // Final transition step: Mark completed and navigate to practice
@@ -746,8 +727,11 @@ export default function LessonPlayer({
   }
 
   const currentRuleId = currentStep.ruleId || currentStep.id;
-  const isCurrentRuleSaved = Boolean(currentRuleId && ruleSavedMap[currentRuleId]);
-  const currentStepKey = currentStep.checkKey || currentStep.id || `step${currentStepIndex}`;
+  const isCurrentRuleSaved = Boolean(
+    currentRuleId && ruleSavedMap[currentRuleId],
+  );
+  const currentStepKey =
+    currentStep.checkKey || currentStep.id || `step${currentStepIndex}`;
 
   return (
     <div
@@ -780,7 +764,7 @@ export default function LessonPlayer({
               className="h-full transition-all duration-300 rounded-full"
               style={{
                 width: `${progressPercent}%`,
-                backgroundColor: 'var(--accent)',
+                backgroundColor: "var(--accent)",
               }}
             />
           </div>
@@ -797,25 +781,30 @@ export default function LessonPlayer({
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-3xl w-full mx-auto px-4 py-8 sm:px-6 sm:py-12 flex flex-col justify-start">
-        {currentStep.type === 'explain' && <ExplainStepView step={currentStep} />}
-        {currentStep.type === 'visual' && <VisualStepView step={currentStep} />}
-        {currentStep.type === 'interact' && <InteractStepView step={currentStep} />}
-        {currentStep.type === 'micro-check' && (
+        {currentStep.type === "explain" && (
+          <ExplainStepView step={currentStep} />
+        )}
+        {currentStep.type === "visual" && <VisualStepView step={currentStep} />}
+        {currentStep.type === "interact" && (
+          <InteractStepView step={currentStep} />
+        )}
+        {currentStep.type === "micro-check" && (
           <MicroCheckStepView
+            key={currentStepKey}
             step={currentStep}
             stepKey={currentStepKey}
             savedAnswer={microCheckAnswers[currentStepKey]}
             onSubmitAnswer={handleMicroCheckSubmit}
           />
         )}
-        {currentStep.type === 'key-rule' && (
+        {currentStep.type === "key-rule" && (
           <KeyRuleStepView
             step={currentStep}
             isSaved={isCurrentRuleSaved}
             onSaveRule={handleSaveRule}
           />
         )}
-        {currentStep.type === 'transition' && (
+        {currentStep.type === "transition" && (
           <TransitionStepView
             step={currentStep}
             onStartPractice={handleContinue}
@@ -839,15 +828,25 @@ export default function LessonPlayer({
           onClick={handleContinue}
           className="study-button px-6 py-2 rounded-xl text-sm font-semibold transition-transform active:scale-95 shadow-sm"
           style={{
-            backgroundColor: 'var(--accent)',
-            color: 'var(--surface)',
+            backgroundColor: "var(--accent)",
+            color: "var(--surface)",
           }}
         >
           {isFinalStep
-            ? currentStep.callToAction || 'Start Practice →'
-            : 'Continue →'}
+            ? currentStep.callToAction || "Start Practice →"
+            : "Continue →"}
         </button>
       </footer>
     </div>
+  );
+}
+
+// A different unit gets fresh local state; saved progress initializes that state.
+export default function LessonPlayer(props) {
+  return (
+    <LessonPlayerContent
+      key={props.unitPath || `${props.courseId}/${props.unitId}`}
+      {...props}
+    />
   );
 }

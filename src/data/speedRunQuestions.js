@@ -198,7 +198,6 @@ export function generateTwoStepEquation() {
 }
 
 export function generateExponentRule() {
-  const base = 'x';
   const m = randInt(2, 6);
   const n = randInt(2, 6);
   const isProduct = Math.random() > 0.5;

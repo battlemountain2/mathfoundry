@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
-import { useStudyActivity } from '../Study/ActivityContext';
-import MultipleChoice from './QuestionTypes/MultipleChoice';
-import SpotTheBlunder from './QuestionTypes/SpotTheBlunder';
-import StepSequence from './QuestionTypes/StepSequence';
-import FillBlank from './QuestionTypes/FillBlank';
-import TrueFalseReason from './QuestionTypes/TrueFalseReason';
-import SessionSummary from './SessionSummary';
-import { displayAnswer, expectedAnswer } from '../../utils/review';
-import { checkPracticeAnswer } from '../../utils/answerChecking';
-import { getProblemHint } from '../../utils/hints';
-import MathBlock from '../Lesson/MathBlock';
+import { savePracticeSession } from "../../utils/storage";
+import { studyTime } from "../../utils/studySession";
+import React, { useState } from "react";
+import { useStudyActivity } from "../../hooks/useStudyActivity";
+import MultipleChoice from "./QuestionTypes/MultipleChoice";
+import SpotTheBlunder from "./QuestionTypes/SpotTheBlunder";
+import StepSequence from "./QuestionTypes/StepSequence";
+import FillBlank from "./QuestionTypes/FillBlank";
+import TrueFalseReason from "./QuestionTypes/TrueFalseReason";
+import SessionSummary from "./SessionSummary";
+import { displayAnswer, expectedAnswer } from "../../utils/review";
+import { checkPracticeAnswer } from "../../utils/answerChecking";
+import { getProblemHint } from "../../utils/hints";
+import MathBlock from "../Lesson/MathBlock";
 
 export const AdaptivePractice = ({ questions, onComplete }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -18,13 +20,14 @@ export const AdaptivePractice = ({ questions, onComplete }) => {
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [attemptsOnCurrent, setAttemptsOnCurrent] = useState(0);
-  const [startTime, setStartTime] = useState(() => Date.now());
+  const [startTime, setStartTime] = useState(() => studyTime());
   const [sessionOver, setSessionOver] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   const currentQ = questions[currentIndex];
   useStudyActivity({
     moduleId: currentQ?.moduleId,
-    moduleTitle: 'Mixed math practice',
+    moduleTitle: "Mixed math practice",
     question: currentQ?.question || currentQ?.statement,
     submittedAnswer: showResult ? answers[currentIndex]?.submittedAnswer : null,
     feedback: showResult && showSolution ? currentQ?.explanation : null,
@@ -35,13 +38,16 @@ export const AdaptivePractice = ({ questions, onComplete }) => {
   const handleAnswer = (ans) => {
     if (showResult && showSolution) return;
     const isCorrect = checkPracticeAnswer(currentQ, ans);
-    const timeTaken = (Date.now() - startTime) / 1000;
+    const timeTaken = (studyTime() - startTime) / 1000;
     const newAttempts = attemptsOnCurrent + 1;
     setAttemptsOnCurrent(newAttempts);
 
     const existingAttempt = answers[currentIndex];
-    const initialAnswer = existingAttempt?.initialAnswer ?? displayAnswer(currentQ, ans);
-    const isHelped = Boolean(existingAttempt?.assisted || newAttempts > 1 || showHint);
+    const initialAnswer =
+      existingAttempt?.initialAnswer ?? displayAnswer(currentQ, ans);
+    const isHelped = Boolean(
+      existingAttempt?.assisted || newAttempts > 1 || showHint,
+    );
 
     const answerRecord = {
       questionId: currentQ.id,
@@ -93,6 +99,23 @@ export const AdaptivePractice = ({ questions, onComplete }) => {
     });
   };
 
+  function saveCompletedSession() {
+    const total = answers.length;
+    const correct = answers.filter((answer) => answer.isCorrect).length;
+    try {
+      savePracticeSession({
+        id: sessionId,
+        answers,
+        score: total ? Math.round((correct / total) * 100) : 0,
+        total,
+        correct,
+      });
+      setSaveError("");
+    } catch (err) {
+      setSaveError(err.message);
+    }
+  }
+
   const handleNext = () => {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex((prev) => prev + 1);
@@ -100,14 +123,23 @@ export const AdaptivePractice = ({ questions, onComplete }) => {
       setShowHint(false);
       setShowSolution(false);
       setAttemptsOnCurrent(0);
-      setStartTime(Date.now());
+      setStartTime(studyTime());
     } else {
+      saveCompletedSession();
       setSessionOver(true);
     }
   };
 
   if (sessionOver) {
-    return <SessionSummary sessionId={sessionId} answers={answers} onComplete={onComplete} />;
+    return (
+      <SessionSummary
+        sessionId={sessionId}
+        answers={answers}
+        onComplete={onComplete}
+        saveError={saveError}
+        onRetrySave={saveCompletedSession}
+      />
+    );
   }
 
   const renderQuestion = () => {
@@ -119,16 +151,38 @@ export const AdaptivePractice = ({ questions, onComplete }) => {
     };
 
     switch (currentQ.format) {
-      case 'mcq':
-        return <MultipleChoice key={`${currentQ.id}-${attemptsOnCurrent}`} {...props} />;
-      case 'blunder':
-        return <SpotTheBlunder key={`${currentQ.id}-${attemptsOnCurrent}`} {...props} />;
-      case 'sequence':
-        return <StepSequence key={`${currentQ.id}-${attemptsOnCurrent}`} {...props} />;
-      case 'fill':
-        return <FillBlank key={`${currentQ.id}-${attemptsOnCurrent}`} {...props} />;
-      case 'tf-reason':
-        return <TrueFalseReason key={`${currentQ.id}-${attemptsOnCurrent}`} {...props} />;
+      case "mcq":
+        return (
+          <MultipleChoice
+            key={`${currentQ.id}-${attemptsOnCurrent}`}
+            {...props}
+          />
+        );
+      case "blunder":
+        return (
+          <SpotTheBlunder
+            key={`${currentQ.id}-${attemptsOnCurrent}`}
+            {...props}
+          />
+        );
+      case "sequence":
+        return (
+          <StepSequence
+            key={`${currentQ.id}-${attemptsOnCurrent}`}
+            {...props}
+          />
+        );
+      case "fill":
+        return (
+          <FillBlank key={`${currentQ.id}-${attemptsOnCurrent}`} {...props} />
+        );
+      case "tf-reason":
+        return (
+          <TrueFalseReason
+            key={`${currentQ.id}-${attemptsOnCurrent}`}
+            {...props}
+          />
+        );
       default:
         return <div>Unknown format</div>;
     }
@@ -137,11 +191,11 @@ export const AdaptivePractice = ({ questions, onComplete }) => {
   const currentAttempt = answers[currentIndex];
   const isCorrect = currentAttempt?.isCorrect;
   const fmtLabels = {
-    mcq: 'Multiple Choice',
-    blunder: 'Spot the Blunder',
-    sequence: 'Step Sequence',
-    fill: 'Fill in the Blank',
-    'tf-reason': 'True/False',
+    mcq: "Multiple Choice",
+    blunder: "Spot the Blunder",
+    sequence: "Step Sequence",
+    fill: "Fill in the Blank",
+    "tf-reason": "True/False",
   };
 
   return (
@@ -150,7 +204,10 @@ export const AdaptivePractice = ({ questions, onComplete }) => {
         <span className="font-bold">
           Question {currentIndex + 1} of {questions.length}
         </span>
-        <span className="uppercase tracking-wider text-[10px]" style={{ color: 'var(--accent)' }}>
+        <span
+          className="uppercase tracking-wider text-[10px]"
+          style={{ color: "var(--accent)" }}
+        >
           {fmtLabels[currentQ.format] || currentQ.format}
         </span>
       </div>
@@ -176,35 +233,53 @@ export const AdaptivePractice = ({ questions, onComplete }) => {
       {showResult && (
         <div
           className={`study-feedback ${
-            isCorrect ? 'feedback-correct' : 'feedback-incorrect'
+            isCorrect ? "feedback-correct" : "feedback-incorrect"
           }`}
           role="status"
         >
           {isCorrect ? (
             <>
               <div className="study-badge correct" style={{ marginBottom: 8 }}>
-                {currentAttempt?.assisted ? '✓ Correct after hint' : '✓ Correct'}
+                {currentAttempt?.assisted
+                  ? "✓ Correct after hint"
+                  : "✓ Correct"}
               </div>
-              <h3 className="font-bold mb-2 text-sm" style={{ color: 'var(--good)' }}>
-                {currentAttempt?.assisted ? 'Well done working through it' : '✓ Correct'}
+              <h3
+                className="font-bold mb-2 text-sm"
+                style={{ color: "var(--good)" }}
+              >
+                {currentAttempt?.assisted
+                  ? "Well done working through it"
+                  : "✓ Correct"}
               </h3>
-              <div className="text-xs leading-relaxed" style={{ color: 'var(--ink)' }}>
+              <div
+                className="text-xs leading-relaxed"
+                style={{ color: "var(--ink)" }}
+              >
                 <MathBlock content={currentQ.explanation} />
               </div>
               <button
                 onClick={handleNext}
                 className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded text-sm w-full transition-colors"
               >
-                {currentIndex < questions.length - 1 ? 'Next Question →' : 'View Results →'}
+                {currentIndex < questions.length - 1
+                  ? "Next Question →"
+                  : "View Results →"}
               </button>
             </>
           ) : !showSolution ? (
             // Incorrect, solution hidden, hint shown
             <>
-              <div className="study-badge incorrect" style={{ marginBottom: 8 }}>
+              <div
+                className="study-badge incorrect"
+                style={{ marginBottom: 8 }}
+              >
                 ✗ Incorrect
               </div>
-              <h3 className="font-bold mb-1 text-sm" style={{ color: 'var(--heat)' }}>
+              <h3
+                className="font-bold mb-1 text-sm"
+                style={{ color: "var(--heat)" }}
+              >
                 Not quite
               </h3>
               <p className="text-xs text-zinc-600 dark:text-zinc-300 mb-3">
@@ -243,35 +318,55 @@ export const AdaptivePractice = ({ questions, onComplete }) => {
           ) : (
             // Solution revealed on learner request
             <>
-              <div className="study-badge incorrect" style={{ marginBottom: 8 }}>
+              <div
+                className="study-badge incorrect"
+                style={{ marginBottom: 8 }}
+              >
                 ✗ Solution Revealed
               </div>
-              <h3 className="font-bold mb-2 text-sm" style={{ color: 'var(--heat)' }}>
+              <h3
+                className="font-bold mb-2 text-sm"
+                style={{ color: "var(--heat)" }}
+              >
                 Walk me through it
               </h3>
               <div className="answer-comparison-box">
                 <div className="comparison-col your-answer is-wrong">
                   <span className="comparison-label">Your answer</span>
-                  <span className="comparison-value">{currentAttempt?.submittedAnswer || 'Not answered'}</span>
+                  <span className="comparison-value">
+                    {currentAttempt?.submittedAnswer || "Not answered"}
+                  </span>
                   {currentAttempt?.initialAnswer &&
-                    currentAttempt?.initialAnswer !== currentAttempt?.submittedAnswer && (
-                      <span className="comparison-subtext">First attempt: {currentAttempt?.initialAnswer}</span>
+                    currentAttempt?.initialAnswer !==
+                      currentAttempt?.submittedAnswer && (
+                      <span className="comparison-subtext">
+                        First attempt: {currentAttempt?.initialAnswer}
+                      </span>
                     )}
                 </div>
                 <div className="comparison-col expected-answer">
                   <span className="comparison-label">Expected answer</span>
-                  <span className="comparison-value">{currentAttempt?.expectedAnswer}</span>
+                  <span className="comparison-value">
+                    {currentAttempt?.expectedAnswer}
+                  </span>
                 </div>
               </div>
-              <h4 className="text-xs font-bold uppercase tracking-wider mb-2">Explanation</h4>
-              <div className="text-xs leading-relaxed" style={{ color: 'var(--ink)' }}>
+              <h4 className="text-xs font-bold uppercase tracking-wider mb-2">
+                Explanation
+              </h4>
+              <div
+                className="text-xs leading-relaxed"
+                style={{ color: "var(--ink)" }}
+              >
                 <MathBlock content={currentQ.explanation} />
               </div>
               <button
                 onClick={handleNext}
                 className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded text-sm w-full transition-colors"
               >
-                {currentIndex < questions.length - 1 ? 'Next Question →' : 'View Results →'}
+                {currentIndex < questions.length - 1
+                  ? "Next Question →"
+                  : "View Results →"}
               </button>
             </>
           )}

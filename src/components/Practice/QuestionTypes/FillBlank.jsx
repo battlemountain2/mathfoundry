@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import MathBlock from '../../Lesson/MathBlock';
 
-export const FillBlank = ({ question, onAnswer, showResult, isCorrect }) => {
+export const FillBlank = ({ question, onAnswer, showResult }) => {
   const [val, setVal] = useState('');
 
   return (

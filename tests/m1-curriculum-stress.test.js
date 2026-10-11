@@ -4,21 +4,16 @@ import assert from 'node:assert/strict';
 // Curriculum and Course Definitions
 import {
   mathFoundationsUnits,
-  getMathUnit,
   checkUnitPrerequisites,
   getNextMathUnit,
   getPreviousMathUnit,
   getDownstreamMathUnits,
-  getTransitivePrerequisites,
-} from '../src/data/courses/mathFoundations.js';
+  getTransitivePrerequisites } from '../src/data/courses/mathFoundations.js';
 
 import {
-  courseCatalog,
   getCourses,
   getCourse,
-  getActiveCourses,
-  isCourseActive,
-} from '../src/data/courses/courseCatalog.js';
+  isCourseActive } from '../src/data/courses/courseCatalog.js';
 
 // Storage Layer
 import * as storage from '../src/utils/storage.js';

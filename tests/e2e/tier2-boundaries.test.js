@@ -3,13 +3,11 @@ import assert from 'node:assert/strict';
 import {
   setupMockLocalStorage,
   EXPECTED_MATH_UNITS,
-  calculateNumberLineTicks,
   clampValue,
   snapToTick,
   verifyNumberLinePlacement,
   evaluateUnitLockState,
-  loadStorageModule,
-} from './setup.js';
+  loadStorageModule } from './setup.js';
 import { equivalentAnswer } from '../../src/utils/answerChecking.js';
 
 test.beforeEach(() => {

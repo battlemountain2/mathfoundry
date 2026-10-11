@@ -258,7 +258,7 @@ function makePythagorasProblem(seed, format) {
   }
 
   // Right triangle area: (a * b) / 2
-  const triplet = PYTHAGOREAN_TRIPLETS[normSeed % 4]; // Use smaller triplets
+  const triplet = PYTHAGOREAN_TRIPLETS[Math.floor(normSeed / 4) % 4]; // Vary this family independently of typeIndex
   const area = (triplet.a * triplet.b) / 2;
   return {
     id: `pyth-num-area-${normSeed}`,
